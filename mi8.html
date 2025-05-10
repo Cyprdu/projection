@@ -1,0 +1,784 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mission Impossible - Billeterie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://image.tmdb.org/t/p/original/7ONMDhnErvpkKvkZqM82ud7bzcT.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.3);
+            z-index: -1;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .glass-input:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            outline: none;
+        }
+
+        .calendar-day {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day.active {
+            background: rgba(220, 38, 38, 0.7);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .calendar-day:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .has-sessions::after {
+            content: '';
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #dc2626;
+            border-radius: 50%;
+        }
+
+        .calendar-day.active.has-sessions::after {
+            background-color: white;
+        }
+
+        .showtime {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .showtime:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .imax-logo {
+            height: 18px;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .DX-logo {
+            height: 18px;
+            margin-left: 5px;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Standard dropdown styling */
+        select {
+            appearance: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem 2rem 0.75rem 1rem;
+            color: white;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            background-size: 1.5em;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .mission-logo {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="backdrop"></div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <div class="mission-logo mb-6">
+                <img src="https://media.themoviedb.org/t/p/w1280/9c0iUhnmMFBi4mJwxY1D3A2h0x6.png" alt="Mission Impossible" class="w-full">
+            </div>
+            <h2 class="text-2xl font-light mb-8">Trouvez votre séance</h2>
+            <div class="max-w-3xl mx-auto glass-card p-6 mb-8">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="flex-1">
+                        <input type="text" id="searchInput" placeholder="Rechercher par ville, code postal ou cinéma" class="glass-input w-full p-3 text-white">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="locationBtn" class="glass-button px-4 py-3 text-white flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            Autour de moi
+                        </button>
+                        <select id="radiusSelect" class="z-50">
+                            <option value="5">5 km</option>
+                            <option value="10" selected>10 km</option>
+                            <option value="20">20 km</option>
+                            <option value="50">50 km</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Calendar -->
+        <div class="mb-10" style="position: relative; z-index: 10;">
+            <h3 class="text-xl font-semibold mb-4 slide-in">Sélectionnez une date</h3>
+            <div class="glass-card p-6">
+                <div class="overflow-x-auto">
+                    <div id="calendar" class="flex space-x-2 min-w-max pb-2">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cinema List -->
+        <div id="cinemaList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <!-- Cinema cards will be generated here -->
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden text-center py-10">
+            <h3 class="text-2xl font-light">Aucun cinéma trouvé pour cette date</h3>
+            <p class="mt-4">Essayez une autre date ou modifiez votre recherche</p>
+        </div>
+    </div>
+
+    <script>
+        // Cinema data
+        const cinemas = [
+        {
+            name: "Amphi Bourg en Bresse",
+            address: "1 All. des Brotteaux, 01000 Bourg-en-Bresse",
+            coordinates: { lat: 46.2051, lng: 5.2284 },
+            showtimes: [
+                { date: "2025-05-17", time: "19:45", language: "VF", url: "https://www.amphibourgenbresse.com/amphi/reserver/F262161/D1747503900/VF/215291/", imax: false },
+                { date: "2025-05-20", time: "18:00", language: "VF", url: "https://www.amphibourgenbresse.com/amphi/reserver/F262161/D1747756800/VF/215291/", imax: false },
+                { date: "2025-05-20", time: "19:50", language: "VF", url: "https://www.amphibourgenbresse.com/amphi/reserver/F262161/D1747763400/VF/215293/", imax: false },
+                { date: "2025-05-21", time: "14:00", language: "VF", url: "https://www.amphibourgenbresse.com/amphi/reserver/F607698/D1747137000/VF/215297/", imax: false }
+            ]
+        },
+        {
+            name: "Pathe Macon",
+            address: "70 Rue Michel Debré, 71000 Mâcon",
+            coordinates: { lat: 46.3089, lng: 4.8280 },
+            showtimes: [
+            { date: "2025-05-17", time: "20:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82170", imax: false },
+            { date: "2025-05-20", time: "18:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82172", imax: false },
+            { date: "2025-05-20", time: "19:30", language: "VOST", url: "https://s.pathe.fr/fr/V3371S82298", imax: false },
+            { date: "2025-05-20", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82171", imax: false },
+            { date: "2025-05-21", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82174", imax: false },
+            { date: "2025-05-21", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S82175", imax: false },
+            { date: "2025-05-21", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S82177", imax: false },
+            { date: "2025-05-21", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82176", imax: false },
+            { date: "2025-05-22", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S82174", imax: false },
+            { date: "2025-05-22", time: "17:30", language: "VOST", url: "https://s.pathe.fr/fr/V3371S83197", imax: false },
+            { date: "2025-05-22", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83199", imax: false },
+            { date: "2025-05-22", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83201", imax: false },
+            { date: "2025-05-23", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83204", imax: false },
+            { date: "2025-05-23", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83207", imax: false },
+            { date: "2025-05-23", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83209", imax: false },
+            { date: "2025-05-23", time: "21:00", language: "VOST", url: "https://s.pathe.fr/fr/V3371S83211", imax: false },
+            { date: "2025-05-24", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83214", imax: false },
+            { date: "2025-05-24", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83217", imax: false },
+            { date: "2025-05-24", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83219", imax: false },
+            { date: "2025-05-24", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83221", imax: false },
+            { date: "2025-05-25", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83224", imax: false },
+            { date: "2025-05-25", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83227", imax: false },
+            { date: "2025-05-25", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83229", imax: false },
+            { date: "2025-05-25", time: "21:00", language: "VOST", url: "https://s.pathe.fr/fr/V3371S83231", imax: false },
+            { date: "2025-05-26", time: "14:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83234", imax: false },
+            { date: "2025-05-26", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83237", imax: false },
+            { date: "2025-05-26", time: "19:30", language: "VOST", url: "https://s.pathe.fr/fr/V3371S83239", imax: false },
+            { date: "2025-05-26", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83241", imax: false },
+            { date: "2025-05-27", time: "14:00", language: "VOST", url: "https://s.pathe.fr/fr/V3371S83244", imax: false },
+            { date: "2025-05-27", time: "17:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83247", imax: false },
+            { date: "2025-05-27", time: "19:30", language: "VF", url: "https://s.pathe.fr/fr/V3371S83249", imax: false },
+            { date: "2025-05-27", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3371S83251", imax: false }            ]
+        },
+        {
+            name: "Cinéma Atmosphère - Oyonnax",
+            address: "Pl. Jeantet, 01100 Oyonnax",
+            coordinates: { lat: 46.2541, lng: 5.6557 },
+            showtimes: [
+                { date: "2025-05-17", time: "21:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=0815&lang=fr&ids=28605&ps=powster", imax: false }
+            ]
+        },
+        {
+            name: "Le SingulierS",
+            address: "3 boulevard Joseph Rosselli, 69220 Belleville-en-Beaujolais",
+            coordinates: { lat: 46.106674, lng: 4.746036 },
+            showtimes: [
+                { date: "2025-05-17", time: "19:40", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29648&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-21", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29651&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-22", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29652&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-23", time: "14:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29720&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-23", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29653&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-24", time: "20:40", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29654&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-25", time: "17:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29655&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-25", time: "12:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29656&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-26", time: "14:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29657&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-26", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29658&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false },
+                { date: "2025-05-27", time: "17:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=0548&lang=fr&ids=29659&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P1937", imax: false }
+            ]
+        },
+        {
+            name: "CGR Villefranche-sur-Saône",
+            address: "140 Passage Yvonne Margerit, 69400 Villefranche-sur-Saône",
+            coordinates: { lat: 45.986087, lng: 4.726183 },
+            showtimes: [
+                { date: "2025-05-20", time: "18:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/171389", imax: false },
+                { date: "2025-05-20", time: "21:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/171392", imax: false },
+                { date: "2025-05-21", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172003", imax: false },
+                { date: "2025-05-21", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172000", imax: false },
+                { date: "2025-05-21", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172004", imax: false },
+                { date: "2025-05-21", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172006", imax: false },
+                { date: "2025-05-21", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172001", imax: false },
+                { date: "2025-05-21", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172005", imax: false },
+                { date: "2025-05-21", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172007", imax: false },
+                { date: "2025-05-21", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172002", imax: false },
+                { date: "2025-05-22", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172062", imax: false },
+                { date: "2025-05-22", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172044", imax: false },
+                { date: "2025-05-22", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172068", imax: false },
+                { date: "2025-05-22", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172080", imax: false },
+                { date: "2025-05-22", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172050", imax: false },
+                { date: "2025-05-22", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172074", imax: false },
+                { date: "2025-05-22", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172086", imax: false },
+                { date: "2025-05-22", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172056", imax: false },
+                { date: "2025-05-23", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172063", imax: false },
+                { date: "2025-05-23", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172045", imax: false },
+                { date: "2025-05-23", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172069", imax: false },
+                { date: "2025-05-23", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172081", imax: false },
+                { date: "2025-05-23", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172051", imax: false },
+                { date: "2025-05-23", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172075", imax: false },
+                { date: "2025-05-23", time: "19:30", language: "VOST", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172105", imax: false },
+                { date: "2025-05-23", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172057", imax: false },
+                { date: "2025-05-24", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172064", imax: false },
+{ date: "2025-05-24", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172046", imax: false },
+{ date: "2025-05-24", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172070", imax: false },
+{ date: "2025-05-24", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172082", imax: false },
+{ date: "2025-05-24", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172052", imax: false },
+{ date: "2025-05-24", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172076", imax: false },
+{ date: "2025-05-24", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172088", imax: false },
+{ date: "2025-05-24", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172058", imax: false },
+{ date: "2025-05-25", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172065", imax: false },
+{ date: "2025-05-25", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172047", imax: false },
+{ date: "2025-05-25", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172071", imax: false },
+{ date: "2025-05-25", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172083", imax: false },
+{ date: "2025-05-25", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172053", imax: false },
+{ date: "2025-05-25", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172077", imax: false },
+{ date: "2025-05-25", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172089", imax: false },
+{ date: "2025-05-25", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172059", imax: false },
+{ date: "2025-05-26", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172066", imax: false },
+{ date: "2025-05-26", time: "13:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172048", imax: false },
+{ date: "2025-05-26", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172072", imax: false },
+{ date: "2025-05-26", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172084", imax: false },
+{ date: "2025-05-26", time: "17:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172054", imax: false },
+{ date: "2025-05-26", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172078", imax: false },
+{ date: "2025-05-26", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172090", imax: false },
+{ date: "2025-05-26", time: "20:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172104", imax: false },
+{ date: "2025-05-27", time: "10:50", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172067", imax: false },
+{ date: "2025-05-27", time: "14:15", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172073", imax: false },
+{ date: "2025-05-27", time: "16:00", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172085", imax: false },
+{ date: "2025-05-27", time: "17:45", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172079", imax: false },
+{ date: "2025-05-27", time: "19:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172091", imax: false },
+{ date: "2025-05-27", time: "21:30", language: "VF", url: "https://achat.cgrcinemas.fr/villefranche-sur-saone/r/172114", imax: false },
+
+                            ]
+
+
+                            
+        },
+
+
+        {
+            name: "Mégarama Chalon-sur-Saône",
+            address: "1 rue René Cassin, Chalon-sur-Saône",
+            coordinates: { lat: 46.7983, lng: 4.8494 },  // Vous pouvez utiliser ces coordonnées ou les modifier si nécessaire.
+            showtimes: [
+            { date: "2025-05-17", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136019&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110",},
+            { date: "2025-05-20", time: "18:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136021&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-20", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136020&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-21", time: "10:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136657&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-21", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136650&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-21", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136643&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-21", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136636&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-22", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136651&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-22", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136644&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-22", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136637&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-23", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136652&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-23", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136645&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-23", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136638&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-24", time: "10:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136658&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-24", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136653&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-24", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136646&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-24", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136639&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-25", time: "10:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136659&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-25", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136654&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-25", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136647&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-25", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136640&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-26", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136655&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-26", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136648&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-26", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136641&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-27", time: "14:00", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136656&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-27", time: "17:15", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136649&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false },
+            { date: "2025-05-27", time: "20:30", language: "VF", url: "https://www.ticketingcine.fr/?nc=1152&lang=fr&ids=136642&ps=powster&utm_source=powster&utm_campaign=powster&utm_medium=referral&utm_content=P7110", imax: false }
+                        
+            
+                ]
+        },
+        
+        
+        {
+            name: "Pathé Lyon Carré de Soie",
+            address: "Centre commercial Carré de Soie, Vaulx-en-Velin",
+            coordinates: { lat: 45.7621, lng: 4.9399 },  // Ces coordonnées peuvent être ajustées si nécessaire.
+            showtimes: [
+
+
+            { date: "2025-05-17", time: "20:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146317", imax: false },
+            { date: "2025-05-20", time: "18:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146310", imax: false },
+            { date: "2025-05-20", time: "20:30", language: "VF", url: "https://s.pathe.fr/fr/V3377S146309", imax: false },
+            { date: "2025-05-20", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146316", imax: true },
+            { date: "2025-05-20", time: "21:30", language: "VF", url: "https://s.pathe.fr/fr/V3377S146315", imax: false, DX: true, },
+            { date: "2025-05-20", time: "21:45", language: "VF", url: "https://s.pathe.fr/fr/V3377S146314", imax: false },
+            { date: "2025-05-21", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146281", imax: true },
+            { date: "2025-05-21", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146282", imax: true },
+            { date: "2025-05-21", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146283", imax: true },
+            { date: "2025-05-21", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146284", imax: true },
+            { date: "2025-05-22", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146333", imax: true },
+            { date: "2025-05-22", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146334", imax: true },
+            { date: "2025-05-22", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146335", imax: true },
+            { date: "2025-05-22", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146336", imax: true },
+            { date: "2025-05-23", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146339", imax: true },
+            { date: "2025-05-23", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146340", imax: true },
+            { date: "2025-05-23", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146341", imax: true },
+            { date: "2025-05-23", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146342", imax: true },
+            { date: "2025-05-24", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146345", imax: true },
+            { date: "2025-05-24", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146346", imax: true },
+            { date: "2025-05-24", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146347", imax: true },
+            { date: "2025-05-24", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146348", imax: true },
+            { date: "2025-05-25", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146351", imax: true },
+            { date: "2025-05-25", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146352", imax: true },
+            { date: "2025-05-25", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146353", imax: true },
+            { date: "2025-05-25", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146354", imax: true },
+            { date: "2025-05-26", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146357", imax: true },
+            { date: "2025-05-26", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146358", imax: true },
+            { date: "2025-05-26", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146359", imax: true },
+            { date: "2025-05-26", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146360", imax: true },
+            { date: "2025-05-27", time: "10:15", language: "VF", url: "https://s.pathe.fr/fr/V3377S146363", imax: true },
+            { date: "2025-05-27", time: "13:50", language: "VF", url: "https://s.pathe.fr/fr/V3377S146364", imax: true },
+            { date: "2025-05-27", time: "17:25", language: "VF", url: "https://s.pathe.fr/fr/V3377S146365", imax: true },
+            { date: "2025-05-27", time: "21:00", language: "VF", url: "https://s.pathe.fr/fr/V3377S146366", imax: true }
+            
+
+
+            ]
+        },
+        
+
+        {
+            name: "Pathé Beaugrenelle - Dolby Cinema",
+            address: "7 Rue Linois, Paris",
+            coordinates: { lat: 48.8443, lng: 2.2779 },
+            showtimes: [
+                { date: "2025-05-17", time: "20:00", language: "VF", url: "https://s.pathe.fr/fr/V3166S113565", imax: false },
+                { date: "2025-05-20", time: "18:30", language: "VF", url: "https://s.pathe.fr/fr/V3166S114380", DX: true },
+                { date: "2025-05-20", time: "19:00", language: "VF", url: "https://s.pathe.fr/fr/V3166S114375", imax: false },
+                { date: "2025-05-21", time: "18:30", language: "VF", url: "https://s.pathe.fr/fr/V3166S113129", DX: true },
+                { date: "2025-05-21", time: "22:00", language: "VF", url: "https://s.pathe.fr/fr/V3166S113130", DX: true },
+                { date: "2025-05-21", time: "19:00", language: "VF", url: "https://s.pathe.fr/fr/V3166S113114", imax: false },
+                { date: "2025-05-21", time: "22:15", language: "VF", url: "https://s.pathe.fr/fr/V3166S113126", imax: false },
+                { date: "2025-05-21", time: "22:30", language: "VF", url: "https://s.pathe.fr/fr/V3166S113113", imax: false }
+            ]
+        },
+        
+
+        
+    ];
+    
+
+        // Generate dates from May 17 to July 1
+        function generateDates() {
+            const startDate = new Date(2025, 4, 17); // May 17, 2025
+            const endDate = new Date(2025, 4, 27);    // July 1, 20245
+            const dates = [];
+            
+            const currentDate = new Date(startDate);
+            while (currentDate <= endDate) {
+                dates.push(new Date(currentDate));
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return dates;
+        }
+
+        // Format date to YYYY-MM-DD
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Format date for display
+        function formatDisplayDate(date) {
+            const options = { weekday: 'short', day: 'numeric', month: 'short' };
+            return date.toLocaleDateString('fr-FR', options);
+        }
+
+        // Calculate distance between two coordinates in km
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radius of the earth in km
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2); 
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            const distance = R * c; // Distance in km
+            return distance;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI/180);
+        }
+
+        // Check if a date has available sessions based on search criteria
+        function hasAvailableSessions(date, searchTerm) {
+            searchTerm = searchTerm.toLowerCase();
+            
+            // Filter cinemas based on search term
+            const filteredCinemas = cinemas.filter(cinema => {
+                return cinema.name.toLowerCase().includes(searchTerm) ||
+                       cinema.address.toLowerCase().includes(searchTerm) ||
+                       searchTerm === '';
+            });
+            
+            // Check if any filtered cinema has showtimes for this date
+            return filteredCinemas.some(cinema => {
+                return cinema.showtimes.some(showtime => showtime.date === date);
+            });
+        }
+
+        // Update calendar indicators
+        function updateCalendarIndicators() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const calendarDays = document.querySelectorAll('.calendar-day');
+            
+            calendarDays.forEach(day => {
+                const dateStr = day.dataset.date;
+                if (hasAvailableSessions(dateStr, searchTerm)) {
+                    day.classList.add('has-sessions');
+                } else {
+                    day.classList.remove('has-sessions');
+                }
+            });
+        }
+
+        // User's current location
+        let userLocation = null;
+        let selectedRadius = 10;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            const calendarEl = document.getElementById('calendar');
+            const dates = generateDates();
+            
+            // Populate calendar
+            dates.forEach((date, index) => {
+                const dateStr = formatDate(date);
+                const displayDate = formatDisplayDate(date);
+                
+                const dayEl = document.createElement('div');
+                dayEl.className = `calendar-day glass-card p-4 text-center min-w-[100px] ${index === 0 ? 'active' : ''}`;
+                dayEl.dataset.date = dateStr;
+                dayEl.innerHTML = `
+                    <div class="font-bold">${displayDate.split(' ')[0]}</div>
+                    <div class="text-xl">${displayDate.split(' ')[1]}</div>
+                    <div>${displayDate.split(' ')[2]}</div>
+                `;
+                
+                dayEl.addEventListener('click', () => {
+                    document.querySelectorAll('.calendar-day').forEach(el => el.classList.remove('active'));
+                    dayEl.classList.add('active');
+                    filterCinemas(dateStr);
+                });
+                
+                calendarEl.appendChild(dayEl);
+            });
+            
+            // Initialize with the first date
+            filterCinemas(formatDate(dates[0]));
+            updateCalendarIndicators();
+            
+            // Set up search input
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', () => {
+                const activeDate = document.querySelector('.calendar-day.active').dataset.date;
+                filterCinemas(activeDate);
+                updateCalendarIndicators();
+            });
+            
+            // Set up location button
+            const locationBtn = document.getElementById('locationBtn');
+            locationBtn.addEventListener('click', getUserLocation);
+            
+            // Set up radius select
+            const radiusSelect = document.getElementById('radiusSelect');
+            radiusSelect.addEventListener('change', () => {
+                selectedRadius = parseInt(radiusSelect.value);
+                
+                if (userLocation) {
+                    const activeDate = document.querySelector('.calendar-day.active').dataset.date;
+                    filterCinemas(activeDate);
+                    updateCalendarIndicators();
+                }
+            });
+        });
+
+        // Get user's location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        
+                        // Show success notification
+                        showNotification('Localisation réussie !', 'success');
+                        
+                        // Update cinema list with the new location
+                        const activeDate = document.querySelector('.calendar-day.active').dataset.date;
+                        filterCinemas(activeDate);
+                        updateCalendarIndicators();
+                    },
+                    (error) => {
+                        console.error("Error getting location:", error);
+                        showNotification('Impossible d\'obtenir votre position', 'error');
+                    }
+                );
+            } else {
+                showNotification('La géolocalisation n\'est pas supportée par votre navigateur', 'error');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 fade-in ${
+                type === 'success' ? 'bg-green-600' : 'bg-red-600'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 3000);
+        }
+
+        // Filter cinemas based on date and search
+        function filterCinemas(date) {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const cinemaListEl = document.getElementById('cinemaList');
+            const noResultsEl = document.getElementById('noResults');
+            
+            // Clear previous results
+            cinemaListEl.innerHTML = '';
+            
+            // Filter cinemas
+            let filteredCinemas = cinemas.filter(cinema => {
+                // Check if cinema has showtimes for the selected date
+                const hasShowtimes = cinema.showtimes.some(showtime => showtime.date === date);
+                
+                // Check if cinema matches search query
+                const matchesSearch = 
+                    cinema.name.toLowerCase().includes(searchInput) ||
+                    cinema.address.toLowerCase().includes(searchInput);
+                
+                return hasShowtimes && matchesSearch;
+            });
+            
+            // Sort by distance if user location is available
+            if (userLocation) {
+                filteredCinemas = filteredCinemas.filter(cinema => {
+                    const distance = calculateDistance(
+                        userLocation.lat, userLocation.lng,
+                        cinema.coordinates.lat, cinema.coordinates.lng
+                    );
+                    cinema.distance = distance; // Store distance for display
+                    return distance <= selectedRadius;
+                });
+                
+                filteredCinemas.sort((a, b) => a.distance - b.distance);
+            }
+            
+            // Display results or no results message
+            if (filteredCinemas.length > 0) {
+                filteredCinemas.forEach((cinema, index) => {
+                    // Filter showtimes for the selected date
+                    const dateShowtimes = cinema.showtimes.filter(showtime => showtime.date === date);
+                    
+                    const cinemaEl = document.createElement('div');
+                    cinemaEl.className = 'glass-card p-6 fade-in';
+                    cinemaEl.style.animationDelay = `${index * 0.1}s`;
+                    
+                    let distanceInfo = '';
+                    if (userLocation && cinema.distance !== undefined) {
+                        distanceInfo = `<div class="text-sm text-green-400 mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            ${cinema.distance.toFixed(1)} km
+                        </div>`;
+                    }
+                    
+                    cinemaEl.innerHTML = `
+                        <h3 class="text-xl font-bold mb-2">${cinema.name}</h3>
+                        ${distanceInfo}
+                        <p class="text-sm text-gray-300 mb-4">${cinema.address}</p>
+                        <div class="text-lg font-semibold mb-3">Séances:</div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            ${dateShowtimes.map(showtime => `
+                                <a href="${showtime.url}" target="_blank" class="showtime glass-card p-3 text-center">
+                                    ${showtime.time} ${showtime.language}
+                                    ${showtime.imax ? `
+                                        <img src="https://raw.githubusercontent.com/Cyprdu/projection/refs/heads/main/imax.png" alt="IMAX" class="imax-logo">
+                                    ` : ''}
+                                    ${showtime.DX ? `
+                                        <img src="https://caribbeancinemas.com/wp-content/uploads/2020/01/x4DX-Logo-Inspiring-White.png.pagespeed.ic.Zi1s1WHQQz.png" alt="4DX" class="DX-logo">
+                                    ` : ''}
+                                </a>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    cinemaListEl.appendChild(cinemaEl);
+                });
+                
+                noResultsEl.classList.add('hidden');
+            } else {
+                noResultsEl.classList.remove('hidden');
+            }
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93d8d16f80eb9a73',t:'MTc0Njg3MzYyMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

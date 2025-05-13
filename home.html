@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projection 2025 - Festival de Courts Métrages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0a1429;
+            color: #e2e8f0;
+        }
+        .tab-active {
+            border-bottom: 3px solid #ef4444;
+            color: #ef4444;
+        }
+        .film-card {
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .film-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        .film-card img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .film-card:hover img {
+            transform: scale(1.03);
+        }
+        .billetterie-container {
+            height: 700px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .btn-primary {
+            background-color: #ef4444;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            transform: translateY(-2px);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .poster-container {
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        .film-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            transform: rotate(5deg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        .film-info {
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-[#071022] py-6 px-4 shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+                <h1 class="text-3xl font-bold text-red-500 mb-4 md:mb-0 flex items-center">
+                    <i class="fas fa-film mr-3 animate-pulse"></i>
+                    Projection 2025
+                </h1>
+                <nav class="flex space-x-2 md:space-x-8">
+                    <button id="tab-films" class="tab-active px-4 py-2 text-lg font-medium flex items-center">
+                        <i class="fas fa-video mr-2"></i>
+                        Films
+                    </button>
+                    <button id="tab-billetterie" class="px-4 py-2 text-lg font-medium flex items-center">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Billetterie
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- Films Tab Content -->
+            <div id="content-films" class="animate-fade-in">
+                <div class="mb-12 text-center animate-slide-up">
+                    <h2 class="text-4xl font-bold mb-4 text-red-500">
+                        <i class="fas fa-star mr-2"></i>
+                        Découvrez nos courts métrages
+                        <i class="fas fa-star ml-2"></i>
+                    </h2>
+                    <p class="text-xl text-slate-300 max-w-3xl mx-auto">Une sélection de films exceptionnels à découvrir lors de notre événement cinéma.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                    <!-- Film 1 -->
+                    <div class="film-card bg-[#071022] rounded-lg overflow-hidden shadow-lg animate-slide-up" style="animation-delay: 0.1s;">
+                        <div class="film-badge">
+                            <i class="fas fa-award mr-1"></i> Sélection
+                        </div>
+                        <div class="poster-container">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/photos/refs/heads/main/cinema/Design%20sans%20titre%20-%202025-05-09T210859.342.png" 
+                                alt="Affiche du film Moins par Moins" 
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-2xl font-bold mb-2 text-red-500 flex items-center">
+                                <i class="fas fa-film mr-2"></i>
+                                Moins par Moins
+                            </h3>
+                            <p class="text-slate-300 mb-4">Un court métrage captivant à découvrir lors de notre projection.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <a href="https://projection-2025.netlify.app" 
+                                target="_blank" 
+                                class="btn-primary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Découvrir le film
+                                </a>
+                                <button id="tickets-film1" 
+                                    class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    Prendre mes places
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Film 2 -->
+                    <div class="film-card bg-[#071022] rounded-lg overflow-hidden shadow-lg animate-slide-up" style="animation-delay: 0.2s;">
+                        <div class="film-badge">
+                            <i class="fas fa-award mr-1"></i> Sélection
+                        </div>
+                        <div class="poster-container">
+                            <img src="http://fr.web.img4.acsta.net/pictures/19/08/29/09/20/1546400.jpg" 
+                                alt="Affiche du film La Vie Rêvée" 
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-2xl font-bold mb-2 text-red-500 flex items-center">
+                                <i class="fas fa-film mr-2"></i>
+                                La Vie Rêvée
+                            </h3>
+                            <p class="text-slate-300 mb-4">Une exploration onirique à ne pas manquer lors de notre événement.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <a href="https://projection-2025.netlify.app/reve" 
+                                target="_blank" 
+                                class="btn-primary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Découvrir le film
+                                </a>
+                                <button id="tickets-film2" 
+                                    class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    Prendre mes places
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Billetterie Tab Content -->
+            <div id="content-billetterie" class="hidden animate-fade-in">
+                <div class="mb-12 text-center animate-slide-up">
+                    <h2 class="text-4xl font-bold mb-4 text-red-500">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Réservez vos places
+                    </h2>
+                    <p class="text-xl text-slate-300 max-w-3xl mx-auto mb-8">Sécurisez votre place pour notre événement cinématographique exceptionnel.</p>
+                </div>
+                
+                <div class="billetterie-container bg-white rounded-lg shadow-xl p-4 mx-auto animate-slide-up" style="animation-delay: 0.2s;">
+                    <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne</a>
+                    <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-[#071022] py-8 px-4 mt-12">
+            <div class="container mx-auto text-center">
+                <div class="flex justify-center space-x-6 mb-6">
+                    <a href="#" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fab fa-facebook-f text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fab fa-instagram text-2xl"></i>
+                    </a>
+                    <a href="#" class="text-red-500 hover:text-red-400 transition-colors">
+                        <i class="fab fa-twitter text-2xl"></i>
+                    </a>
+                </div>
+                <p class="text-slate-400">&copy; 2025 Projection - Festival de Courts Métrages</p>
+                <p class="text-slate-500 mt-2">Tous droits réservés</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        const tabFilms = document.getElementById('tab-films');
+        const tabBilletterie = document.getElementById('tab-billetterie');
+        const contentFilms = document.getElementById('content-films');
+        const contentBilletterie = document.getElementById('content-billetterie');
+
+        tabFilms.addEventListener('click', () => {
+            tabFilms.classList.add('tab-active');
+            tabBilletterie.classList.remove('tab-active');
+            contentFilms.classList.remove('hidden');
+            contentBilletterie.classList.add('hidden');
+            
+            // Reset animations
+            contentFilms.style.animation = 'none';
+            contentFilms.offsetHeight; // Trigger reflow
+            contentFilms.style.animation = null;
+        });
+
+        tabBilletterie.addEventListener('click', () => {
+            tabBilletterie.classList.add('tab-active');
+            tabFilms.classList.remove('tab-active');
+            contentBilletterie.classList.remove('hidden');
+            contentFilms.classList.add('hidden');
+            
+            // Reset animations
+            contentBilletterie.style.animation = 'none';
+            contentBilletterie.offsetHeight; // Trigger reflow
+            contentBilletterie.style.animation = null;
+        });
+        
+        // Ticket buttons functionality
+        document.getElementById('tickets-film1').addEventListener('click', () => {
+            tabBilletterie.click();
+            // Scroll to billetterie with smooth animation
+            setTimeout(() => {
+                document.querySelector('.billetterie-container').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }, 100);
+        });
+        
+        document.getElementById('tickets-film2').addEventListener('click', () => {
+            tabBilletterie.click();
+            // Scroll to billetterie with smooth animation
+            setTimeout(() => {
+                document.querySelector('.billetterie-container').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }, 100);
+        });
+        
+        // Add hover effects
+        const filmCards = document.querySelectorAll('.film-card');
+        filmCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.querySelector('h3').classList.add('text-red-400');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.querySelector('h3').classList.remove('text-red-400');
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93f328658219d56c',t:'MTc0NzE0OTgxNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculateur de besoins</title>
     <link rel="icon" href="https://tally.so/favicon.png" type="image/png">
+    <script type="text/javascript" src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            emailjs.init("jdLboYu2-t-uviuPF"); // Assure-toi que c'est ta clé publique EmailJS
+        })();
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -25,333 +29,253 @@
         .input-group {
             margin-bottom: 1.5rem;
         }
+        .form-input {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0.75rem;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            border-color: #333;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+        }
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #333;
-        }
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            transition: all 0.3s;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: #666;
-            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
-        }
-        .radio-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-        .radio-option {
-            flex: 1 0 45%;
-            margin-bottom: 0.5rem;
+            color: #444;
         }
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem 1.5rem;
             background-color: #333;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
         }
         .btn:hover {
             background-color: #555;
         }
-        .btn i {
-            margin-right: 0.5rem;
+        .radio-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
-        .email-container {
-            margin-top: 2rem;
-            padding: 1.5rem;
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 1rem;
             border-radius: 8px;
-            background-color: #f8f8f8;
+            margin-top: 1rem;
             display: none;
         }
         .error-message {
-            color: #e53e3e;
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            display: none;
-        }
-        .success-message {
-            background-color: #d1fae5;
-            border-left: 4px solid #10b981;
-            color: #065f46;
+            background-color: #ffebee;
+            color: #c62828;
             padding: 1rem;
-            border-radius: 4px;
+            border-radius: 8px;
             margin-top: 1rem;
             display: none;
         }
-        .error-alert {
-            background-color: #fee2e2;
-            border-left: 4px solid #ef4444;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-top: 1rem;
+        .loading {
             display: none;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #333;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="py-10">
     <div class="form-container">
-        <h1 class="text-3xl font-semibold mb-6 text-center text-gray-800">Calculateur de besoins</h1>
+        <h1 class="text-3xl font-semibold mb-6 text-center">Calculateur de besoins</h1>
         
-        <form id="calculForm" class="space-y-6">
+        <form id="calculatorForm">
             <div class="input-group">
-                <label for="poids" class="form-label">Poids (kg)</label>
-                <div class="relative">
-                    <input type="number" id="poids" class="form-input" placeholder="Entrez votre poids" required>
-                    <div class="error-message" id="poids-error">Veuillez entrer un poids valide</div>
-                </div>
+                <label for="email" class="form-label">Votre email</label>
+                <input type="email" id="email" name="email" class="form-input" required placeholder="exemple@email.com">
             </div>
             
             <div class="input-group">
-                <label for="taille" class="form-label">Taille (cm)</label>
-                <div class="relative">
-                    <input type="number" id="taille" class="form-input" placeholder="Entrez votre taille" required>
-                    <div class="error-message" id="taille-error">Veuillez entrer une taille valide</div>
-                </div>
+                <label for="weight" class="form-label">Poids (kg)</label>
+                <input type="number" id="weight" name="weight" class="form-input" required min="30" max="300" step="0.1" placeholder="70">
+            </div>
+            
+            <div class="input-group">
+                <label for="height" class="form-label">Taille (cm)</label>
+                <input type="number" id="height" name="height" class="form-input" required min="100" max="250" placeholder="175">
             </div>
             
             <div class="input-group">
                 <label for="age" class="form-label">Âge</label>
-                <div class="relative">
-                    <input type="number" id="age" class="form-input" placeholder="Entrez votre âge" required>
-                    <div class="error-message" id="age-error">Veuillez entrer un âge valide</div>
-                </div>
+                <input type="number" id="age" name="age" class="form-input" required min="15" max="120" placeholder="30">
             </div>
             
             <div class="input-group">
                 <label class="form-label">Sexe</label>
                 <div class="radio-group">
-                    <div class="radio-option">
-                        <input type="radio" id="homme" name="sexe" value="homme" required>
-                        <label for="homme" class="ml-2">Homme</label>
+                    <div class="radio-item">
+                        <input type="radio" id="male" name="gender" value="homme" required>
+                        <label for="male">Homme</label>
                     </div>
-                    <div class="radio-option">
-                        <input type="radio" id="femme" name="sexe" value="femme" required>
-                        <label for="femme" class="ml-2">Femme</label>
+                    <div class="radio-item">
+                        <input type="radio" id="female" name="gender" value="femme">
+                        <label for="female">Femme</label>
                     </div>
                 </div>
-                <div class="error-message" id="sexe-error">Veuillez sélectionner votre sexe</div>
             </div>
             
             <div class="input-group">
                 <label class="form-label">Niveau d'activité</label>
-                <div class="space-y-2">
-                    <div>
-                        <input type="radio" id="niveau1" name="activite" value="1.2" required>
-                        <label for="niveau1" class="ml-2">Pas de sport</label>
+                <div class="radio-group flex-col">
+                    <div class="radio-item">
+                        <input type="radio" id="activity1" name="activity" value="1.2" required>
+                        <label for="activity1">Pas de sport</label>
                     </div>
-                    <div>
-                        <input type="radio" id="niveau2" name="activite" value="1.375" required>
-                        <label for="niveau2" class="ml-2">Sport 1 à 3 fois par semaine</label>
+                    <div class="radio-item">
+                        <input type="radio" id="activity2" name="activity" value="1.375">
+                        <label for="activity2">Sport 1 à 3 fois par semaine</label>
                     </div>
-                    <div>
-                        <input type="radio" id="niveau3" name="activite" value="1.55" required>
-                        <label for="niveau3" class="ml-2">Sport 4 à 6 fois par semaine</label>
+                    <div class="radio-item">
+                        <input type="radio" id="activity3" name="activity" value="1.55">
+                        <label for="activity3">Sport 4 à 6 fois par semaine</label>
                     </div>
-                    <div>
-                        <input type="radio" id="niveau4" name="activite" value="1.725" required>
-                        <label for="niveau4" class="ml-2">Sport tous les jours</label>
+                    <div class="radio-item">
+                        <input type="radio" id="activity4" name="activity" value="1.725">
+                        <label for="activity4">Sport tous les jours</label>
                     </div>
-                </div>
-                <div class="error-message" id="activite-error">Veuillez sélectionner votre niveau d'activité</div>
-            </div>
-            
-            <div id="emailSection" class="input-group">
-                <label for="email" class="form-label">Votre adresse email</label>
-                <div class="relative">
-                    <input type="email" id="email" class="form-input" placeholder="Entrez votre email pour recevoir le résultat" required>
-                    <div class="error-message" id="email-error">Veuillez entrer une adresse email valide</div>
                 </div>
             </div>
             
-            <div class="flex justify-center">
-                <button type="submit" id="submitButton" class="btn">
-                    <i class="fas fa-paper-plane"></i>
-                    Calculer et envoyer par email
-                </button>
-            </div>
-            
-            <div id="successMessage" class="success-message">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span>Votre résultat a été calculé et envoyé à votre adresse email.</span>
-                </div>
-            </div>
-            
-            <div id="errorMessage" class="error-alert">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span>Une erreur s'est produite lors de l'envoi. Veuillez réessayer.</span>
-                </div>
-            </div>
+            <button type="button" id="calculateBtn" class="btn w-full">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Calculer et envoyer par email
+            </button>
         </form>
+        
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <span>Envoi en cours...</span>
+        </div>
+        
+        <div id="successMessage" class="success-message">
+            Vos résultats ont été envoyés avec succès à votre adresse email !
+        </div>
+        
+        <div id="errorMessage" class="error-message">
+            Une erreur s'est produite lors de l'envoi de l'email. Veuillez réessayer.
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('calculForm');
-            const submitButton = document.getElementById('submitButton');
+            const calculateBtn = document.getElementById('calculateBtn');
             const successMessage = document.getElementById('successMessage');
             const errorMessage = document.getElementById('errorMessage');
+            const loading = document.getElementById('loading');
             
-            // Validation des champs
-            function validateField(field, errorId) {
-                const errorElement = document.getElementById(errorId);
-                if (!field.value) {
-                    errorElement.style.display = 'block';
-                    return false;
-                } else {
-                    errorElement.style.display = 'none';
-                    return true;
-                }
-            }
-            
-            // Validation de l'email
-            function validateEmail(email) {
-                const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const errorElement = document.getElementById('email-error');
-                if (!re.test(email.value.toLowerCase())) {
-                    errorElement.style.display = 'block';
-                    return false;
-                } else {
-                    errorElement.style.display = 'none';
-                    return true;
-                }
-            }
-            
-            // Validation des boutons radio
-            function validateRadio(name, errorId) {
-                const radios = document.getElementsByName(name);
-                const errorElement = document.getElementById(errorId);
-                let isChecked = false;
+            calculateBtn.addEventListener('click', function() {
+                const form = document.getElementById('calculatorForm');
                 
-                for (let i = 0; i < radios.length; i++) {
-                    if (radios[i].checked) {
-                        isChecked = true;
-                        break;
-                    }
+                // Vérification basique du formulaire
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
                 }
                 
-                if (!isChecked) {
-                    errorElement.style.display = 'block';
-                    return false;
-                } else {
-                    errorElement.style.display = 'none';
-                    return true;
-                }
-            }
-            
-            // Calcul des besoins caloriques
-            function calculerBesoins() {
-                const poids = parseFloat(document.getElementById('poids').value);
-                const taille = parseFloat(document.getElementById('taille').value);
-                const age = parseFloat(document.getElementById('age').value);
-                const sexe = document.querySelector('input[name="sexe"]:checked').value;
-                const activite = parseFloat(document.querySelector('input[name="activite"]:checked').value);
+                // Récupération des valeurs du formulaire
+                const email = document.getElementById('email').value;
+                const weight = parseFloat(document.getElementById('weight').value);
+                const height = parseFloat(document.getElementById('height').value);
+                const age = parseInt(document.getElementById('age').value);
+                const gender = document.querySelector('input[name="gender"]:checked').value;
+                const activityLevel = parseFloat(document.querySelector('input[name="activity"]:checked').value);
                 
-                let metabolismeDeBase = (10 * poids) + (6.25 * taille) - (5 * age);
+                // Calcul selon la formule fournie
+                let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+                bmr += (gender === 'homme') ? 5 : -161;
                 
-                if (sexe === 'homme') {
-                    metabolismeDeBase += 5;
-                } else {
-                    metabolismeDeBase -= 161;
-                }
-                
-                const besoinsCaloriques = Math.round(metabolismeDeBase * activite * 0.8);
-                
-                return besoinsCaloriques;
-            }
-            
-            // Soumission du formulaire
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
+                // Calcul final avec facteur d'activité et coefficient 0.8
+                const calculatedCalories = Math.round(bmr * activityLevel * 0.8);
                 
                 // Masquer les messages précédents
                 successMessage.style.display = 'none';
                 errorMessage.style.display = 'none';
                 
-                // Validation de tous les champs
-                const poidsValid = validateField(document.getElementById('poids'), 'poids-error');
-                const tailleValid = validateField(document.getElementById('taille'), 'taille-error');
-                const ageValid = validateField(document.getElementById('age'), 'age-error');
-                const sexeValid = validateRadio('sexe', 'sexe-error');
-                const activiteValid = validateRadio('activite', 'activite-error');
-                const emailValid = validateEmail(document.getElementById('email'));
+                // Afficher le chargement
+                loading.style.display = 'flex';
+                calculateBtn.disabled = true;
                 
-                if (poidsValid && tailleValid && ageValid && sexeValid && activiteValid && emailValid) {
-                    const besoins = calculerBesoins();
-                    const email = document.getElementById('email').value;
-                    
-                    // Animation du bouton pendant l'envoi
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
-                    submitButton.disabled = true;
-                    
-                    // Envoi des données à make.com
-                    const webhookUrl = 'https://hook.eu2.make.com/b8lpt68djgjdozy8sg3ri03xkwn66nhn';
-                    
-                    const data = {
-                        poids: parseFloat(document.getElementById('poids').value),
-                        taille: parseFloat(document.getElementById('taille').value),
-                        age: parseFloat(document.getElementById('age').value),
-                        sexe: document.querySelector('input[name="sexe"]:checked').value,
-                        activite: document.querySelector('input[name="activite"]:checked').value,
-                        email: email,
-                        resultat: besoins
-                    };
-                    
-                    fetch(webhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data)
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Afficher le message de succès
-                            successMessage.style.display = 'block';
-                            // Réinitialiser le formulaire
-                            form.reset();
-                        } else {
-                            throw new Error('Erreur lors de l\'envoi');
-                        }
-                    })
-                    .catch(error => {
-                        // Afficher le message d'erreur
+                // Préparation des données pour EmailJS
+                const templateParams = {
+                    email: email,
+                    weight: weight,
+                    height: height,
+                    age: age,
+                    gender: gender,
+                    activity_level: getActivityText(activityLevel),
+                    calories: calculatedCalories
+                };
+                
+                // Envoi de l'email via EmailJS
+                emailjs.send('service_ouxhefb', 'template_s4eb2m9', templateParams)
+                    .then(function(response) {
+                        console.log('SUCCESS!', response.status, response.text);
+                        loading.style.display = 'none';
+                        successMessage.style.display = 'block';
+                        calculateBtn.disabled = false;
+                    }, function(error) {
+                        console.log('FAILED...', error);
+                        loading.style.display = 'none';
                         errorMessage.style.display = 'block';
-                        console.error('Erreur:', error);
-                    })
-                    .finally(() => {
-                        // Restaurer le bouton
-                        submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Calculer et envoyer par email';
-                        submitButton.disabled = false;
-                        
-                        // Scroll vers le message
-                        if (successMessage.style.display === 'block') {
-                            successMessage.scrollIntoView({ behavior: 'smooth' });
-                        } else if (errorMessage.style.display === 'block') {
-                            errorMessage.scrollIntoView({ behavior: 'smooth' });
-                        }
+                        calculateBtn.disabled = false;
                     });
-                }
             });
+            
+            // Fonction pour obtenir le texte correspondant au niveau d'activité
+            function getActivityText(level) {
+                switch(level) {
+                    case 1.2: return 'Pas de sport';
+                    case 1.375: return 'Sport 1 à 3 fois par semaine';
+                    case 1.55: return 'Sport 4 à 6 fois par semaine';
+                    case 1.725: return 'Sport tous les jours';
+                    default: return 'Non spécifié';
+                }
+            }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93f41a7f4372e1f8',t:'MTc0NzE1OTczMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

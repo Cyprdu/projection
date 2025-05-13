@@ -6,12 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculateur de besoins</title>
     <link rel="icon" href="https://tally.so/favicon.png" type="image/png">
-    <script type="text/javascript" src="https://cdn.emailjs.com/sdk/2.3.2/email.min.js"></script>
-    <script type="text/javascript">
-        (function(){
-            emailjs.init("8FwFbrCme2DQiPYt3");
-        })();
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -97,38 +91,16 @@
             margin-top: 1rem;
             display: none;
         }
-        .loading {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            margin-top: 1rem;
-        }
-        .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #333;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .hidden-field {
-            display: none;
-        }
     </style>
 </head>
 <body class="py-10">
     <div class="form-container">
         <h1 class="text-3xl font-semibold mb-6 text-center">Calculateur de besoins</h1>
         
-        <form id="calculatorForm">
+        <form id="form">
             <div class="input-group">
-                <label for="user_email" class="form-label">Votre email</label>
-                <input type="email" id="user_email" name="user_email" class="form-input" required placeholder="exemple@email.com">
+                <label for="email" class="form-label">Votre email</label>
+                <input type="email" id="email" name="email" class="form-input" required placeholder="exemple@email.com">
             </div>
             
             <div class="input-group">
@@ -164,39 +136,29 @@
                 <label class="form-label">Niveau d'activité</label>
                 <div class="radio-group flex-col">
                     <div class="radio-item">
-                        <input type="radio" id="activity1" name="activity_level" value="Pas de sport" required>
+                        <input type="radio" id="activity1" name="activity" value="1.2" required>
                         <label for="activity1">Pas de sport</label>
                     </div>
                     <div class="radio-item">
-                        <input type="radio" id="activity2" name="activity_level" value="Sport 1 à 3 fois par semaine">
+                        <input type="radio" id="activity2" name="activity" value="1.375">
                         <label for="activity2">Sport 1 à 3 fois par semaine</label>
                     </div>
                     <div class="radio-item">
-                        <input type="radio" id="activity3" name="activity_level" value="Sport 4 à 6 fois par semaine">
+                        <input type="radio" id="activity3" name="activity" value="1.55">
                         <label for="activity3">Sport 4 à 6 fois par semaine</label>
                     </div>
                     <div class="radio-item">
-                        <input type="radio" id="activity4" name="activity_level" value="Sport tous les jours">
+                        <input type="radio" id="activity4" name="activity" value="1.725">
                         <label for="activity4">Sport tous les jours</label>
                     </div>
                 </div>
             </div>
             
             <!-- Champ caché pour stocker le résultat du calcul -->
-            <input type="hidden" id="calories" name="calories" value="">
+            <input type="hidden" id="resultat" name="resultat" value="">
             
-            <button type="submit" id="calculateBtn" class="btn w-full">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Calculer et envoyer par email
-            </button>
+            <input type="submit" id="button" value="Calculer et envoyer par email" class="btn w-full">
         </form>
-        
-        <div id="loading" class="loading">
-            <div class="loading-spinner"></div>
-            <span>Envoi en cours...</span>
-        </div>
         
         <div id="successMessage" class="success-message">
             Vos résultats ont été envoyés avec succès à votre adresse email !
@@ -207,82 +169,69 @@
         </div>
     </div>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        emailjs.init('8FwFbrCme2DQiPYt3')
+    </script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('calculatorForm');
-            const successMessage = document.getElementById('successMessage');
-            const errorMessage = document.getElementById('errorMessage');
-            const loading = document.getElementById('loading');
+        const btn = document.getElementById("button");
+        const form = document.getElementById("form");
+        const successMessage = document.getElementById("successMessage");
+        const errorMessage = document.getElementById("errorMessage");
+
+        // Fonction pour calculer les besoins caloriques
+        function calculateCalories() {
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const age = parseInt(document.getElementById('age').value);
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const activityLevel = parseFloat(document.querySelector('input[name="activity"]:checked').value);
             
-            form.addEventListener('submit', function(event) {
-                event.preventDefault();
-                
-                // Vérification basique du formulaire
-                if (!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
-                
-                // Récupération des valeurs du formulaire
-                const weight = parseFloat(document.getElementById('weight').value);
-                const height = parseFloat(document.getElementById('height').value);
-                const age = parseInt(document.getElementById('age').value);
-                const gender = document.querySelector('input[name="gender"]:checked').value;
-                
-                // Obtenir la valeur numérique du niveau d'activité
-                let activityLevel = 1.2; // Valeur par défaut
-                const activityValue = document.querySelector('input[name="activity_level"]:checked').value;
-                
-                switch(activityValue) {
-                    case "Pas de sport":
-                        activityLevel = 1.2;
-                        break;
-                    case "Sport 1 à 3 fois par semaine":
-                        activityLevel = 1.375;
-                        break;
-                    case "Sport 4 à 6 fois par semaine":
-                        activityLevel = 1.55;
-                        break;
-                    case "Sport tous les jours":
-                        activityLevel = 1.725;
-                        break;
-                }
-                
-                // Calcul selon la formule fournie
-                let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-                bmr += (gender === 'homme') ? 5 : -161;
-                
-                // Calcul final avec facteur d'activité et coefficient 0.8
-                const calculatedCalories = Math.round(bmr * activityLevel * 0.8);
-                
-                // Mettre à jour le champ caché avec le résultat du calcul
-                document.getElementById('calories').value = calculatedCalories;
-                
-                // Masquer les messages précédents
-                successMessage.style.display = 'none';
-                errorMessage.style.display = 'none';
-                
-                // Afficher le chargement
-                loading.style.display = 'flex';
-                document.getElementById('calculateBtn').disabled = true;
-                
-                // Envoi du formulaire via EmailJS
-                emailjs.sendForm('default_service', 'template_s4eb2m9', form, {
-                    publicKey: '8FwFbrCme2DQiPYt3',
-                })
-                .then(function() {
-                    loading.style.display = 'none';
+            // Calcul selon la formule fournie
+            let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+            bmr += (gender === 'homme') ? 5 : -161;
+            
+            // Calcul final avec facteur d'activité et coefficient 0.8
+            return Math.round(bmr * activityLevel * 0.8);
+        }
+
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            // Vérification basique du formulaire
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+            
+            // Calculer les calories et mettre à jour le champ caché
+            const calories = calculateCalories();
+            document.getElementById('resultat').value = calories + " calories";
+            
+            // Changer le texte du bouton
+            btn.value = "Envoi en cours...";
+            btn.disabled = true;
+            
+            // Masquer les messages précédents
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Envoi du formulaire via EmailJS
+            emailjs.sendForm('default_service', 'template_s4eb2m9', form)
+                .then(() => {
+                    btn.value = "Calculer et envoyer par email";
+                    btn.disabled = false;
                     successMessage.style.display = 'block';
-                    document.getElementById('calculateBtn').disabled = false;
                     form.reset();
-                }, function(error) {
-                    console.log('FAILED...', error);
-                    loading.style.display = 'none';
+                })
+                .catch((err) => {
+                    btn.value = "Calculer et envoyer par email";
+                    btn.disabled = false;
                     errorMessage.style.display = 'block';
-                    document.getElementById('calculateBtn').disabled = false;
+                    console.error("Erreur EmailJS:", err);
                 });
-            });
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93f49473e48544c2',t:'MTc0NzE2NDcyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93f4a0e143437226',t:'MTc0NzE2NTIzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

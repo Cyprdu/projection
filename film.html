@@ -365,6 +365,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding: 1rem 0;
+    
 }
 
         
@@ -500,13 +501,14 @@
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
         
-        .card-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.7);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.4rem; /* moitié de 0.8rem */
+    color: rgba(255,255,255,0.7);
+    text-shadow: 0 0.5px 1px rgba(0,0,0,0.8); /* ombre réduite proportionnellement */
+}
+
         
         /* Improved featured section with left-to-right gradient */
         .featured-section {
@@ -1463,49 +1465,35 @@ if (frenchLogos.length > 0 && frenchLogos[0].file_path) {
                     <p class="movie-synopsis-highlight"></p>
                     <p class="text-gray-300 leading-relaxed">${movie.overview || 'Aucun synopsis disponible.'}</p>
                 </div>
+${filteredRecommendations.length > 0 ? `
+    <div class="recommendations slide-up" style="animation-delay: 0.6s">
+        <h3 class="recommendations-title">
+            <i class="fas fa-thumbs-up"></i> Nous vous recommandons aussi
+        </h3>
+        
+<div class="recommendations-list grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-20 mt-6">
+            ${filteredRecommendations.map((rec) => {
+                const recPosterPath = rec.poster_path 
+                    ? `${IMAGE_BASE_URL}w185${rec.poster_path}`
+                    : 'https://via.placeholder.com/370x556?text=No+Poster';
                 
-                ${filteredRecommendations.length > 0 ? `
-                    <div class="recommendations slide-up" style="animation-delay: 0.6s">
-                        <h3 class="recommendations-title">
-                            <i class="fas fa-thumbs-up"></i> Nous vous recommandons aussi
-                        </h3>
-                        
-                        <div class="scroll-container">
-                            <div class="scroll-grid">
-                                ${filteredRecommendations.map((rec, index) => {
-                                    const recPosterPath = rec.poster_path 
-                                        ? `${IMAGE_BASE_URL}w185${rec.poster_path}`
-                                        : 'https://via.placeholder.com/185x278?text=No+Poster';
-                                    
-                                    return `
-                                        <div class="poster-card cursor-pointer" data-id="${rec.id}">
-                                            <img src="${recPosterPath}" alt="${rec.title}" class="w-full h-full object-cover">
-                                            <div class="card-overlay">
-                                                <div class="card-title">${rec.title}</div>
-                                                <div class="card-meta">
-                                                    <span>${rec.release_date ? new Date(rec.release_date).getFullYear() : 'N/A'}</span>
-                                                    <span>${rec.vote_average.toFixed(1)} <i class="fas fa-star text-yellow-400"></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                            <div class="scroll-controls">
-                                <button class="scroll-btn scroll-left">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <button class="scroll-btn scroll-right">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
+                return `
+                    <div class="poster-card cursor-pointer" data-id="${rec.id}">
+                        <img src="${recPosterPath}" alt="${rec.title}" class="w-full h-full object-cover">
+                        <div class="card-overlay">
+                            <div class="card-title">${rec.title}</div>
+                            <div class="card-meta">
+                                <span>${rec.release_date ? new Date(rec.release_date).getFullYear() : 'N/A'}</span>
+                                <span>${rec.vote_average.toFixed(1)} <i class="fas fa-star text-yellow-400"></i></span>
                             </div>
                         </div>
                     </div>
-                ` : ''}
-            `;
-
-
-            
+                `;
+            }).join('')}
+        </div>
+    </div>
+` : ''}
+`;
             
             movieDetails.classList.remove('hidden');
             
@@ -1573,10 +1561,7 @@ if (frenchLogos.length > 0 && frenchLogos[0].file_path) {
                 window.scrollTo(0, navigationState.scrollPosition);
             }, 100);
 
-
-
-
-            
+ 
         }
         
         function playMovie(movie, movieData) {
@@ -1591,16 +1576,6 @@ if (frenchLogos.length > 0 && frenchLogos[0].file_path) {
                 ? `${IMAGE_BASE_URL}original${movie.poster_path}`
                 : '';
 
-
-
-
-
-
-
-
-
-
-                
             
             // Show player container
             playerFullscreen.style.display = 'block';
@@ -1749,16 +1724,7 @@ if (frenchLogos.length > 0 && frenchLogos[0].file_path) {
             card.addEventListener('click', () => fetchMovieDetails(movie.id));
             return card;
         }
-        
 
-
-
-
-
-
-
-
-        
         // Create featured movie section
         async function createFeaturedMovie(movieId) {
             try {
@@ -1931,18 +1897,7 @@ if (frenchLogos.length > 0 && frenchLogos[0].file_path) {
                 showLoading(false);
             }
 
-
-
-
-
         }
-
-
-        
-
-
-
-
 
         // Start the app
         initializeApp();

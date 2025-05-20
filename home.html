@@ -1,1 +1,782 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projection 2025 - Festival de Courts Métrages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #0a1429;
+            color: #e2e8f0;
+        }
+        .tab-active {
+            border-bottom: 3px solid #ef4444;
+            color: #ef4444;
+        }
+        .film-card {
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .film-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        .film-card img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .film-card:hover img {
+            transform: scale(1.03);
+        }
+        .billetterie-container {
+            height: 700px;
+            width: 100%;
+            overflow: auto; /* Changed from hidden to auto to allow scrolling */
+        }
+        .btn-primary {
+            background-color: #ef4444;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid #ef4444;
+            color: #ef4444;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+            transform: translateY(-2px);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+        .animate-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .poster-container {
+            aspect-ratio: 2/3;
+            overflow: hidden;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+        .tab-indicator {
+            transition: all 0.3s ease;
+        }
+        .film-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ef4444;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            transform: rotate(5deg);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        
+        /* Film Detail Modal Styles */
+        .film-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: none;
+            overflow-y: auto;
+        }
+        
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.3);
+        }
+        
+        .modal-content {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .glass-button {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .glass-panel {
+            background: rgba(10, 20, 41, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+        
+        .trailer-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+        
+        .trailer-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+        
+        .close-button:hover {
+            background: rgba(220, 38, 38, 1);
+            transform: rotate(90deg);
+        }
+        
+        .film-poster-vertical {
+            width: 100%;
+            max-width: 300px;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .share-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(10, 20, 41, 0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .reserve-button {
+            width: 100%;
+            max-width: 300px;
+            margin: 1rem auto 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-[#071022] py-6 px-4 shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto flex flex-col md:flex-row justify-between items-center">
+                <h1 class="text-3xl font-bold text-red-500 mb-4 md:mb-0 flex items-center">
+                    <i class="fas fa-film mr-3 animate-pulse"></i>
+                    Projection Lycée Lalande
+                </h1>
+                <nav class="flex space-x-2 md:space-x-8">
+                    <button id="tab-films" class="tab-active px-4 py-2 text-lg font-medium flex items-center">
+                        <i class="fas fa-video mr-2"></i>
+                        Films
+                    </button>
+                    <button id="tab-billetterie" class="px-4 py-2 text-lg font-medium flex items-center">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Billetterie
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow container mx-auto px-4 py-8">
+            <!-- Films Tab Content -->
+            <div id="content-films" class="animate-fade-in">
+                <div class="mb-12 text-center animate-slide-up">
+                    <h2 class="text-4xl font-bold mb-4 text-red-500">
+                        <i class="fas fa-star mr-2"></i>
+                        Découvrez nos courts métrages
+                        <i class="fas fa-star ml-2"></i>
+                    </h2>
+                    <p class="text-xl text-slate-300 max-w-3xl mx-auto">Une sélection de films exceptionnels à découvrir lors de notre événement cinéma.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Film 1 -->
+                    <div class="film-card bg-[#071022] rounded-lg overflow-hidden shadow-lg animate-slide-up" style="animation-delay: 0.1s;" data-film="moins-par-moins">
+                        <div class="film-badge">
+                            <i class="fas fa-award mr-1"></i> Sélection
+                        </div>
+                        <div class="poster-container" data-film="moins-par-moins">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png" 
+                                alt="Affiche du film Moins par Moins" 
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-2xl font-bold mb-2 text-red-500 flex items-center">
+                                <i class="fas fa-film mr-2"></i>
+                                Moins par Moins
+                            </h3>
+                            <p class="text-slate-300 mb-4">Un court métrage captivant sur le génie d'Albert Einstein.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button data-film="moins-par-moins"
+                                class="btn-primary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center film-detail-btn">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Découvrir le film
+                                </button>
+                                <button id="tickets-film1" 
+                                    class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    Prendre mes places
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Film 2 -->
+                    <div class="film-card bg-[#071022] rounded-lg overflow-hidden shadow-lg animate-slide-up" style="animation-delay: 0.2s;" data-film="la-vie-revee">
+                        <div class="film-badge">
+                            <i class="fas fa-award mr-1"></i> Sélection
+                        </div>
+                        <div class="poster-container" data-film="la-vie-revee">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png" 
+                                alt="Affiche du film La Vie Rêvée" 
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-2xl font-bold mb-2 text-red-500 flex items-center">
+                                <i class="fas fa-film mr-2"></i>
+                                La Vie Rêvée
+                            </h3>
+                            <p class="text-slate-300 mb-4">Une histoire d'amour captivante et émouvante.</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button data-film="la-vie-revee"
+                                class="btn-primary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center film-detail-btn">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Découvrir le film
+                                </button>
+                                <button id="tickets-film2" 
+                                    class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    Prendre mes places
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Film 3 -->
+                    <div class="film-card bg-[#071022] rounded-lg overflow-hidden shadow-lg animate-slide-up" style="animation-delay: 0.3s;" data-film="nature-morte">
+                        <div class="film-badge">
+                            <i class="fas fa-award mr-1"></i> Sélection
+                        </div>
+                        <div class="poster-container" data-film="nature-morte">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/nature%20morte.png" 
+                                alt="Affiche du film Nature Morte" 
+                                class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-4">
+                            <h3 class="text-2xl font-bold mb-2 text-red-500 flex items-center">
+                                <i class="fas fa-film mr-2"></i>
+                                Nature Morte
+                            </h3>
+                            <p class="text-slate-300 mb-4">Un film d'horreur qui va vous donner des frissons...</p>
+                            <div class="flex flex-col sm:flex-row gap-3">
+                                <button data-film="nature-morte"
+                                class="btn-primary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center film-detail-btn">
+                                    <i class="fas fa-eye mr-2"></i>
+                                    Découvrir le film
+                                </button>
+                                <button id="tickets-film3" 
+                                    class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
+                                    <i class="fas fa-ticket-alt mr-2"></i>
+                                    Prendre mes places
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Billetterie Tab Content -->
+            <div id="content-billetterie" class="hidden animate-fade-in">
+                <div class="mb-12 text-center animate-slide-up">
+                    <h2 class="text-4xl font-bold mb-4 text-red-500">
+                        <i class="fas fa-ticket-alt mr-2"></i>
+                        Réservez vos places
+                    </h2>
+                    <p class="text-xl text-slate-300 max-w-3xl mx-auto mb-8">Sécurisez votre place pour notre événement cinématographique exceptionnel.</p>
+                </div>
+                
+                <div class="billetterie-container bg-white rounded-lg shadow-xl p-4 mx-auto animate-slide-up" style="animation-delay: 0.2s;">
+                    <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="yes" data-id="projection" data-resize="1">Vente de billets en ligne</a>
+                    <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-[#071022] py-8 px-4 mt-12">
+            <div class="container mx-auto text-center">
+                <p class="text-slate-400">&copy; 2025 Projection Lycée Lalande</p>
+                <p class="text-slate-500 mt-2">Tous droits réservés</p>
+            </div>
+        </footer>
+    </div>
+    
+    <!-- Film Detail Modals -->
+    <!-- Moins par Moins Modal -->
+    <div id="modal-moins-par-moins" class="film-detail-modal">
+        <div class="modal-backdrop" style="background-image: url('https://image.tmdb.org/t/p/original/mDidJV9zQHu0j2R8WzA2lYXR0wV.jpg');"></div>
+        <div class="modal-content">
+            <div class="close-button">
+                <i class="fas fa-times text-xl"></i>
+            </div>
+            
+            <div class="container mx-auto py-8">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Left Column - Poster -->
+                    <div class="lg:w-1/3 flex flex-col items-center">
+                        <div style="width: 100%; max-width: 300px; aspect-ratio: 2/3;">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png" 
+                                alt="Affiche verticale de Moins par Moins" 
+                                class="film-poster-vertical">
+                        </div>
+                             
+                        <button id="tickets-modal-film1" 
+                            class="glass-button py-3 px-8 rounded-lg text-lg font-bold flex items-center justify-center reserve-button">
+                            <i class="fas fa-ticket-alt mr-3"></i>
+                            Réserver mes places
+                        </button>
+                    </div>
+                    
+                    <!-- Right Column - Details -->
+                    <div class="lg:w-2/3">
+                        <div class="glass-panel p-8">
+                            <h2 class="text-4xl font-bold mb-2 text-red-500">Moins par Moins</h2>
+                            <div class="flex items-center mb-6">
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">Court-métrage</span>
+                                <span class="text-slate-300"><i class="far fa-clock mr-1"></i> 3 minutes</span>
+                            </div>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Synopsis</h3>
+                            <p class="text-slate-300 mb-8 leading-relaxed">
+                                "Moins par Moins" est un court-métrage français d'une durée de trois minutes, qui met en lumière le génie d'Albert Einstein.
+                                Ce film, bien que bref, parvient à illustrer de manière percutante l'esprit brillant du célèbre physicien. 
+                                À travers une mise en scène concise et évocatrice, il rend hommage à ses idées révolutionnaires,
+                                notamment dans le domaine de la physique théorique.
+                                En jouant sur la métaphore mathématique du « moins par moins »
+                            </p>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Bande-annonce</h3>
+                            <div class="trailer-container mb-8">
+                                <iframe src="https://www.youtube.com/embed/jTX1sE3SyTc" 
+                                        title="Bande-annonce de Moins par Moins" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen></iframe>
+                            </div>
+                            
+                            <div class="flex flex-wrap">
+                                <button class="glass-button py-2 px-5 rounded-lg flex items-center share-btn" data-film="Moins par Moins">
+                                    <i class="fas fa-share-alt mr-2"></i>
+                                    Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- La Vie Rêvée Modal -->
+    <div id="modal-la-vie-revee" class="film-detail-modal">
+        <div class="modal-backdrop" style="background-image: url('https://raw.githubusercontent.com/Cyprdu/projection/main/Capture%20d%E2%80%99%C3%A9cran%202025-05-06%20%C3%A0%2017.18.49.png');"></div>
+        <div class="modal-content">
+            <div class="close-button">
+                <i class="fas fa-times text-xl"></i>
+            </div>
+            
+            <div class="container mx-auto py-8">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Left Column - Poster -->
+                    <div class="lg:w-1/3 flex flex-col items-center">
+                        <div style="width: 100%; max-width: 300px; aspect-ratio: 2/3;">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png" 
+                                alt="Affiche verticale de La Vie Rêvée" 
+                                class="film-poster-vertical">
+                        </div>
+                             
+                        <button id="tickets-modal-film2" 
+                            class="glass-button py-3 px-8 rounded-lg text-lg font-bold flex items-center justify-center reserve-button">
+                            <i class="fas fa-ticket-alt mr-3"></i>
+                            Réserver mes places
+                        </button>
+                    </div>
+                    
+                    <!-- Right Column - Details -->
+                    <div class="lg:w-2/3">
+                        <div class="glass-panel p-8">
+                            <h2 class="text-4xl font-bold mb-2 text-red-500">La Vie Rêvée</h2>
+                            <div class="flex items-center mb-6">
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">Court-métrage</span>
+                                <span class="text-slate-300"><i class="far fa-clock mr-1"></i> Romance</span>
+                            </div>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Synopsis</h3>
+                            <p class="text-slate-300 mb-8 leading-relaxed">
+                                Une histoire d'amour...
+                            </p>
+                            
+                            <div class="flex flex-wrap">
+                                <button class="glass-button py-2 px-5 rounded-lg flex items-center share-btn" data-film="La Vie Rêvée">
+                                    <i class="fas fa-share-alt mr-2"></i>
+                                    Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Nature Morte Modal -->
+    <div id="modal-nature-morte" class="film-detail-modal">
+        <div class="modal-backdrop" style="background-image: url('https://raw.githubusercontent.com/Cyprdu/projection/main/00C10EAF-49D6-42E0-B7EB-E1A09584B73D_L0_001-20_05_2025%2016_10_01.jpg');"></div>
+        <div class="modal-content">
+            <div class="close-button">
+                <i class="fas fa-times text-xl"></i>
+            </div>
+            
+            <div class="container mx-auto py-8">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Left Column - Poster -->
+                    <div class="lg:w-1/3 flex flex-col items-center">
+                        <div style="width: 100%; max-width: 300px; aspect-ratio: 2/3;">
+                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/nature%20morte.png" 
+                                alt="Affiche verticale de Nature Morte" 
+                                class="film-poster-vertical">
+                        </div>
+                             
+                        <button id="tickets-modal-film3" 
+                            class="glass-button py-3 px-8 rounded-lg text-lg font-bold flex items-center justify-center reserve-button">
+                            <i class="fas fa-ticket-alt mr-3"></i>
+                            Réserver mes places
+                        </button>
+                    </div>
+                    
+                    <!-- Right Column - Details -->
+                    <div class="lg:w-2/3">
+                        <div class="glass-panel p-8">
+                            <h2 class="text-4xl font-bold mb-2 text-red-500">Nature Morte</h2>
+                            <div class="flex items-center mb-6">
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">Court-métrage</span>
+                                <span class="text-slate-300"><i class="far fa-clock mr-1"></i> Horreur</span>
+                            </div>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Synopsis</h3>
+                            <p class="text-slate-300 mb-8 leading-relaxed">
+                                Un film d'horreur qui va vous donner des frissons...
+                            </p>
+                            
+                            <div class="flex flex-wrap">
+                                <button class="glass-button py-2 px-5 rounded-lg flex items-center share-btn" data-film="Nature Morte">
+                                    <i class="fas fa-share-alt mr-2"></i>
+                                    Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Share Toast Notification -->
+    <div id="share-toast" class="share-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle text-green-500 mr-3 text-xl"></i>
+            <span>Lien de partage copié dans le presse-papiers !</span>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        const tabFilms = document.getElementById('tab-films');
+        const tabBilletterie = document.getElementById('tab-billetterie');
+        const contentFilms = document.getElementById('content-films');
+        const contentBilletterie = document.getElementById('content-billetterie');
+
+        tabFilms.addEventListener('click', () => {
+            tabFilms.classList.add('tab-active');
+            tabBilletterie.classList.remove('tab-active');
+            contentFilms.classList.remove('hidden');
+            contentBilletterie.classList.add('hidden');
+            
+            // Reset animations
+            contentFilms.style.animation = 'none';
+            contentFilms.offsetHeight; // Trigger reflow
+            contentFilms.style.animation = null;
+        });
+
+        tabBilletterie.addEventListener('click', () => {
+            tabBilletterie.classList.add('tab-active');
+            tabFilms.classList.remove('tab-active');
+            contentBilletterie.classList.remove('hidden');
+            contentFilms.classList.add('hidden');
+            
+            // Reset animations
+            contentBilletterie.style.animation = 'none';
+            contentBilletterie.offsetHeight; // Trigger reflow
+            contentBilletterie.style.animation = null;
+        });
+        
+        // Ticket buttons functionality
+        document.querySelectorAll('#tickets-film1, #tickets-film2, #tickets-film3, #tickets-modal-film1, #tickets-modal-film2, #tickets-modal-film3').forEach(button => {
+            button.addEventListener('click', () => {
+                // Close any open modals
+                document.querySelectorAll('.film-detail-modal').forEach(modal => {
+                    modal.style.display = 'none';
+                });
+                
+                tabBilletterie.click();
+                // Scroll to billetterie with smooth animation
+                setTimeout(() => {
+                    document.querySelector('.billetterie-container').scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            });
+        });
+        
+        // Film detail modal functionality - Make entire card clickable
+        document.querySelectorAll('.film-card, .poster-container').forEach(element => {
+            element.addEventListener('click', (e) => {
+                // Don't trigger if clicking on a button
+                if (e.target.closest('button')) return;
+                
+                const filmId = element.getAttribute('data-film');
+                openFilmModal(filmId);
+            });
+        });
+        
+        // Make "Découvrir le film" button work
+        document.querySelectorAll('.film-detail-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const filmId = button.getAttribute('data-film');
+                openFilmModal(filmId);
+            });
+        });
+        
+        // Function to open film modal
+        function openFilmModal(filmId) {
+            const modal = document.getElementById(`modal-${filmId}`);
+            
+            if (modal) {
+                // Disable body scroll
+                document.body.style.overflow = 'hidden';
+                
+                // Show modal with animation
+                modal.style.display = 'block';
+                modal.querySelector('.modal-content').style.opacity = '0';
+                setTimeout(() => {
+                    modal.querySelector('.modal-content').style.opacity = '1';
+                    modal.querySelector('.modal-content').style.transition = 'opacity 0.5s ease';
+                }, 10);
+            }
+        }
+        
+        // Close modal functionality
+        document.querySelectorAll('.close-button, .modal-backdrop').forEach(element => {
+            element.addEventListener('click', (e) => {
+                if (e.target === element || element.contains(e.target)) {
+                    // Only close if clicking the backdrop or close button directly
+                    if (!e.target.closest('.modal-content') || e.target.closest('.close-button')) {
+                        document.querySelectorAll('.film-detail-modal').forEach(modal => {
+                            // Fade out animation
+                            modal.querySelector('.modal-content').style.opacity = '0';
+                            setTimeout(() => {
+                                modal.style.display = 'none';
+                                // Re-enable body scroll
+                                document.body.style.overflow = 'auto';
+                            }, 500);
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Prevent modal content clicks from closing the modal
+        document.querySelectorAll('.modal-content').forEach(content => {
+            content.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+        
+        // Share functionality
+        document.querySelectorAll('.share-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const filmName = button.getAttribute('data-film');
+                const shareText = `Bonjour, je t'invite à venir voir "${filmName}" à Bourg en Bresse le 1 juillet 2025. : billet-projection.com`;
+                
+                // Try to use the Web Share API if available
+                if (navigator.share) {
+                    navigator.share({
+                        title: `Projection Lycée Lalande - ${filmName}`,
+                        text: shareText,
+                        url: 'https://billet-projection.com'
+                    }).catch(err => {
+                        console.log('Error sharing:', err);
+                        fallbackShare(shareText);
+                    });
+                } else {
+                    fallbackShare(shareText);
+                }
+            });
+        });
+        
+        // Fallback share function (copy to clipboard)
+        function fallbackShare(text) {
+            // Create a temporary textarea element
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed'; // Prevent scrolling to bottom
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            
+            try {
+                // Execute copy command
+                document.execCommand('copy');
+                
+                // Show toast notification
+                const toast = document.getElementById('share-toast');
+                toast.style.display = 'block';
+                
+                // Hide toast after 3 seconds
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                        toast.style.opacity = '1';
+                    }, 500);
+                }, 3000);
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                alert('Impossible de copier le texte. Veuillez réessayer.');
+            }
+            
+            // Remove the temporary textarea
+            document.body.removeChild(textarea);
+        }
+        
+        // Add hover effects
+        const filmCards = document.querySelectorAll('.film-card');
+        filmCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.querySelector('h3').classList.add('text-red-400');
+            });
+            card.addEventListener('mouseleave', () => {
+                card.querySelector('h3').classList.remove('text-red-400');
+            });
+        });
+        
+        // Add keyboard support for closing modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.film-detail-modal').forEach(modal => {
+                    if (modal.style.display === 'block') {
+                        // Fade out animation
+                        modal.querySelector('.modal-content').style.opacity = '0';
+                        setTimeout(() => {
+                            modal.style.display = 'none';
+                            // Re-enable body scroll
+                            document.body.style.overflow = 'auto';
+                        }, 500);
+                    }
+                });
+            }
+        });
+        
+        // Fix iframe scrolling in billetterie
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update the iframe attributes to allow scrolling
+            setTimeout(() => {
+                const billetterieIframe = document.querySelector('.billetterie-container iframe');
+                if (billetterieIframe) {
+                    billetterieIframe.setAttribute('scrolling', 'yes');
+                    billetterieIframe.style.overflow = 'auto';
+                }
+            }, 1000); // Give time for the iframe to load
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'942ce6a222c82a57',t:'MTc0Nzc1NTI5NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+
 

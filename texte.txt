@@ -1,0 +1,37 @@
+
+Quand on clique sur découvrir le film, au lieu d'aller sur le site du fil, ça ouvre un onglet sur la même page avec toutes 
+les infos du film en mode synopsis, affiche, affiche vertical en
+ arrière plan floutté, bande annonce si marqué en "true" dans la liste...
+
+fait un design basé sur le flou d'arrière plan v=avec des boutons qui sont juste le floue de ce qu'il y a a l'arrière
+
+ 
+
+liste des films : 
+
+
+
+Moins par moins : 
+
+Affiche vertical : https://github.com/Cyprdu/projection/blob/main/Projection.png
+
+
+Affiche horizontal arrière plan : https://image.tmdb.org/t/p/original/mDidJV9zQHu0j2R8WzA2lYXR0wV.jpg
+bande annonce (true) : https://www.youtube.com/watch?v=jTX1sE3SyTc
+Synopsis : "Moins par Moins" est un court-métrage français d'une durée de trois minutes, qui met en lumière le génie d'Albert Einstein.
+Ce film, bien que bref, parvient à illustrer de manière percutante l'esprit brillant du célèbre physicien. 
+À travers une mise en scène concise et évocatrice, il rend hommage à ses idées révolutionnaires,
+notamment dans le domaine de la physique théorique.
+En jouant sur la métaphore mathématique du « moins par moins »
+
+La vie rêvé : 
+affiche vertical : https://github.com/Cyprdu/projection/blob/main/la%20vie%20reve.png
+Affiche horizontal arrière plan : https://github.com/Cyprdu/projection/blob/main/Capture%20d%E2%80%99%C3%A9cran%202025-05-06%20%C3%A0%2017.18.49.png
+bande annonce (false)
+synopsis : Une histoire d'amour...
+
+nature morte :
+affiche vertical: https://github.com/Cyprdu/projection/blob/main/nature%20morte.png
+Affiche horizontal arrière plan : https://github.com/Cyprdu/projection/blob/main/00C10EAF-49D6-42E0-B7EB-E1A09584B73D_L0_001-20_05_2025%2016_10_01.jpg
+bande annonce (false)
+synopsis : Un film d'horreur qui va vous donner des frissons...

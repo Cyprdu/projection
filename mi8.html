@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mission: Impossible - The Final Reckoning | Billetterie</title>
+    <title>Mission: Impossible | Billetterie</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js"></script>
@@ -102,15 +102,13 @@
     
     <div id="loading" class="loading-overlay">
         <div class="text-center">
-            <img src="https://image.tmdb.org/t/p/original/me0FcUuZEYdEIElc2xh28Du7FD6.png" alt="Mission Impossible Logo" class="w-64 mx-auto mb-6 pulse">
-            <p class="text-xl text-white">Chargement des séances...</p>
+            <img src="https://image.tmdb.org/t/p/original/me0FcUuZEYdEIElc2xh28Du7FD6.png" alt="Mission Impossible Logo" class="w-64 mx-auto pulse">
         </div>
     </div>
 
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <header class="mb-8 text-center">
             <img src="https://image.tmdb.org/t/p/original/me0FcUuZEYdEIElc2xh28Du7FD6.png" alt="Mission Impossible Logo" class="w-64 mx-auto mb-6">
-            <h1 class="text-3xl md:text-4xl font-bold mb-2">THE FINAL RECKONING</h1>
             <p class="text-gray-400 mb-6">Réservez vos places dès maintenant</p>
             
             <div class="flex flex-col md:flex-row justify-center items-center gap-4 mb-8">
@@ -214,6 +212,9 @@
                 ];
             }
 
+            // Remove duplicate screenings (same cinema, date, time and version)
+            screenings = removeDuplicateScreenings(screenings);
+
             // Process data
             const DateTime = luxon.DateTime;
             
@@ -257,6 +258,24 @@
                 datesListEl.appendChild(dateBtn);
             });
             
+            // Function to remove duplicate screenings
+            function removeDuplicateScreenings(screenings) {
+                const uniqueScreenings = [];
+                const seen = new Set();
+                
+                screenings.forEach(screening => {
+                    // Create a unique key for each screening
+                    const key = `${screening.Cinéma}|${screening.Adresse}|${screening.Date}|${screening.Horaire}|${screening.Version}`;
+                    
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        uniqueScreenings.push(screening);
+                    }
+                });
+                
+                return uniqueScreenings;
+            }
+            
             // Group screenings by cinema and address
             function groupScreeningsByLocation(screenings, selectedDate) {
                 const filtered = selectedDate ? screenings.filter(s => s.Date === selectedDate) : screenings;
@@ -268,7 +287,8 @@
                         grouped[key] = {
                             cinema: screening.Cinéma,
                             address: screening.Adresse,
-                            sessions: []
+                            sessions: [],
+                            coordinates: extractCoordinates(screening.Adresse)
                         };
                     }
                     
@@ -281,6 +301,38 @@
                 });
                 
                 return Object.values(grouped);
+            }
+            
+            // Extract coordinates from address (mock function for demo)
+            function extractCoordinates(address) {
+                // In a real app, this would use a geocoding API
+                // For demo, we'll generate random but consistent coordinates based on the address string
+                const hash = address.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                
+                // Generate latitude between 45.5 and 46.5 (roughly France)
+                const lat = 45.5 + (hash % 100) / 100;
+                // Generate longitude between 4.5 and 5.5
+                const lng = 4.5 + ((hash * 13) % 100) / 100;
+                
+                return { lat, lng };
+            }
+            
+            // Calculate distance between two points (Haversine formula)
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Radius of the earth in km
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1);
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2); 
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                const d = R * c; // Distance in km
+                return d;
+            }
+            
+            function deg2rad(deg) {
+                return deg * (Math.PI/180);
             }
             
             // Display cinemas and sessions
@@ -324,9 +376,25 @@
                         sessionsByVersion[session.version].push(session);
                     });
                     
-                    // Sort sessions by time
+                    // Sort sessions by time and remove duplicates
                     Object.values(sessionsByVersion).forEach(sessions => {
-                        sessions.sort((a, b) => a.time.localeCompare(b.time));
+                        // Remove duplicates
+                        const uniqueTimes = new Set();
+                        const uniqueSessions = [];
+                        
+                        sessions.forEach(session => {
+                            if (!uniqueTimes.has(session.time)) {
+                                uniqueTimes.add(session.time);
+                                uniqueSessions.push(session);
+                            }
+                        });
+                        
+                        // Sort by time
+                        uniqueSessions.sort((a, b) => a.time.localeCompare(b.time));
+                        
+                        // Replace original array with unique sorted sessions
+                        sessions.length = 0;
+                        sessions.push(...uniqueSessions);
                     });
                     
                     let sessionsHTML = '';
@@ -350,6 +418,14 @@
                         <p class="text-gray-400 text-sm mb-4">${cinema.address}</p>
                         ${sessionsHTML}
                     `;
+                    
+                    if (cinema.distance) {
+                        const distanceBadge = document.createElement('div');
+                        distanceBadge.className = 'absolute top-6 right-6 bg-red-800 bg-opacity-80 px-3 py-1 rounded-full text-xs';
+                        distanceBadge.innerHTML = `${cinema.distance.toFixed(1)} km`;
+                        cinemaEl.style.position = 'relative';
+                        cinemaEl.appendChild(distanceBadge);
+                    }
                     
                     container.appendChild(cinemaEl);
                 });
@@ -386,16 +462,23 @@
             });
             
             // Find nearest cinemas
-            async function findNearestCinemas(lat, lng) {
-                // Get unique cinema addresses
-                const uniqueAddresses = [...new Set(screenings.map(s => s.Adresse))];
-                
-                // This would normally use a geocoding API to get coordinates for each address
-                // For demo purposes, we'll just show a random subset of cinemas
+            async function findNearestCinemas(userLat, userLng) {
                 const activeDate = document.querySelector('.date-btn.active').dataset.date;
                 const groupedCinemas = groupScreeningsByLocation(screenings, activeDate);
                 
-                // Simulate finding nearby cinemas
+                // Calculate distance for each cinema
+                groupedCinemas.forEach(cinema => {
+                    const { lat, lng } = cinema.coordinates;
+                    cinema.distance = calculateDistance(userLat, userLng, lat, lng);
+                });
+                
+                // Sort cinemas by distance
+                groupedCinemas.sort((a, b) => a.distance - b.distance);
+                
+                // Display message
+                const container = document.getElementById('cinemasContainer');
+                container.innerHTML = '';
+                
                 const nearbyMessage = document.createElement('div');
                 nearbyMessage.className = 'bg-green-900 bg-opacity-50 text-white p-4 rounded-lg mb-6 fade-in';
                 nearbyMessage.innerHTML = `
@@ -404,14 +487,13 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        <span>Cinémas trouvés à proximité de votre position</span>
+                        <span>Cinémas triés par distance</span>
                     </div>
                 `;
                 
-                const container = document.getElementById('cinemasContainer');
-                container.insertBefore(nearbyMessage, container.firstChild);
+                container.appendChild(nearbyMessage);
                 
-                // Display all cinemas (in a real app, we would sort by distance)
+                // Display sorted cinemas
                 displayCinemas(groupedCinemas);
             }
             
@@ -429,5 +511,5 @@
             }, 1000);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9435b15e0478e1e9',t:'MTc0Nzg0NzQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9435f0a184de12b5',t:'MTc0Nzg1MDA3Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

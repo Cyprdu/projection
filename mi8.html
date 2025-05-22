@@ -135,38 +135,14 @@
             background-color: rgba(255, 255, 255, 0.1);
         }
 
-        /* Custom scrollbar styles */
-        .scroll-container {
-            position: relative;
-            height: 100%;
-            overflow-y: auto;
-            padding-right: 10px; /* Space for the scrollbar */
-        }
-
-        .scroll-container::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .scroll-container::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
-
-        .scroll-container::-webkit-scrollbar-thumb {
-            background: #f10000;
-            border-radius: 10px;
-        }
-
-        .scroll-container::-webkit-scrollbar-thumb:hover {
-            background: #d10000;
-        }
-
         .dates-container {
             backdrop-filter: blur(10px);
             background-color: rgba(0, 0, 0, 0.6);
             border-radius: 10px;
             padding: 1rem;
             margin-bottom: 1rem;
+            max-height: 300px; /* Set a max height for the container */
+            overflow-y: auto; /* Enable vertical scrolling */
         }
     </style>
 </head>
@@ -215,10 +191,8 @@
 
                     <div class="dates-container">
                         <h2 class="text-xl font-bold mb-4">Dates</h2>
-                        <div class="scroll-container">
-                            <div id="datesList" class="flex flex-col gap-2">
-                                <!-- Dates will be populated here -->
-                            </div>
+                        <div id="datesList" class="flex flex-col gap-2">
+                            <!-- Dates will be populated here -->
                         </div>
                     </div>
                 </div>

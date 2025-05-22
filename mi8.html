@@ -143,6 +143,16 @@
             margin-bottom: 1rem;
             max-height: 300px; /* Set a max height for the container */
         }
+        #dates-container {
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+
+#dates-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
     </style>
 </head>
 <body>

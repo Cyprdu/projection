@@ -104,13 +104,6 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .sticky-sidebar {
-            position: sticky;
-            top: 180px;
-            height: calc(100vh - 180px);
-            overflow-y: auto;
-        }
-
         .search-results {
             position: absolute;
             top: 100%;
@@ -174,7 +167,7 @@
     <div class="container mx-auto px-4 py-8 max-w-6xl">
         <div class="flex flex-col md:flex-row gap-8">
             <div class="md:w-1/4">
-                <div class="sticky-sidebar">
+                <div>
                     <div class="poster-container rounded-lg overflow-hidden mb-6">
                         <img src="https://image.tmdb.org/t/p/original/z53D72EAOxGRqdr7KXXWp9dJiDe.jpg" alt="Mission Impossible Poster" class="w-full">
                     </div>
@@ -327,7 +320,6 @@
                 screenings.forEach(screening => {
                     // Create a unique key for each screening based on cinema, date, and time
                     const key = `${screening.Cinéma}|${screening.Date}|${screening.Horaire}`;
-                    
 
                     if (!seen.has(key)) {
                         seen.add(key);
@@ -344,7 +336,7 @@
 
                 const grouped = {};
                 filtered.forEach(screening => {
-const key = `${screening.Cinéma}|${screening.Adresse}`;
+                    const key = `${screening.Cinéma}|${screening.Adresse}`;
                     if (!grouped[key]) {
                         grouped[key] = {
                             cinema: screening.Cinéma,
@@ -421,7 +413,7 @@ const key = `${screening.Cinéma}|${screening.Adresse}`;
                 const uniqueAddresses = {};
 
                 screenings.forEach(screening => {
-const key = `${screening.Cinéma}|${screening.Adresse}`;
+                    const key = `${screening.Cinéma}|${screening.Adresse}`;
                     if (!uniqueAddresses[key]) {
                         uniqueAddresses[key] = screening.Adresse;
                     }
@@ -582,7 +574,7 @@ const key = `${screening.Cinéma}|${screening.Adresse}`;
 
                     try {
                         // Search for cities using Nominatim
-                        
+
                         const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&countrycodes=fr`);
                         const data = await response.json();
 
@@ -708,7 +700,7 @@ const key = `${screening.Cinéma}|${screening.Adresse}`;
 
                 // Calculate distance for each cinema
                 filteredCinemas.forEach(cinema => {
-const key = `${screening.Cinéma}|${screening.Adresse}`;
+                    const key = `${cinema.cinema}|${cinema.address}`;
                     if (cinemaCoordinates[key]) {
                         const { lat: cinemaLat, lng: cinemaLng } = cinemaCoordinates[key];
                         cinema.distance = calculateDistance(lat, lng, cinemaLat, cinemaLng);
@@ -718,7 +710,6 @@ const key = `${screening.Cinéma}|${screening.Adresse}`;
                         cinema.distance = 9999;
                     }
                 });
-const cinemaCoordinates = {};
 
                 // Sort cinemas by distance
                 filteredCinemas.sort((a, b) => a.distance - b.distance);

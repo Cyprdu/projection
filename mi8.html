@@ -376,7 +376,7 @@
                     cinema.sessions = cinema.sessions.filter(session => {
                         try {
                             // Parse the date and time
-                            const [day, month, year] = session.date.split('-').map(Number);
+                            const [year, month, day] = session.date.split('-').map(Number);
                             const [hours, minutes] = session.time.split(':').map(Number);
 
                             // Create a DateTime object for the session

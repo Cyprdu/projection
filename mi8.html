@@ -267,6 +267,9 @@
             // Remove duplicate screenings (same cinema, date, and time)
             screenings = removeDuplicateScreenings(screenings);
 
+            // Filter out screenings with invalid dates and past screenings
+            screenings = filterScreenings(screenings);
+
             // Process data
             const DateTime = luxon.DateTime;
 
@@ -304,7 +307,7 @@
                     document.querySelectorAll('.date-btn').forEach(btn => btn.classList.add('bg-black', 'bg-opacity-30'));
                     dateBtn.classList.add('active');
                     dateBtn.classList.remove('bg-black', 'bg-opacity-30');
-                    filterScreenings(date.original);
+                    filterScreeningsByDate(date.original);
                 });
                 datesListEl.appendChild(dateBtn);
             });
@@ -325,6 +328,15 @@
                 });
 
                 return uniqueScreenings;
+            }
+
+            // Function to filter out screenings with invalid dates and past screenings
+            function filterScreenings(screenings) {
+                const now = DateTime.now();
+                return screenings.filter(screening => {
+                    const screeningDateTime = DateTime.fromISO(`${screening.Date}T${screening.Horaire}`);
+                    return screeningDateTime.isValid && screeningDateTime > now;
+                });
             }
 
             // Group screenings by cinema and address
@@ -518,7 +530,7 @@
             }
 
             // Filter screenings by date
-            function filterScreenings(date, searchTerm = '') {
+            function filterScreeningsByDate(date, searchTerm = '') {
                 const groupedCinemas = groupScreeningsByLocation(screenings, date);
                 displayCinemas(groupedCinemas, searchTerm);
             }
@@ -573,7 +585,7 @@
                                 item.addEventListener('click', () => {
                                     searchInput.value = cinema.cinema;
                                     searchResults.classList.add('hidden');
-                                    filterScreenings(activeDate, cinema.cinema);
+                                    filterScreeningsByDate(activeDate, cinema.cinema);
                                 });
                                 searchResults.appendChild(item);
                             });
@@ -624,7 +636,7 @@
             // Direct search on input change (for cinema names)
             searchInput.addEventListener('change', () => {
                 const activeDate = document.querySelector('.date-btn.active').dataset.date;
-                filterScreenings(activeDate, searchInput.value);
+                filterScreeningsByDate(activeDate, searchInput.value);
             });
 
             // Geolocation functionality
@@ -706,7 +718,7 @@
 
             // Initialize with first date
             if (formattedDates.length > 0) {
-                filterScreenings(formattedDates[0].original);
+                filterScreeningsByDate(formattedDates[0].original);
             }
 
             // Start geocoding cinemas in the background

@@ -267,9 +267,6 @@
             // Remove duplicate screenings (same cinema, date, and time)
             screenings = removeDuplicateScreenings(screenings);
 
-            // Filter out screenings with invalid dates and past screenings
-            screenings = filterScreenings(screenings);
-
             // Process data
             const DateTime = luxon.DateTime;
 
@@ -307,7 +304,7 @@
                     document.querySelectorAll('.date-btn').forEach(btn => btn.classList.add('bg-black', 'bg-opacity-30'));
                     dateBtn.classList.add('active');
                     dateBtn.classList.remove('bg-black', 'bg-opacity-30');
-                    filterScreeningsByDate(date.original);
+                    filterScreenings(date.original);
                 });
                 datesListEl.appendChild(dateBtn);
             });
@@ -328,15 +325,6 @@
                 });
 
                 return uniqueScreenings;
-            }
-
-            // Function to filter out screenings with invalid dates and past screenings
-            function filterScreenings(screenings) {
-                const now = DateTime.now();
-                return screenings.filter(screening => {
-                    const screeningDateTime = DateTime.fromISO(`${screening.Date}T${screening.Horaire}`);
-                    return screeningDateTime.isValid && screeningDateTime > now;
-                });
             }
 
             // Group screenings by cinema and address
@@ -530,7 +518,7 @@
             }
 
             // Filter screenings by date
-            function filterScreeningsByDate(date, searchTerm = '') {
+            function filterScreenings(date, searchTerm = '') {
                 const groupedCinemas = groupScreeningsByLocation(screenings, date);
                 displayCinemas(groupedCinemas, searchTerm);
             }
@@ -585,7 +573,7 @@
                                 item.addEventListener('click', () => {
                                     searchInput.value = cinema.cinema;
                                     searchResults.classList.add('hidden');
-                                    filterScreeningsByDate(activeDate, cinema.cinema);
+                                    filterScreenings(activeDate, cinema.cinema);
                                 });
                                 searchResults.appendChild(item);
                             });
@@ -636,7 +624,7 @@
             // Direct search on input change (for cinema names)
             searchInput.addEventListener('change', () => {
                 const activeDate = document.querySelector('.date-btn.active').dataset.date;
-                filterScreeningsByDate(activeDate, searchInput.value);
+                filterScreenings(activeDate, searchInput.value);
             });
 
             // Geolocation functionality
@@ -718,36 +706,19 @@
 
             // Initialize with first date
             if (formattedDates.length > 0) {
-                filterScreeningsByDate(formattedDates[0].original);
+                filterScreenings(formattedDates[0].original);
             }
 
             // Start geocoding cinemas in the background
-            geocodeAllCinemas().then(() => {
-                // Hide loading screen
-                setTimeout(() => {
-                    document.getElementById('loading').style.opacity = 0;
-                    setTimeout(() => {
-                        document.getElementById('loading').style.display = 'none';
-                    }, 500);
-                }, 1000);
-            }).catch(error => {
-                console.error('Error in geocodeAllCinemas:', error);
-                // Hide loading screen even if geocoding fails
-                setTimeout(() => {
-                    document.getElementById('loading').style.opacity = 0;
-                    setTimeout(() => {
-                        document.getElementById('loading').style.display = 'none';
-                    }, 500);
-                }, 1000);
-            });
+            geocodeAllCinemas();
 
-            // Ensure the loading screen is hidden even if geocoding fails
+            // Hide loading screen
             setTimeout(() => {
                 document.getElementById('loading').style.opacity = 0;
                 setTimeout(() => {
                     document.getElementById('loading').style.display = 'none';
                 }, 500);
-            }, 10000); // Fallback timeout
+            }, 1000);
         });
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9435fe5201bd11b6',t:'MTc0Nzg1MDYzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>

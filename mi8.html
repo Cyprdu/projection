@@ -179,23 +179,14 @@
                         <img src="https://image.tmdb.org/t/p/original/z53D72EAOxGRqdr7KXXWp9dJiDe.jpg" alt="Mission Impossible Poster" class="w-full">
                     </div>
 
-
-
-                            <div class="scroll-container">
-    <div class="blur-background"></div>
-    <div class="dates-container">
-        <div class="bg-black bg-opacity-50 rounded-lg p-4">
-            <h2 class="text-xl font-bold mb-4">Dates</h2>
-            <div id="datesList" class="flex flex-col gap-2">
-                <!-- Dates will be populated here -->
+                    <div class="dates-container bg-black bg-opacity-50 rounded-lg p-4">
+                        <h2 class="text-xl font-bold mb-4">Dates</h2>
+                        <div id="datesList" class="flex flex-col gap-2">
+                            <!-- Dates will be populated here -->
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</div>
-
-
-
-           
 
             <div class="md:w-3/4">
                 <div id="cinemasContainer" class="space-y-6">
@@ -776,51 +767,3 @@ const cinemaCoordinates = {};
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9435fe5201bd11b6',t:'MTc0Nzg1MDYzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
-<style>
-    /* Ajoutez ou modifiez les styles suivants */
-    .scroll-container {
-        position: relative;
-        height: 300px; /* Hauteur fixe pour le conteneur des dates */
-    }
-
-    .dates-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        overflow-y: auto; /* Active le défilement vertical */
-        scrollbar-width: thin; /* Largeur de la barre de défilement */
-        scrollbar-color: rgba(241, 0, 0, 0.7) transparent; /* Couleur de la barre de défilement */
-        padding-right: 10px; /* Espace pour la barre de défilement */
-    }
-
-    /* Style pour la barre de défilement sur WebKit (Chrome, Safari) */
-    .dates-container::-webkit-scrollbar {
-        width: 8px;
-    }
-
-    .dates-container::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .dates-container::-webkit-scrollbar-thumb {
-        background-color: rgba(241, 0, 0, 0.7); /* Couleur rouge avec transparence */
-        border-radius: 10px;
-    }
-
-    .dates-container::-webkit-scrollbar-thumb:hover {
-        background-color: rgba(241, 0, 0, 0.9); /* Couleur rouge plus opaque au survol */
-    }
-
-    .blur-background {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        backdrop-filter: blur(10px); /* Effet de flou */
-        background-color: rgba(0, 0, 0, 0.5); /* Fond transparent */
-        z-index: -1;
-    }
-</style>

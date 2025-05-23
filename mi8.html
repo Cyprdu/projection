@@ -238,7 +238,7 @@
             let cinemaCoordinates = {};
 
             try {
-                const response = await fetch('https://raw.githubusercontent.com/Cyprdu/projection/refs/heads/main/données.json');
+                const response = await fetch('https://gitlab.com/filmsst/Films/-/raw/master/seances.json');
                 screenings = await response.json();
             } catch (error) {
                 console.error('Error fetching data:', error);

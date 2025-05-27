@@ -25,6 +25,7 @@
             background-color: #f5f5f7;
             color: var(--text);
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
         
         h1, h2, h3, h4 {
@@ -268,6 +269,7 @@
             max-height: 70vh;
             object-fit: contain;
             margin: 0 auto;
+            border-radius: 12px;
         }
         
         .back-btn {
@@ -296,7 +298,15 @@
             top: 0;
             left: 0;
             width: 100%;
-            z-index: 100;
+            z-index: 1000;
+        }
+        
+        .content-wrapper {
+            padding-top: 56px; /* Height of the navbar */
+        }
+        
+        .reduced-margin {
+            margin-top: 0.5rem;
         }
     </style>
 </head>
@@ -317,13 +327,11 @@
         </div>
     </header>
     
-    <nav class="bg-white shadow-sm sticky top-0 z-50 navbar">
+    <nav class="bg-white shadow-sm sticky top-0 z-1000 navbar">
         <div class="container mx-auto px-4">
-            <div class="flex justify-between md:justify-center items-center">
-                <button id="mobile-menu-btn" class="md:hidden p-4">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <div class="hidden md:flex">
+            <div class="flex justify-between items-center">
+                <div class="md:flex-1"></div> <!-- Spacer for desktop -->
+                <div class="hidden md:flex justify-center md:flex-1">
                     <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
                         <i class="fas fa-film mr-2"></i> Programmation
                     </button>
@@ -331,10 +339,14 @@
                         <i class="fas fa-ticket-alt mr-2"></i> Billetterie
                     </button>
                 </div>
-                <div class="md:hidden">
+                <div class="md:hidden flex-1 flex justify-center">
                     <h2 class="text-lg font-medium py-4">Courts Métrages</h2>
                 </div>
-                <div class="w-10 md:hidden"></div> <!-- Spacer for mobile -->
+                <div class="md:flex-1 flex justify-end">
+                    <button id="mobile-menu-btn" class="md:hidden p-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </nav>
@@ -355,9 +367,9 @@
     </div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     
-    <main class="container mx-auto px-4 py-8 mt-16">
+    <main class="container mx-auto px-4 py-4 content-wrapper">
         <section id="section-accueil" class="block">
-            <div class="mb-8 text-center">
+            <div class="mb-6 text-center reduced-margin">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
             </div>
             
@@ -367,7 +379,7 @@
         </section>
         
         <section id="section-billeterie" class="hidden">
-            <div class="mb-12 text-center">
+            <div class="mb-8 text-center reduced-margin">
                 <h2 class="text-3xl font-bold section-title mx-auto">Réservez vos places</h2>
                 <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
             </div>
@@ -413,7 +425,7 @@
         </button>
         <div class="container mx-auto px-4 py-8">
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="bg-[#f5f5f7] p-6 flex justify-center">
+                <div class="bg-[#f5f5f7] p-6 flex justify-center rounded-t-xl">
                     <img id="details-poster" class="film-details-poster" src="" alt="">
                 </div>
                 <div class="p-6 md:p-8">
@@ -473,7 +485,7 @@
         </button>
     </div>
     
-    <div class="floating-ticket-btn">
+    <div class="floating-ticket-btn" id="floating-ticket-btn">
         <button id="floating-tickets" class="btn-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
             <i class="fas fa-ticket-alt text-xl"></i>
         </button>
@@ -560,11 +572,13 @@
         const shareTwitter = document.getElementById('share-twitter');
         const btnTicketsHeader = document.getElementById('btn-tickets-header');
         const floatingTickets = document.getElementById('floating-tickets');
+        const floatingTicketBtn = document.getElementById('floating-ticket-btn');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 
         let currentFilm = null;
+        let currentSection = 'accueil';
 
         // Initialize films
         function initializeFilms() {
@@ -604,6 +618,9 @@
             
             filmDetailsPage.classList.add('active');
             document.body.style.overflow = 'hidden';
+            
+            // Scroll to top of details page
+            filmDetailsPage.scrollTo(0, 0);
         }
 
         // Close film details page
@@ -652,8 +669,26 @@
             document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : 'auto';
         }
 
+        // Update floating ticket button visibility
+        function updateFloatingButton() {
+            if (currentSection === 'billeterie') {
+                floatingTicketBtn.style.display = 'none';
+            } else {
+                floatingTicketBtn.style.display = 'block';
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
         // Switch tabs
         function switchToAccueil() {
+            currentSection = 'accueil';
             tabAccueil.classList.add('tab-active');
             tabBilleterie.classList.remove('tab-active');
             sectionAccueil.classList.remove('hidden');
@@ -670,9 +705,16 @@
             if (mobileMenu.classList.contains('active')) {
                 toggleMobileMenu();
             }
+            
+            // Scroll to top
+            scrollToTop();
+            
+            // Update floating button
+            updateFloatingButton();
         }
 
         function switchToBilleterie() {
+            currentSection = 'billeterie';
             tabBilleterie.classList.add('tab-active');
             tabAccueil.classList.remove('tab-active');
             sectionBilleterie.classList.remove('hidden');
@@ -689,6 +731,12 @@
             if (mobileMenu.classList.contains('active')) {
                 toggleMobileMenu();
             }
+            
+            // Scroll to top
+            scrollToTop();
+            
+            // Update floating button
+            updateFloatingButton();
         }
 
         // Event listeners
@@ -719,7 +767,8 @@
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();
+            updateFloatingButton();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466fcf3d36cdad4',t:'MTc0ODM2NDM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467095cf159536e',t:'MTc0ODM2NDg5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

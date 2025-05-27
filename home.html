@@ -41,7 +41,6 @@
         
         .film-card {
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            cursor: pointer;
             position: relative;
             overflow: hidden;
             background-color: white;
@@ -217,7 +216,6 @@
             overflow-y: auto;
             transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             transform: translateX(100%);
-            padding-top: 56px; /* Height of the navbar */
         }
         
         .page.active {
@@ -274,7 +272,7 @@
         
         .back-btn {
             position: fixed;
-            top: 70px; /* Below navbar */
+            top: 120px; /* Further below navbar */
             left: 20px;
             z-index: 51;
             background-color: white;
@@ -294,24 +292,56 @@
         }
         
         .navbar {
+            position: relative;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.fixed {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            z-index: 1000;
-        }
-        
-        .content-wrapper {
-            padding-top: 56px; /* Height of the navbar */
         }
         
         .reduced-margin {
             margin-top: 0.5rem;
         }
+        
+        .view-details-btn {
+            cursor: pointer;
+        }
+        
+        .film-details-poster {
+            border-radius: 12px;
+        }
+        
+        .main-header {
+            position: relative;
+            z-index: 999;
+            transition: transform 0.3s ease;
+        }
+        
+        .main-header.hidden {
+            transform: translateY(-100%);
+        }
+        
+        .content-padding {
+            padding-top: 0;
+            transition: padding-top 0.3s ease;
+        }
+        
+        .content-padding.navbar-fixed {
+            padding-top: 56px; /* Height of the navbar */
+        }
+        
+        .page.navbar-fixed {
+            padding-top: 56px; /* Height of the navbar */
+        }
     </style>
 </head>
 <body>
-    <header class="bg-white shadow-sm py-6 header-animation desktop-header">
+    <header class="bg-white shadow-sm py-6 header-animation main-header" id="main-header">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div>
@@ -327,10 +357,14 @@
         </div>
     </header>
     
-    <nav class="bg-white shadow-sm sticky top-0 z-1000 navbar">
+    <nav class="bg-white shadow-sm navbar" id="main-navbar">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
-                <div class="md:flex-1"></div> <!-- Spacer for desktop -->
+                <div class="md:flex-1">
+                    <button id="mobile-menu-btn" class="md:hidden p-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
                 <div class="hidden md:flex justify-center md:flex-1">
                     <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
                         <i class="fas fa-film mr-2"></i> Programmation
@@ -343,9 +377,7 @@
                     <h2 class="text-lg font-medium py-4">Courts Métrages</h2>
                 </div>
                 <div class="md:flex-1 flex justify-end">
-                    <button id="mobile-menu-btn" class="md:hidden p-4">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
+                    <!-- Spacer for mobile -->
                 </div>
             </div>
         </div>
@@ -367,7 +399,7 @@
     </div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     
-    <main class="container mx-auto px-4 py-4 content-wrapper">
+    <main class="container mx-auto px-4 py-4 mt-8 content-padding" id="main-content">
         <section id="section-accueil" class="block">
             <div class="mb-6 text-center reduced-margin">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
@@ -423,7 +455,7 @@
         <button class="back-btn" id="back-btn">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <div class="container mx-auto px-4 py-8">
+        <div class="container mx-auto px-4 py-8 pt-16">
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="bg-[#f5f5f7] p-6 flex justify-center rounded-t-xl">
                     <img id="details-poster" class="film-details-poster" src="" alt="">
@@ -498,15 +530,10 @@
                     <h3 class="text-xl font-bold mb-2">Festival de Courts Métrages</h3>
                     <p class="text-gray-600">Cinéma La Grenette - 1 juillet 2025</p>
                 </div>
-                <div class="flex gap-4">
-                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
-                        <i class="fab fa-facebook-f text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
-                        <i class="fab fa-instagram text-xl"></i>
-                    </a>
-                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
-                        <i class="fab fa-twitter text-xl"></i>
+                <div>
+                    <a href="https://lalande.ent.auvergnerhonealpes.fr/" target="_blank" class="text-gray-600 hover:text-[#e94560] transition-colors flex items-center">
+                        <i class="fas fa-globe text-xl mr-2"></i>
+                        <span>Site du lycée Lalande</span>
                     </a>
                 </div>
             </div>
@@ -576,9 +603,68 @@
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const navbar = document.getElementById('main-navbar');
+        const mainHeader = document.getElementById('main-header');
+        const mainContent = document.getElementById('main-content');
 
         let currentFilm = null;
         let currentSection = 'accueil';
+        let lastScrollTop = 0;
+        let navbarHeight = navbar.offsetHeight;
+        let navbarOffset = navbar.offsetTop;
+        let isNavbarFixed = false;
+
+        // Handle sticky navbar on scroll
+        function handleStickyNavbar() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Get the current position of the navbar if it's not fixed
+            if (!isNavbarFixed) {
+                navbarOffset = navbar.getBoundingClientRect().top + scrollTop;
+            }
+            
+            // Make navbar sticky when scrolled to its position
+            if (scrollTop > navbarOffset && !isNavbarFixed) {
+                navbar.classList.add('fixed');
+                mainContent.classList.add('navbar-fixed');
+                filmDetailsPage.classList.add('navbar-fixed');
+                isNavbarFixed = true;
+            } else if (scrollTop <= navbarOffset && isNavbarFixed) {
+                navbar.classList.remove('fixed');
+                mainContent.classList.remove('navbar-fixed');
+                filmDetailsPage.classList.remove('navbar-fixed');
+                isNavbarFixed = false;
+            }
+            
+            // Hide header when scrolling down
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                mainHeader.classList.add('hidden');
+            } else if (scrollTop < lastScrollTop) {
+                mainHeader.classList.remove('hidden');
+            }
+            
+            lastScrollTop = scrollTop;
+        }
+
+        // Make navbar sticky immediately
+        function makeNavbarSticky() {
+            if (!isNavbarFixed) {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                navbarOffset = navbar.getBoundingClientRect().top + scrollTop;
+                
+                // Scroll to make navbar sticky
+                window.scrollTo({
+                    top: navbarOffset + 1,
+                    behavior: 'smooth'
+                });
+                
+                // Force navbar to be fixed immediately
+                navbar.classList.add('fixed');
+                mainContent.classList.add('navbar-fixed');
+                filmDetailsPage.classList.add('navbar-fixed');
+                isNavbarFixed = true;
+            }
+        }
 
         // Initialize films
         function initializeFilms() {
@@ -595,15 +681,22 @@
                         <div class="film-overlay">
                             <span class="genre-badge mb-2">${film.genre}</span>
                             <h3 class="text-xl font-bold text-white mb-3">${film.nom}</h3>
-                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm">
+                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm view-details-btn" data-film-index="${index}">
                                 Voir détails
                             </button>
                         </div>
                     </div>
                 `;
                 
-                filmCard.addEventListener('click', () => openFilmDetails(film));
                 filmsContainer.appendChild(filmCard);
+                
+                // Add event listener only to the button
+                const detailsBtn = filmCard.querySelector('.view-details-btn');
+                detailsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    const filmIndex = parseInt(detailsBtn.getAttribute('data-film-index'));
+                    openFilmDetails(films[filmIndex]);
+                });
             });
         }
 
@@ -615,6 +708,9 @@
             detailsPoster.alt = film.nom;
             detailsSynopsis.textContent = film.synopsis;
             detailsGenre.textContent = film.genre;
+            
+            // Make navbar sticky before showing film details
+            makeNavbarSticky();
             
             filmDetailsPage.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -763,12 +859,30 @@
         });
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+        
+        // Handle sticky navbar on scroll
+        window.addEventListener('scroll', handleStickyNavbar);
+        
+        // Recalculate navbar position on resize
+        window.addEventListener('resize', () => {
+            navbarHeight = navbar.offsetHeight;
+            if (!isNavbarFixed) {
+                navbarOffset = navbar.offsetTop;
+            }
+        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();
             updateFloatingButton();
+            
+            // Initial calculation of navbar position
+            navbarHeight = navbar.offsetHeight;
+            navbarOffset = navbar.offsetTop;
+            
+            // Check if navbar should be sticky on page load
+            handleStickyNavbar();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467095cf159536e',t:'MTc0ODM2NDg5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'946731dde55045d4',t:'MTc0ODM2NjU1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

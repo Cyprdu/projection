@@ -9,20 +9,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
         
         :root {
-            --primary: #8C1C13;
-            --secondary: #2D3047;
-            --accent: #F4D35E;
-            --light: #F8F9FA;
-            --dark: #212529;
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --light: #f8f9fa;
+            --dark: #0f3460;
+            --text: #333333;
         }
         
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: #f5f5f5;
-            color: var(--dark);
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f7;
+            color: var(--text);
             overflow-x: hidden;
         }
         
@@ -31,47 +32,53 @@
         }
         
         .tab-active {
-            background-color: var(--primary);
-            color: white;
-            border-bottom: 3px solid var(--accent);
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            font-weight: 500;
         }
         
         .film-card {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             cursor: pointer;
             position: relative;
             overflow: hidden;
+            background-color: white;
         }
         
         .film-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
         }
         
-        .film-card::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
+        .film-card:hover .film-info {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .film-poster {
+            height: auto;
             width: 100%;
-            height: 50%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            z-index: 1;
+            object-fit: contain;
+            aspect-ratio: 2/3;
+            transition: all 0.4s ease;
         }
         
-        .film-card-content {
+        .film-info {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             padding: 1.5rem;
-            z-index: 2;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5), transparent);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
         }
         
         .modal {
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         
         .modal.active {
@@ -80,8 +87,8 @@
         }
         
         .modal-content {
-            transform: translateY(50px);
-            transition: all 0.4s ease;
+            transform: translateY(30px);
+            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
         }
         
         .modal.active .modal-content {
@@ -89,41 +96,42 @@
         }
         
         .btn-primary {
-            background-color: var(--primary);
+            background-color: var(--accent);
             color: white;
             transition: all 0.3s ease;
         }
         
         .btn-primary:hover {
-            background-color: #7a1810;
+            background-color: #d03651;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(140, 28, 19, 0.3);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3);
         }
         
-        .btn-accent {
-            background-color: var(--accent);
-            color: var(--dark);
+        .btn-secondary {
+            background-color: var(--dark);
+            color: white;
             transition: all 0.3s ease;
         }
         
-        .btn-accent:hover {
-            background-color: #e9c64f;
+        .btn-secondary:hover {
+            background-color: #0a2647;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(244, 211, 94, 0.3);
+            box-shadow: 0 5px 15px rgba(15, 52, 96, 0.3);
         }
         
         .genre-badge {
-            background-color: var(--secondary);
+            background-color: var(--accent);
             color: white;
             padding: 0.25rem 0.75rem;
             border-radius: 50px;
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 500;
             display: inline-block;
+            letter-spacing: 0.5px;
         }
         
         .header-animation {
-            animation: fadeInDown 1s ease-out;
+            animation: fadeIn 1s ease-out;
         }
         
         .film-card-animation {
@@ -131,14 +139,12 @@
             animation: fadeInUp 0.8s ease-out forwards;
         }
         
-        @keyframes fadeInDown {
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-30px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
             }
         }
         
@@ -153,22 +159,6 @@
             }
         }
         
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-        
         .share-popup {
             position: fixed;
             top: 50%;
@@ -176,8 +166,8 @@
             transform: translate(-50%, -50%);
             background: white;
             padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             z-index: 1000;
             max-width: 90%;
             width: 500px;
@@ -191,6 +181,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
             z-index: 999;
             display: none;
         }
@@ -200,95 +191,121 @@
             bottom: 30px;
             right: 30px;
             z-index: 100;
-            animation: bounce 2s infinite;
+            transition: all 0.3s ease;
         }
         
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-20px);
-            }
-            60% {
-                transform: translateY(-10px);
-            }
+        .floating-ticket-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        .modal-poster-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f7;
+            padding: 1rem;
+        }
+        
+        .modal-poster {
+            max-height: 500px;
+            width: auto;
+            object-fit: contain;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent);
         }
     </style>
 </head>
 <body>
-    <header class="bg-gradient-to-r from-[#8C1C13] to-[#2D3047] text-white py-8 header-animation">
+    <header class="bg-white shadow-sm py-6 header-animation">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div>
-                    <h1 class="text-3xl md:text-4xl font-bold mb-2">Festival de Courts Métrages</h1>
-                    <p class="text-lg opacity-90">1 juillet 2025 - Cinéma La Grenette</p>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-1 text-[#1a1a2e]">Festival de Courts Métrages</h1>
+                    <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
                 </div>
                 <div class="mt-4 md:mt-0">
-                    <button id="btn-tickets-header" class="btn-accent px-6 py-3 rounded-full font-bold text-lg shadow-lg">
-                        <i class="fas fa-ticket-alt mr-2"></i> Réserver mes places
+                    <button id="btn-tickets-header" class="btn-primary px-6 py-3 rounded-lg font-medium text-lg shadow-sm">
+                        <i class="fas fa-ticket-alt mr-2"></i> Réserver
                     </button>
                 </div>
             </div>
         </div>
     </header>
     
-    <nav class="bg-white shadow-md sticky top-0 z-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-4">
             <div class="flex justify-center">
-                <button id="tab-accueil" class="tab-active px-6 py-4 text-lg font-medium transition-all duration-300">
+                <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
                     <i class="fas fa-film mr-2"></i> Programmation
                 </button>
-                <button id="tab-billeterie" class="px-6 py-4 text-lg font-medium transition-all duration-300">
+                <button id="tab-billeterie" class="px-8 py-4 text-lg transition-all duration-300">
                     <i class="fas fa-ticket-alt mr-2"></i> Billetterie
                 </button>
             </div>
         </div>
     </nav>
     
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-12">
         <section id="section-accueil" class="block">
-            <div class="mb-8 text-center">
-                <h2 class="text-3xl font-bold mb-4">Sélection Officielle</h2>
-                <p class="text-lg max-w-2xl mx-auto">Découvrez notre sélection de courts métrages exceptionnels qui seront diffusés le mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
+                <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Découvrez notre sélection de courts métrages exceptionnels qui seront diffusés le mardi 1 juillet 2025 à 19h00.</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="films-container">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="films-container">
                 <!-- Films will be inserted here by JavaScript -->
             </div>
         </section>
         
         <section id="section-billeterie" class="hidden">
-            <div class="mb-8 text-center">
-                <h2 class="text-3xl font-bold mb-4">Réservez vos places</h2>
-                <p class="text-lg max-w-2xl mx-auto">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-bold section-title mx-auto">Réservez vos places</h2>
+                <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
             </div>
             
-            <div class="bg-white rounded-lg shadow-lg p-6">
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-12">
                 <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne</a>
             </div>
             
-            <div class="mt-8 bg-[#f8f4e5] rounded-lg p-6 shadow-lg">
-                <h3 class="text-2xl font-bold mb-4">Informations pratiques</h3>
-                <div class="flex flex-col md:flex-row gap-6">
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <h3 class="text-2xl font-bold mb-6 section-title">Informations pratiques</h3>
+                <div class="flex flex-col md:flex-row gap-8 mt-8">
                     <div class="flex-1">
-                        <div class="flex items-start mb-4">
-                            <i class="fas fa-map-marker-alt text-[#8C1C13] text-xl mt-1 mr-3"></i>
+                        <div class="flex items-start mb-6">
+                            <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
+                                <i class="fas fa-map-marker-alt text-[#e94560] text-xl"></i>
+                            </div>
                             <div>
-                                <h4 class="font-bold text-lg">Adresse</h4>
-                                <p>Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
+                                <h4 class="font-bold text-lg mb-2">Adresse</h4>
+                                <p class="text-gray-600">Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
                             </div>
                         </div>
                         <div class="flex items-start">
-                            <i class="fas fa-clock text-[#8C1C13] text-xl mt-1 mr-3"></i>
+                            <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
+                                <i class="fas fa-clock text-[#e94560] text-xl"></i>
+                            </div>
                             <div>
-                                <h4 class="font-bold text-lg">Horaire</h4>
-                                <p>Mardi 1 juillet 2025<br>Début de la séance à 19h00</p>
+                                <h4 class="font-bold text-lg mb-2">Horaire</h4>
+                                <p class="text-gray-600">Mardi 1 juillet 2025<br>Début de la séance à 19h00</p>
                             </div>
                         </div>
                     </div>
                     <div class="flex-1">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2763.1088923372144!2d5.2238!3d46.2052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f353f9e067bd11%3A0x8f1c1807c525cc17!2sCin%C3%A9ma%20La%20Grenette!5e0!3m2!1sfr!2sfr!4v1625123456789!5m2!1sfr!2sfr" width="100%" height="200" style="border:0; border-radius: 8px;" allowfullscreen="" loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2763.1088923372144!2d5.2238!3d46.2052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f353f9e067bd11%3A0x8f1c1807c525cc17!2sCin%C3%A9ma%20La%20Grenette!5e0!3m2!1sfr!2sfr!4v1625123456789!5m2!1sfr!2sfr" width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
@@ -296,37 +313,37 @@
     </main>
     
     <div class="modal fixed inset-0 flex items-center justify-center z-50" id="film-modal">
-        <div class="absolute inset-0 bg-black bg-opacity-75" id="modal-overlay"></div>
-        <div class="modal-content bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 relative z-10 overflow-hidden">
-            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl z-10" id="close-modal">
+        <div class="absolute inset-0 bg-black bg-opacity-75 backdrop-blur-sm" id="modal-overlay"></div>
+        <div class="modal-content bg-white rounded-xl shadow-xl max-w-5xl w-full mx-4 relative z-10 overflow-hidden">
+            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl z-10 bg-white bg-opacity-80 w-10 h-10 rounded-full flex items-center justify-center" id="close-modal">
                 <i class="fas fa-times"></i>
             </button>
             <div class="flex flex-col md:flex-row">
-                <div class="md:w-2/5 relative">
-                    <div id="modal-poster" class="h-full w-full bg-cover bg-center" style="min-height: 300px;"></div>
+                <div class="md:w-2/5 modal-poster-container">
+                    <img id="modal-poster" class="modal-poster" src="" alt="Affiche du film">
                 </div>
-                <div class="md:w-3/5 p-6 md:p-8">
+                <div class="md:w-3/5 p-8">
                     <span id="modal-genre" class="genre-badge mb-3"></span>
                     <h3 id="modal-title" class="text-3xl font-bold mb-4"></h3>
-                    <p id="modal-synopsis" class="text-gray-700 mb-6"></p>
+                    <p id="modal-synopsis" class="text-gray-700 mb-8"></p>
                     
-                    <div class="flex flex-wrap gap-3">
-                        <button class="btn-primary px-5 py-3 rounded-lg font-medium flex items-center" id="modal-tickets">
+                    <div class="flex flex-wrap gap-4">
+                        <button class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center" id="modal-tickets">
                             <i class="fas fa-ticket-alt mr-2"></i> Réserver
                         </button>
-                        <button class="bg-[#2D3047] text-white px-5 py-3 rounded-lg font-medium flex items-center" id="modal-share">
+                        <button class="btn-secondary px-6 py-3 rounded-lg font-medium flex items-center" id="modal-share">
                             <i class="fas fa-share-alt mr-2"></i> Partager
                         </button>
                     </div>
                     
-                    <div class="mt-6 pt-6 border-t border-gray-200">
-                        <div class="flex items-center">
-                            <i class="fas fa-calendar-alt text-[#8C1C13] mr-3"></i>
-                            <span>1 juillet 2025 à 19h00</span>
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-calendar-alt text-[#e94560] mr-3"></i>
+                            <span class="text-gray-700">1 juillet 2025 à 19h00</span>
                         </div>
-                        <div class="flex items-center mt-2">
-                            <i class="fas fa-map-marker-alt text-[#8C1C13] mr-3"></i>
-                            <span>Cinéma La Grenette, Bourg-en-Bresse</span>
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-[#e94560] mr-3"></i>
+                            <span class="text-gray-700">Cinéma La Grenette, Bourg-en-Bresse</span>
                         </div>
                     </div>
                 </div>
@@ -337,22 +354,22 @@
     <div class="overlay" id="share-overlay"></div>
     <div class="share-popup" id="share-popup">
         <h3 class="text-2xl font-bold mb-4">Partager ce film</h3>
-        <p class="mb-4">Invitez vos amis à découvrir ce court-métrage :</p>
-        <div class="bg-gray-100 p-3 rounded-lg mb-4">
+        <p class="mb-4 text-gray-600">Invitez vos amis à découvrir ce court-métrage :</p>
+        <div class="bg-gray-100 p-4 rounded-lg mb-6">
             <p id="share-text" class="text-sm"></p>
         </div>
         <div class="flex justify-between">
-            <button id="copy-share" class="bg-[#2D3047] text-white px-4 py-2 rounded-lg font-medium">
+            <button id="copy-share" class="bg-[#16213e] text-white px-5 py-2 rounded-lg font-medium hover:bg-[#0f3460] transition-colors">
                 <i class="fas fa-copy mr-2"></i> Copier
             </button>
             <div class="flex gap-3">
-                <a href="#" id="share-whatsapp" class="bg-[#25D366] text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <a href="#" id="share-whatsapp" class="bg-[#25D366] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="#" id="share-facebook" class="bg-[#3b5998] text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <a href="#" id="share-facebook" class="bg-[#3b5998] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
                     <i class="fab fa-facebook-f"></i>
                 </a>
-                <a href="#" id="share-twitter" class="bg-[#1DA1F2] text-white w-10 h-10 rounded-full flex items-center justify-center">
+                <a href="#" id="share-twitter" class="bg-[#1DA1F2] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
                     <i class="fab fa-twitter"></i>
                 </a>
             </div>
@@ -363,31 +380,31 @@
     </div>
     
     <div class="floating-ticket-btn">
-        <button id="floating-tickets" class="btn-primary rounded-full w-16 h-16 flex items-center justify-center shadow-lg">
-            <i class="fas fa-ticket-alt text-2xl"></i>
+        <button id="floating-tickets" class="btn-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
+            <i class="fas fa-ticket-alt text-xl"></i>
         </button>
     </div>
     
-    <footer class="bg-[#2D3047] text-white py-8 mt-12">
+    <footer class="bg-white py-8 mt-16 border-t border-gray-200">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
                     <h3 class="text-xl font-bold mb-2">Festival de Courts Métrages</h3>
-                    <p>Cinéma La Grenette - 1 juillet 2025</p>
+                    <p class="text-gray-600">Cinéma La Grenette - 1 juillet 2025</p>
                 </div>
                 <div class="flex gap-4">
-                    <a href="#" class="text-white hover:text-[#F4D35E] transition-colors">
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
                         <i class="fab fa-facebook-f text-xl"></i>
                     </a>
-                    <a href="#" class="text-white hover:text-[#F4D35E] transition-colors">
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
                         <i class="fab fa-instagram text-xl"></i>
                     </a>
-                    <a href="#" class="text-white hover:text-[#F4D35E] transition-colors">
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
                         <i class="fab fa-twitter text-xl"></i>
                     </a>
                 </div>
             </div>
-            <div class="mt-6 pt-6 border-t border-gray-700 text-center text-sm opacity-80">
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
                 <p>© 2025 Festival de Courts Métrages - Cinéma La Grenette. Tous droits réservés.</p>
             </div>
         </div>
@@ -458,15 +475,22 @@
             films.forEach((film, index) => {
                 const delay = (index + 1) * 150;
                 const filmCard = document.createElement('div');
-                filmCard.className = `film-card rounded-lg overflow-hidden shadow-lg film-card-animation`;
+                filmCard.className = `film-card rounded-xl overflow-hidden shadow-sm film-card-animation`;
                 filmCard.style.animationDelay = `${delay}ms`;
                 filmCard.innerHTML = `
-                    <div class="relative h-96">
-                        <img src="${film.affiche}" alt="${film.nom}" class="w-full h-full object-cover">
-                        <div class="film-card-content text-white">
-                            <span class="genre-badge mb-2">${film.genre}</span>
-                            <h3 class="text-xl font-bold">${film.nom}</h3>
+                    <div class="p-4">
+                        <img src="${film.affiche}" alt="${film.nom}" class="film-poster rounded-lg shadow-sm">
+                        <div class="pt-4 pb-2 px-1">
+                            <h3 class="text-lg font-semibold">${film.nom}</h3>
+                            <span class="text-sm text-gray-600">${film.genre}</span>
                         </div>
+                    </div>
+                    <div class="film-info text-white">
+                        <span class="genre-badge mb-2">${film.genre}</span>
+                        <h3 class="text-xl font-bold mb-2">${film.nom}</h3>
+                        <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm">
+                            Voir détails
+                        </button>
                     </div>
                 `;
                 
@@ -479,7 +503,8 @@
         function openFilmModal(film) {
             currentFilm = film;
             modalTitle.textContent = film.nom;
-            modalPoster.style.backgroundImage = `url(${film.affiche})`;
+            modalPoster.src = film.affiche;
+            modalPoster.alt = film.nom;
             modalSynopsis.textContent = film.synopsis;
             modalGenre.textContent = film.genre;
             
@@ -563,5 +588,5 @@
             initializeFilms();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466de01867cda11',t:'MTc0ODM2MzExNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466e70443d1da11',t:'MTc0ODM2MzQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
         
         :root {
             --primary: #1a1a2e;
@@ -28,7 +28,8 @@
         }
         
         h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.02em;
         }
         
         .tab-active {
@@ -71,7 +72,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent);
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7), rgba(0,0,0,0.4));
             opacity: 0;
             transition: all 0.4s ease;
             display: flex;
@@ -117,6 +118,7 @@
             font-weight: 500;
             display: inline-block;
             letter-spacing: 0.5px;
+            width: fit-content;
         }
         
         .header-animation {
@@ -210,10 +212,11 @@
             width: 100%;
             height: 100%;
             background-color: #f5f5f7;
-            z-index: 100;
+            z-index: 50;
             overflow-y: auto;
             transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             transform: translateX(100%);
+            padding-top: 56px; /* Height of the navbar */
         }
         
         .page.active {
@@ -269,9 +272,9 @@
         
         .back-btn {
             position: fixed;
-            top: 20px;
+            top: 70px; /* Below navbar */
             left: 20px;
-            z-index: 101;
+            z-index: 51;
             background-color: white;
             width: 40px;
             height: 40px;
@@ -286,6 +289,14 @@
         .back-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
         }
     </style>
 </head>
@@ -306,7 +317,7 @@
         </div>
     </header>
     
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 navbar">
         <div class="container mx-auto px-4">
             <div class="flex justify-between md:justify-center items-center">
                 <button id="mobile-menu-btn" class="md:hidden p-4">
@@ -344,14 +355,13 @@
     </div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 mt-16">
         <section id="section-accueil" class="block">
-            <div class="mb-12 text-center">
+            <div class="mb-8 text-center">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
-                <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Découvrez notre sélection de courts métrages exceptionnels qui seront diffusés le mardi 1 juillet 2025 à 19h00.</p>
             </div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="films-container">
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="films-container">
                 <!-- Films will be inserted here by JavaScript -->
             </div>
         </section>
@@ -401,7 +411,7 @@
         <button class="back-btn" id="back-btn">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <div class="container mx-auto px-4 py-12">
+        <div class="container mx-auto px-4 py-8">
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="bg-[#f5f5f7] p-6 flex justify-center">
                     <img id="details-poster" class="film-details-poster" src="" alt="">
@@ -651,6 +661,11 @@
             sectionBilleterie.classList.add('hidden');
             sectionBilleterie.classList.remove('block');
             
+            // Close film details if open
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
+            
             // Close mobile menu if open
             if (mobileMenu.classList.contains('active')) {
                 toggleMobileMenu();
@@ -664,6 +679,11 @@
             sectionBilleterie.classList.add('block');
             sectionAccueil.classList.add('hidden');
             sectionAccueil.classList.remove('block');
+            
+            // Close film details if open
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
             
             // Close mobile menu if open
             if (mobileMenu.classList.contains('active')) {
@@ -686,7 +706,13 @@
         closeShare.addEventListener('click', closeSharePopup);
         copyShare.addEventListener('click', copyShareText);
         btnTicketsHeader.addEventListener('click', switchToBilleterie);
-        floatingTickets.addEventListener('click', switchToBilleterie);
+        floatingTickets.addEventListener('click', () => {
+            // Make sure it works even when in film details
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
+            switchToBilleterie();
+        });
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 
@@ -695,5 +721,5 @@
             initializeFilms();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466f08ee083aa2c',t:'MTc0ODM2Mzg3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466fcf3d36cdad4',t:'MTc0ODM2NDM4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

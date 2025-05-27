@@ -1,510 +1,853 @@
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Moins par Moins - Au cinéma le 1 juillet 2025</title>
+    <title>Festival de Courts Métrages - Cinéma La Grenette</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Montserrat', sans-serif;
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --light: #f8f9fa;
+            --dark: #0f3460;
+            --text: #333333;
         }
-
+        
         body {
-            background-color: #0a0a0a;
-            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f5f7;
+            color: var(--text);
             overflow-x: hidden;
+            scroll-behavior: smooth;
+            padding-top: 56px; /* Height of the navbar */
         }
-
-        .nav-link {
+        
+        h1, h2, h3, h4 {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: -0.02em;
+        }
+        
+        .tab-active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+            font-weight: 500;
+        }
+        
+        .film-card {
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
             position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -4px;
-            left: 0;
-            background-color: #e50914;
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after, .nav-link.active::after {
-            width: 100%;
-        }
-
-        .nav-link.active {
-            color: #e50914;
-        }
-
-        .hero-section {
-            position: relative;
-            height: 100vh;
             overflow: hidden;
+            background-color: white;
+            height: 100%;
         }
-
-        .hero-video {
-            position: absolute;
-            top: 0;
-            left: 0;
+        
+        .film-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+        }
+        
+        .film-poster-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .film-poster {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: 1;
+            transition: all 0.4s ease;
         }
-
-        .hero-overlay {
+        
+        .film-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 2;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7), rgba(0,0,0,0.4));
+            opacity: 0;
+            transition: all 0.4s ease;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            justify-content: flex-end;
+            padding: 1.5rem;
         }
-
-        .logo-animation {
-            animation: pulse 2s infinite;
+        
+        .film-card:hover .film-overlay {
+            opacity: 1;
         }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.05);
-            }
-            100% {
-                transform: scale(1);
+        
+        /* For mobile, show overlay when card has active class */
+        @media (max-width: 768px) {
+            .film-card.active .film-overlay {
+                opacity: 1;
             }
         }
-
-        .watch-button {
-            position: relative;
-            overflow: hidden;
+        
+        .btn-primary {
+            background-color: var(--accent);
+            color: white;
             transition: all 0.3s ease;
         }
-
-        .watch-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: all 0.5s ease;
+        
+        .btn-primary:hover {
+            background-color: #d03651;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.3);
         }
-
-        .watch-button:hover::before {
-            left: 100%;
+        
+        .btn-secondary {
+            background-color: var(--dark);
+            color: white;
+            transition: all 0.3s ease;
         }
-
-        .section {
+        
+        .btn-secondary:hover {
+            background-color: #0a2647;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 52, 96, 0.3);
+        }
+        
+        .genre-badge {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+            letter-spacing: 0.5px;
+            width: fit-content;
+        }
+        
+        .header-animation {
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .film-card-animation {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease;
+            animation: fadeInUp 0.8s ease-out forwards;
         }
-
-        .section.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
+        
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-
-        .trailer-container {
-            position: relative;
-            padding-bottom: 56.25%;
-            height: 0;
-            overflow: hidden;
-            max-width: 100%;
+        
+        .share-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 90%;
+            width: 500px;
+            display: none;
         }
-
-        .trailer-container iframe {
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            display: none;
+        }
+        
+        .floating-ticket-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+        
+        .floating-ticket-btn:hover {
+            transform: translateY(-5px);
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title::after {
+            content: '';
             position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background-color: var(--accent);
+        }
+        
+        .page {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: #f5f5f7;
+            z-index: 50;
+            overflow-y: auto;
+            transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform: translateX(100%);
+            padding-top: 56px; /* Height of the navbar */
         }
-
-        .poster-hover {
+        
+        .page.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80%;
+            height: 100%;
+            background-color: white;
+            z-index: 200;
+            transform: translateX(-100%);
             transition: transform 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
-
-        .poster-hover:hover {
-            transform: scale(1.03);
+        
+        .mobile-menu.active {
+            transform: translateX(0);
         }
-
-        .scroll-down {
-            animation: bounce 2s infinite;
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 199;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+        }
+        
+        .film-details-poster {
+            max-height: 70vh;
+            object-fit: contain;
+            margin: 0 auto;
+            border-radius: 12px;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 100px; /* Further below navbar */
+            left: 20px;
+            z-index: 51;
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        .reduced-margin {
+            margin-top: 0.5rem;
+        }
+        
+        .view-details-btn {
             cursor: pointer;
         }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-20px);
-            }
-            60% {
-                transform: translateY(-10px);
-            }
+        
+        .film-details-poster {
+            border-radius: 12px;
         }
         
-        .projection-info {
-            background: linear-gradient(135deg, #e50914 0%, #8b0000 100%);
-            border-radius: 8px;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            transform: translateY(0);
-            transition: transform 0.3s ease;
+        .page-title {
+            animation: fadeIn 1s ease-out;
+            margin-top: 40px; /* Increased space below navbar */
+            margin-bottom: 40px; /* Space below title */
         }
         
-        .projection-info:hover {
-            transform: translateY(-5px);
+        .content-spacing {
+            margin-top: 20px; /* Increased space below navbar */
+        }
+        
+        .billeterie-spacing {
+            margin-top: 40px; /* Increased space for billeterie section */
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 w-full bg-black bg-opacity-80 z-50 px-6 py-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="text-2xl font-bold text-red-600">Moins par Moins</div>
-            <div class="hidden md:flex space-x-8">
-                <a href="#" class="nav-link active" data-tab="accueil">Accueil</a>
-                <a href="#" class="nav-link" data-tab="billeterie">Billeterie</a>
-                <a href="#" class="nav-link" data-tab="bande-annonce">Bande-Annonce</a>
-                <a href="#" class="nav-link" data-tab="synopsis">Synopsis</a>
-            </div>
-            <div class="md:hidden">
-                <button id="menu-toggle" class="text-white focus:outline-none">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div id="mobile-menu" class="md:hidden hidden bg-black bg-opacity-95 w-full py-4 px-6">
-            <div class="flex flex-col space-y-4">
-                <a href="#" class="nav-link active" data-tab="accueil">Accueil</a>
-                <a href="#" class="nav-link" data-tab="billeterie">Billeterie</a>
-                <a href="#" class="nav-link" data-tab="bande-annonce">Bande-Annonce</a>
-                <a href="#" class="nav-link" data-tab="synopsis">Synopsis</a>
+    <nav class="bg-white shadow-sm navbar" id="main-navbar">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <div class="md:flex-1">
+                    <button id="mobile-menu-btn" class="md:hidden p-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+                <div class="hidden md:flex justify-center md:flex-1">
+                    <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
+                        <i class="fas fa-film mr-2"></i> Programmation
+                    </button>
+                    <button id="tab-billeterie" class="px-8 py-4 text-lg transition-all duration-300">
+                        <i class="fas fa-ticket-alt mr-2"></i> Billetterie
+                    </button>
+                </div>
+                <div class="md:hidden flex-1 flex justify-center">
+                    <h2 class="text-lg font-medium py-4">Courts Métrages Lalande</h2>
+                </div>
+                <div class="md:flex-1 flex justify-end">
+                    <!-- Spacer for mobile -->
+                </div>
             </div>
         </div>
     </nav>
-
-    <!-- Accueil Section -->
-    <section id="accueil" class="tab-content active">
-        <!-- Hero Section with Video Background -->
-        <div class="hero-section">
-            <video class="hero-video" autoplay loop muted playsinline>
-                <source src="https://cyprienveyret.my.canva.site/_assets/video/a2f2e556048c7a730cbd9e784fab1b3a.mp4" type="video/mp4">
-            </video>
-            <div class="hero-overlay">
-                <img src="https://raw.githubusercontent.com/Cyprdu/photos/refs/heads/main/cinema%20/au%20cinema%20le%201%20juillet%202025.png" alt="Moins par Moins" class="w-3/4 md:w-1/2 lg:w-1/3 mb-8 logo-animation">
-                <button id="watch-trailer-btn" class="watch-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 flex items-center">
-                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Regarder la bande-annonce
-                </button>
-                <div id="scroll-down" class="absolute bottom-10 scroll-down">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                    </svg>
+    
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold mb-1">Courts Métrages</h3>
+            <p class="text-sm text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
+        </div>
+        <div class="p-4">
+            <button id="mobile-tab-accueil" class="w-full text-left py-4 border-b border-gray-200">
+                <i class="fas fa-film mr-2"></i> Programmation
+            </button>
+            <button id="mobile-tab-billeterie" class="w-full text-left py-4 border-b border-gray-200">
+                <i class="fas fa-ticket-alt mr-2"></i> Billetterie
+            </button>
+        </div>
+    </div>
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    
+    <main class="container mx-auto px-4 py-4 content-spacing" id="main-content">
+        <section id="section-accueil" class="block">
+            <!-- Festival title - now centered without white background -->
+            <div class="text-center page-title" id="page-title">
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-[#1a1a2e]">Festival de Courts Métrages</h1>
+                <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
+            </div>
+            
+            <div class="mb-6 text-center">
+                <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="films-container">
+                <!-- Films will be inserted here by JavaScript -->
+            </div>
+        </section>
+        
+        <section id="section-billeterie" class="hidden billeterie-spacing">
+            <div class="mb-8 text-center mt-10">
+                <h2 class="text-3xl font-bold section-title mx-auto">Réservez vos places</h2>
+                <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-12">
+                <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne</a>
+            </div>
+            
+            <div class="bg-white rounded-xl p-8 shadow-sm">
+                <h3 class="text-2xl font-bold mb-6 section-title">Informations pratiques</h3>
+                <div class="flex flex-col md:flex-row gap-8 mt-8">
+                    <div class="flex-1">
+                        <div class="flex items-start mb-6">
+                            <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
+                                <i class="fas fa-map-marker-alt text-[#e94560] text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Adresse</h4>
+                                <p class="text-gray-600">Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
+                                <i class="fas fa-clock text-[#e94560] text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2">Horaire</h4>
+                                <p class="text-gray-600">Mardi 1 juillet 2025<br>Début de la séance à 19h00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2763.1088923372144!2d5.2238!3d46.2052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f353f9e067bd11%3A0x8f1c1807c525cc17!2sCin%C3%A9ma%20La%20Grenette!5e0!3m2!1sfr!2sfr!4v1625123456789!5m2!1sfr!2sfr" width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Film Info Section -->
-        <div class="container mx-auto py-20 px-6">
-            <div class="section flex flex-col md:flex-row gap-10 items-center">
-                <div class="md:w-1/2">
-                    <img src="https://raw.githubusercontent.com/Cyprdu/photos/refs/heads/main/cinema/Design%20sans%20titre%20-%202025-05-09T210859.342.png" alt="Affiche du film" class="rounded-lg shadow-2xl poster-hover">
+        </section>
+    </main>
+    
+    <div class="page" id="film-details-page">
+        <button class="back-btn" id="back-btn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="container mx-auto px-4 py-8 pt-16">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-[#f5f5f7] p-6 flex justify-center rounded-t-xl">
+                    <img id="details-poster" class="film-details-poster" src="" alt="">
                 </div>
-                <div class="md:w-1/2">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6 text-red-600">Le Scénario</h2>
-                    <p class="text-lg mb-6 leading-relaxed">
-                        "Moins par Moins" est un court-métrage français d'une durée de trois minutes, qui met en lumière le génie d'Albert Einstein. Ce film, bien que bref, parvient à illustrer de manière percutante l'esprit brillant du célèbre physicien.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                        <button class="watch-button bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 flex items-center justify-center" onclick="switchToTab('synopsis')">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Voir plus
+                <div class="p-6 md:p-8">
+                    <span id="details-genre" class="genre-badge mb-3"></span>
+                    <h2 id="details-title" class="text-3xl font-bold mb-4"></h2>
+                    <p id="details-synopsis" class="text-gray-700 mb-8"></p>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <button class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center" id="details-tickets">
+                            <i class="fas fa-ticket-alt mr-2"></i> Réserver
                         </button>
-                        <button class="watch-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 flex items-center justify-center" onclick="switchToTab('billeterie')">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-                            </svg>
-                            Prendre mes places
+                        <button class="btn-secondary px-6 py-3 rounded-lg font-medium flex items-center" id="details-share">
+                            <i class="fas fa-share-alt mr-2"></i> Partager
                         </button>
                     </div>
-                    <div class="flex items-center space-x-4 mt-8">
-                        <div class="bg-red-600 px-4 py-2 rounded-lg">
-                            <span class="font-bold">Sortie</span>
-                            <p>1 juillet 2025</p>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-200">
+                        <div class="flex items-center mb-3">
+                            <i class="fas fa-calendar-alt text-[#e94560] mr-3"></i>
+                            <span class="text-gray-700">1 juillet 2025 à 19h00</span>
                         </div>
-                        <div class="bg-red-600 px-4 py-2 rounded-lg">
-                            <span class="font-bold">Durée</span>
-                            <p>3 minutes</p>
-                        </div>
-                        <div class="bg-red-600 px-4 py-2 rounded-lg">
-                            <span class="font-bold">Lieu</span>
-                            <p>Bourg-en-Bresse</p>
+                        <div class="flex items-center">
+                            <i class="fas fa-map-marker-alt text-[#e94560] mr-3"></i>
+                            <span class="text-gray-700">Cinéma La Grenette, Bourg-en-Bresse</span>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Billeterie Section -->
-    <section id="billeterie" class="tab-content">
-        <div class="container mx-auto py-20 px-6 mt-16">
-            <h2 class="text-4xl font-bold mb-12 text-center text-red-600">Réservez vos places</h2>
-            <div class="max-w-4xl mx-auto">
-                <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
-                    <h3 class="text-2xl font-bold mb-6 text-center">Billeterie</h3>
-                    <div class="billeterie-container">
-                        <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne</a>
-                        <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
-                    </div>
-                </div>
-                
-                <div class="mt-12 projection-info p-8 text-center">
-                    <h3 class="text-2xl font-bold mb-4">Informations sur la projection</h3>
-                    <div class="flex flex-col md:flex-row justify-center items-center gap-8 mt-6">
-                        <div class="flex flex-col items-center">
-                            <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <p class="text-xl font-bold">19h30</p>
-                            <p>1 juillet 2025</p>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <p class="text-xl font-bold">Cinéma La Grenette</p>
-                            <p>Bourg-en-Bresse</p>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <svg class="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                            </svg>
-                            <p class="text-xl font-bold">Événement spécial</p>
-                            <p>En présence des réalisateurs</p>
-                        </div>
-                    </div>
-                </div>
+    </div>
+    
+    <div class="overlay" id="share-overlay"></div>
+    <div class="share-popup" id="share-popup">
+        <h3 class="text-2xl font-bold mb-4">Partager ce film</h3>
+        <p class="mb-4 text-gray-600">Invitez vos amis à découvrir ce court-métrage :</p>
+        <div class="bg-gray-100 p-4 rounded-lg mb-6">
+            <p id="share-text" class="text-sm"></p>
+        </div>
+        <div class="flex justify-between">
+            <button id="copy-share" class="bg-[#16213e] text-white px-5 py-2 rounded-lg font-medium hover:bg-[#0f3460] transition-colors">
+                <i class="fas fa-copy mr-2"></i> Copier
+            </button>
+            <div class="flex gap-3">
+                <a href="#" id="share-whatsapp" class="bg-[#25D366] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="#" id="share-facebook" class="bg-[#3b5998] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" id="share-twitter" class="bg-[#1DA1F2] text-white w-10 h-10 rounded-full flex items-center justify-center hover:opacity-90 transition-opacity">
+                    <i class="fab fa-twitter"></i>
+                </a>
             </div>
         </div>
-    </section>
-
-    <!-- Bande-Annonce Section -->
-    <section id="bande-annonce" class="tab-content">
-        <div class="container mx-auto py-20 px-6 mt-16">
-            <h2 class="text-4xl font-bold mb-12 text-center text-red-600">Bande-Annonce</h2>
-            <div class="section max-w-4xl mx-auto">
-                <div class="trailer-container rounded-lg overflow-hidden shadow-2xl">
-                    <iframe src="https://www.youtube.com/embed/PMU03vpcnKQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-                </div>
-                <div class="mt-8 text-center">
-                    <h3 class="text-2xl font-bold mb-4">Moins par Moins</h3>
-                    <p class="text-gray-300 mb-6">Découvrez l'histoire fascinante d'Albert Einstein dans ce court-métrage captivant.</p>
-                    <button class="watch-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 inline-flex items-center justify-center" onclick="switchToTab('billeterie')">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-                        </svg>
-                        Prendre mes places
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Synopsis Section -->
-    <section id="synopsis" class="tab-content">
-        <div class="container mx-auto py-20 px-6 mt-16">
-            <h2 class="text-4xl font-bold mb-12 text-center text-red-600">Synopsis</h2>
-            <div class="section max-w-4xl mx-auto bg-gray-900 p-8 rounded-lg shadow-lg">
-                <div class="flex flex-col md:flex-row gap-8 items-center">
-                    <div class="md:w-1/3">
-                        <img src="https://www.themoviedb.org/t/p/w1280/6nQZkXfJw4R9aaOmNQLu7IIfI1W.jpg" alt="Affiche du film" class="rounded-lg shadow-xl poster-hover">
-                    </div>
-                    <div class="md:w-2/3">
-                        <h3 class="text-2xl font-bold mb-4">Moins par Moins</h3>
-                        <p class="text-lg mb-6 leading-relaxed">
-                            "Moins par Moins" est un court-métrage français d'une durée de trois minutes, qui met en lumière le génie d'Albert Einstein. Ce film, bien que bref, parvient à illustrer de manière percutante l'esprit brillant du célèbre physicien.
-                        </p>
-                        <p class="text-lg mb-6 leading-relaxed">
-                            À travers une mise en scène concise et évocatrice, il rend hommage à ses idées révolutionnaires, notamment dans le domaine de la physique théorique. En jouant sur la métaphore mathématique du « moins par moins », le film explore comment les concepts les plus complexes peuvent parfois mener aux vérités les plus profondes.
-                        </p>
-                        <div class="mt-8">
-                            <button class="watch-button bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 inline-flex items-center justify-center" onclick="switchToTab('billeterie')">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path>
-                                </svg>
-                                Prendre mes places
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-black py-10 px-6">
-        <div class="container mx-auto">
+        <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800" id="close-share">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <div class="floating-ticket-btn" id="floating-ticket-btn">
+        <button id="floating-tickets" class="btn-primary rounded-full w-14 h-14 flex items-center justify-center shadow-lg">
+            <i class="fas fa-ticket-alt text-xl"></i>
+        </button>
+    </div>
+    
+    <footer class="bg-white py-8 mt-16 border-t border-gray-200">
+        <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-6 md:mb-0">
-                    <h3 class="text-xl font-bold text-red-600 mb-2">Moins par Moins</h3>
-                    <p class="text-gray-400">Au cinéma le 1 juillet 2025 à Bourg-en-Bresse</p>
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-xl font-bold mb-2">Festival de Courts Métrages</h3>
+                    <p class="text-gray-600">Cinéma La Grenette - 1 juillet 2025</p>
                 </div>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
-                        </svg>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z"></path>
-                        </svg>
-                    </a>
-                    <a href="#" class="text-gray-400 hover:text-red-600 transition-colors">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
-                        </svg>
+                <div>
+                    <a href="https://lalande.ent.auvergnerhonealpes.fr/" target="_blank" class="text-gray-600 hover:text-[#e94560] transition-colors flex items-center">
+                        <i class="fas fa-globe text-xl mr-2"></i>
+                        <span>Site du lycée Lalande</span>
                     </a>
                 </div>
             </div>
-            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-                <p>&copy; 2024 Tous droits réservés. Cyprien VEYRET</p>
+            <div class="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-500">
+                <p>© 2025 Festival de Courts Métrages - Cinéma La Grenette. Tous droits réservés.</p>
             </div>
         </div>
     </footer>
 
+    <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
     <script>
-        // Make all sections visible initially for proper rendering
-        document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('.section');
-            sections.forEach(section => {
-                section.classList.add('visible');
-            });
-        });
+        // Film data
+        const films = [
+            {
+                "nom": "Moins par Moins",
+                "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png",
+                "synopsis": "\"Moins par Moins\" est un court-métrage français d'une durée de trois minutes, qui met en lumière le génie d'Albert Einstein. Ce film, bien que bref, parvient à illustrer de manière percutante l'esprit brillant du célèbre physicien. À travers une mise en scène concise et évocatrice, il rend hommage à ses idées révolutionnaires, notamment dans le domaine de la physique théorique. En jouant sur la métaphore mathématique du « moins par moins »",
+                "genre": "Science-Fiction"
+            },
+            {
+                "nom": "Ipulsion",
+                "affiche": "https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true",
+                "synopsis": "Un jeune homme commence à apercevoir une mystérieuse fille à chaque coin de rue, dans ses rêves, même dans les reflets. Au début, il pense à une simple coïncidence… mais bientôt, il comprend que sa présence n'est pas le fruit du hasard. Qui est-elle vraiment, et pourquoi le hante-t-elle ?",
+                "genre": "Fantastique"
+            },
+            {
+                "nom": "La Vie Rêvée",
+                "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
+                "synopsis": "Une histoire d'amour...",
+                "genre": "Romance"
+            },
+            {
+                "nom": "Nature Morte",
+                "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/nature%20morte.png",
+                "synopsis": "Un film d'horreur qui va vous donner des frissons...",
+                "genre": "Horreur"
+            }
+        ];
 
-        // Tab switching function
-        function switchToTab(tabId) {
-            // Update active nav link
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(navLink => {
-                navLink.classList.remove('active');
-                if (navLink.getAttribute('data-tab') === tabId) {
-                    navLink.classList.add('active');
+        // DOM elements
+        const filmsContainer = document.getElementById('films-container');
+        const tabAccueil = document.getElementById('tab-accueil');
+        const tabBilleterie = document.getElementById('tab-billeterie');
+        const mobileTabAccueil = document.getElementById('mobile-tab-accueil');
+        const mobileTabBilleterie = document.getElementById('mobile-tab-billeterie');
+        const sectionAccueil = document.getElementById('section-accueil');
+        const sectionBilleterie = document.getElementById('section-billeterie');
+        const filmDetailsPage = document.getElementById('film-details-page');
+        const backBtn = document.getElementById('back-btn');
+        const detailsPoster = document.getElementById('details-poster');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsSynopsis = document.getElementById('details-synopsis');
+        const detailsGenre = document.getElementById('details-genre');
+        const detailsTickets = document.getElementById('details-tickets');
+        const detailsShare = document.getElementById('details-share');
+        const sharePopup = document.getElementById('share-popup');
+        const shareOverlay = document.getElementById('share-overlay');
+        const closeShare = document.getElementById('close-share');
+        const shareText = document.getElementById('share-text');
+        const copyShare = document.getElementById('copy-share');
+        const shareWhatsapp = document.getElementById('share-whatsapp');
+        const shareFacebook = document.getElementById('share-facebook');
+        const shareTwitter = document.getElementById('share-twitter');
+        const floatingTickets = document.getElementById('floating-tickets');
+        const floatingTicketBtn = document.getElementById('floating-ticket-btn');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        const pageTitle = document.getElementById('page-title');
+
+        let currentFilm = null;
+        let currentSection = 'accueil';
+        let activeFilmCard = null; // Track which film card is active on mobile
+
+        // Initialize films
+        function initializeFilms() {
+            filmsContainer.innerHTML = '';
+            
+            films.forEach((film, index) => {
+                const delay = (index + 1) * 150;
+                const filmCard = document.createElement('div');
+                filmCard.className = `film-card rounded-xl overflow-hidden shadow-sm film-card-animation`;
+                filmCard.style.animationDelay = `${delay}ms`;
+                filmCard.dataset.filmIndex = index;
+                filmCard.innerHTML = `
+                    <div class="film-poster-container h-full">
+                        <img src="${film.affiche}" alt="${film.nom}" class="film-poster">
+                        <div class="film-overlay">
+                            <span class="genre-badge mb-2">${film.genre}</span>
+                            <h3 class="text-xl font-bold text-white mb-3">${film.nom}</h3>
+                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm view-details-btn" data-film-index="${index}">
+                                Voir détails
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                filmsContainer.appendChild(filmCard);
+                
+                // Add event listener to the entire card for mobile
+                filmCard.addEventListener('click', function(e) {
+                    // Only handle click on mobile devices
+                    if (window.innerWidth <= 768) {
+                        e.stopPropagation();
+                        
+                        // If this card is already active, don't do anything
+                        // Let the button click handler take over
+                        if (this.classList.contains('active')) {
+                            return;
+                        }
+                        
+                        // Remove active class from previous card
+                        if (activeFilmCard) {
+                            activeFilmCard.classList.remove('active');
+                        }
+                        
+                        // Add active class to this card
+                        this.classList.add('active');
+                        activeFilmCard = this;
+                    }
+                });
+                
+                // Add event listener to the button
+                const detailsBtn = filmCard.querySelector('.view-details-btn');
+                detailsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent event bubbling
+                    const filmIndex = parseInt(detailsBtn.getAttribute('data-film-index'));
+                    openFilmDetails(films[filmIndex]);
+                });
+            });
+            
+            // Add click event to document to close active card when clicking elsewhere
+            document.addEventListener('click', function(e) {
+                // Only on mobile
+                if (window.innerWidth <= 768) {
+                    // Check if click is outside any film card
+                    if (!e.target.closest('.film-card') && activeFilmCard) {
+                        activeFilmCard.classList.remove('active');
+                        activeFilmCard = null;
+                    }
                 }
             });
+        }
+
+        // Open film details page
+        function openFilmDetails(film) {
+            currentFilm = film;
+            detailsTitle.textContent = film.nom;
+            detailsPoster.src = film.affiche;
+            detailsPoster.alt = film.nom;
+            detailsSynopsis.textContent = film.synopsis;
+            detailsGenre.textContent = film.genre;
             
-            // Show target tab content
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabContents.forEach(content => {
-                content.classList.remove('active');
+            filmDetailsPage.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Scroll to top of details page
+            filmDetailsPage.scrollTo(0, 0);
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
+            }
+        }
+
+        // Close film details page
+        function closeFilmDetails() {
+            filmDetailsPage.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Open share popup
+        function openSharePopup() {
+            if (!currentFilm) return;
+            
+            const shareMessage = `Je t'invite à venir voir "${currentFilm.nom}" au cinéma La Grenette le 1 juillet 2025, viens vite prendre tes places sur ${window.location.href}`;
+            shareText.textContent = shareMessage;
+            
+            const encodedMessage = encodeURIComponent(shareMessage);
+            shareWhatsapp.href = `https://wa.me/?text=${encodedMessage}`;
+            shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodedMessage}`;
+            shareTwitter.href = `https://twitter.com/intent/tweet?text=${encodedMessage}`;
+            
+            sharePopup.style.display = 'block';
+            shareOverlay.style.display = 'block';
+        }
+
+        // Close share popup
+        function closeSharePopup() {
+            sharePopup.style.display = 'none';
+            shareOverlay.style.display = 'none';
+        }
+
+        // Copy share text
+        function copyShareText() {
+            navigator.clipboard.writeText(shareText.textContent).then(() => {
+                const originalText = copyShare.innerHTML;
+                copyShare.innerHTML = '<i class="fas fa-check mr-2"></i> Copié !';
+                setTimeout(() => {
+                    copyShare.innerHTML = originalText;
+                }, 2000);
             });
-            document.getElementById(tabId).classList.add('active');
-            
-            // Close mobile menu if open
-            document.getElementById('mobile-menu').classList.add('hidden');
-            
-            // Scroll to top
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('active');
+            mobileMenuOverlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : 'auto';
+        }
+
+        // Update floating ticket button visibility
+        function updateFloatingButton() {
+            if (currentSection === 'billeterie') {
+                floatingTicketBtn.style.display = 'none';
+            } else {
+                floatingTicketBtn.style.display = 'block';
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         }
 
-        // Mobile menu toggle
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
+        // Switch tabs
+        function switchToAccueil() {
+            currentSection = 'accueil';
+            tabAccueil.classList.add('tab-active');
+            tabBilleterie.classList.remove('tab-active');
+            sectionAccueil.classList.remove('hidden');
+            sectionAccueil.classList.add('block');
+            sectionBilleterie.classList.add('hidden');
+            sectionBilleterie.classList.remove('block');
+            
+            // Show page title in accueil section
+            pageTitle.style.display = 'block';
+            
+            // Close film details if open
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
+            
+            // Close mobile menu if open
+            if (mobileMenu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
+            }
+            
+            // Scroll to top
+            scrollToTop();
+            
+            // Update floating button
+            updateFloatingButton();
+        }
 
-        menuToggle.addEventListener('click', function() {
-            mobileMenu.classList.toggle('hidden');
+        function switchToBilleterie() {
+            currentSection = 'billeterie';
+            tabBilleterie.classList.add('tab-active');
+            tabAccueil.classList.remove('tab-active');
+            sectionBilleterie.classList.remove('hidden');
+            sectionBilleterie.classList.add('block');
+            sectionAccueil.classList.add('hidden');
+            sectionAccueil.classList.remove('block');
+            
+            // Hide page title in billetterie section
+            pageTitle.style.display = 'none';
+            
+            // Close film details if open
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
+            
+            // Close mobile menu if open
+            if (mobileMenu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
+            }
+            
+            // Scroll to top
+            scrollToTop();
+            
+            // Update floating button
+            updateFloatingButton();
+        }
+
+        // Event listeners
+        tabAccueil.addEventListener('click', switchToAccueil);
+        tabBilleterie.addEventListener('click', switchToBilleterie);
+        mobileTabAccueil.addEventListener('click', switchToAccueil);
+        mobileTabBilleterie.addEventListener('click', switchToBilleterie);
+        backBtn.addEventListener('click', closeFilmDetails);
+        detailsTickets.addEventListener('click', () => {
+            closeFilmDetails();
+            switchToBilleterie();
         });
-
-        // Navigation active state and tab switching
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('data-tab');
-                switchToTab(targetId);
-            });
+        detailsShare.addEventListener('click', openSharePopup);
+        shareOverlay.addEventListener('click', closeSharePopup);
+        closeShare.addEventListener('click', closeSharePopup);
+        copyShare.addEventListener('click', copyShareText);
+        floatingTickets.addEventListener('click', () => {
+            // Make sure it works even when in film details
+            if (filmDetailsPage.classList.contains('active')) {
+                closeFilmDetails();
+            }
+            switchToBilleterie();
         });
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 
-        // Watch trailer button
-        document.getElementById('watch-trailer-btn').addEventListener('click', function() {
-            switchToTab('bande-annonce');
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeFilms();
+            updateFloatingButton();
         });
-
-        // Scroll down button
-        document.getElementById('scroll-down').addEventListener('click', function() {
-            const filmInfoSection = document.querySelector('.container.mx-auto.py-20');
-            filmInfoSection.scrollIntoView({ behavior: 'smooth' });
-        });
-
-        // Scroll animation for sections
-        const sections = document.querySelectorAll('.section');
-        
-        const revealSection = () => {
-            sections.forEach(section => {
-                const sectionTop = section.getBoundingClientRect().top;
-                const windowHeight = window.innerHeight;
-                
-                if (sectionTop < windowHeight - 150) {
-                    section.classList.add('visible');
-                }
-            });
-        };
-        
-        window.addEventListener('scroll', revealSection);
-        window.addEventListener('load', revealSection);
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93d369c29366e187',t:'MTc0NjgxNjk0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94674f942223189a',t:'MTc0ODM2Nzc2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

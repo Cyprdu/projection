@@ -26,6 +26,7 @@
             color: var(--text);
             overflow-x: hidden;
             scroll-behavior: smooth;
+            padding-top: 56px; /* Height of the navbar */
         }
         
         h1, h2, h3, h4 {
@@ -83,6 +84,13 @@
         
         .film-card:hover .film-overlay {
             opacity: 1;
+        }
+        
+        /* For mobile, show overlay when card has active class */
+        @media (max-width: 768px) {
+            .film-card.active .film-overlay {
+                opacity: 1;
+            }
         }
         
         .btn-primary {
@@ -216,6 +224,7 @@
             overflow-y: auto;
             transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             transform: translateX(100%);
+            padding-top: 56px; /* Height of the navbar */
         }
         
         .page.active {
@@ -272,7 +281,7 @@
         
         .back-btn {
             position: fixed;
-            top: 120px; /* Further below navbar */
+            top: 100px; /* Further below navbar */
             left: 20px;
             z-index: 51;
             background-color: white;
@@ -292,16 +301,11 @@
         }
         
         .navbar {
-            position: relative;
-            width: 100%;
-            z-index: 1000;
-            transition: all 0.3s ease;
-        }
-        
-        .navbar.fixed {
             position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
+            z-index: 1000;
         }
         
         .reduced-margin {
@@ -316,47 +320,17 @@
             border-radius: 12px;
         }
         
-        .main-header {
-            position: relative;
-            z-index: 999;
-            transition: transform 0.3s ease;
+        .page-title {
+            animation: fadeIn 1s ease-out;
+            margin-top: 20px; /* Increased space below navbar */
         }
         
-        .main-header.hidden {
-            transform: translateY(-100%);
-        }
-        
-        .content-padding {
-            padding-top: 0;
-            transition: padding-top 0.3s ease;
-        }
-        
-        .content-padding.navbar-fixed {
-            padding-top: 56px; /* Height of the navbar */
-        }
-        
-        .page.navbar-fixed {
-            padding-top: 56px; /* Height of the navbar */
+        .content-spacing {
+            margin-top: 20px; /* Increased space below navbar */
         }
     </style>
 </head>
 <body>
-    <header class="bg-white shadow-sm py-6 header-animation main-header" id="main-header">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div>
-                    <h1 class="text-3xl md:text-4xl font-bold mb-1 text-[#1a1a2e]">Festival de Courts Métrages</h1>
-                    <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
-                </div>
-                <div class="mt-4 md:mt-0">
-                    <button id="btn-tickets-header" class="btn-primary px-6 py-3 rounded-lg font-medium text-lg shadow-sm">
-                        <i class="fas fa-ticket-alt mr-2"></i> Réserver
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-    
     <nav class="bg-white shadow-sm navbar" id="main-navbar">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
@@ -399,9 +373,25 @@
     </div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     
-    <main class="container mx-auto px-4 py-4 mt-8 content-padding" id="main-content">
+    <main class="container mx-auto px-4 py-4 content-spacing" id="main-content">
         <section id="section-accueil" class="block">
-            <div class="mb-6 text-center reduced-margin">
+            <div class="bg-white shadow-sm py-6 mb-8 rounded-lg page-title" id="page-title">
+                <div class="container mx-auto px-4">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <div>
+                            <h1 class="text-3xl md:text-4xl font-bold mb-1 text-[#1a1a2e]">Festival de Courts Métrages</h1>
+                            <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <button id="btn-tickets-header" class="btn-primary px-6 py-3 rounded-lg font-medium text-lg shadow-sm">
+                                <i class="fas fa-ticket-alt mr-2"></i> Réserver
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-6 text-center">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
             </div>
             
@@ -411,7 +401,7 @@
         </section>
         
         <section id="section-billeterie" class="hidden">
-            <div class="mb-8 text-center reduced-margin">
+            <div class="mb-8 text-center">
                 <h2 class="text-3xl font-bold section-title mx-auto">Réservez vos places</h2>
                 <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
             </div>
@@ -603,68 +593,11 @@
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-        const navbar = document.getElementById('main-navbar');
-        const mainHeader = document.getElementById('main-header');
-        const mainContent = document.getElementById('main-content');
+        const pageTitle = document.getElementById('page-title');
 
         let currentFilm = null;
         let currentSection = 'accueil';
-        let lastScrollTop = 0;
-        let navbarHeight = navbar.offsetHeight;
-        let navbarOffset = navbar.offsetTop;
-        let isNavbarFixed = false;
-
-        // Handle sticky navbar on scroll
-        function handleStickyNavbar() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            // Get the current position of the navbar if it's not fixed
-            if (!isNavbarFixed) {
-                navbarOffset = navbar.getBoundingClientRect().top + scrollTop;
-            }
-            
-            // Make navbar sticky when scrolled to its position
-            if (scrollTop > navbarOffset && !isNavbarFixed) {
-                navbar.classList.add('fixed');
-                mainContent.classList.add('navbar-fixed');
-                filmDetailsPage.classList.add('navbar-fixed');
-                isNavbarFixed = true;
-            } else if (scrollTop <= navbarOffset && isNavbarFixed) {
-                navbar.classList.remove('fixed');
-                mainContent.classList.remove('navbar-fixed');
-                filmDetailsPage.classList.remove('navbar-fixed');
-                isNavbarFixed = false;
-            }
-            
-            // Hide header when scrolling down
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                mainHeader.classList.add('hidden');
-            } else if (scrollTop < lastScrollTop) {
-                mainHeader.classList.remove('hidden');
-            }
-            
-            lastScrollTop = scrollTop;
-        }
-
-        // Make navbar sticky immediately
-        function makeNavbarSticky() {
-            if (!isNavbarFixed) {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                navbarOffset = navbar.getBoundingClientRect().top + scrollTop;
-                
-                // Scroll to make navbar sticky
-                window.scrollTo({
-                    top: navbarOffset + 1,
-                    behavior: 'smooth'
-                });
-                
-                // Force navbar to be fixed immediately
-                navbar.classList.add('fixed');
-                mainContent.classList.add('navbar-fixed');
-                filmDetailsPage.classList.add('navbar-fixed');
-                isNavbarFixed = true;
-            }
-        }
+        let activeFilmCard = null; // Track which film card is active on mobile
 
         // Initialize films
         function initializeFilms() {
@@ -675,6 +608,7 @@
                 const filmCard = document.createElement('div');
                 filmCard.className = `film-card rounded-xl overflow-hidden shadow-sm film-card-animation`;
                 filmCard.style.animationDelay = `${delay}ms`;
+                filmCard.dataset.filmIndex = index;
                 filmCard.innerHTML = `
                     <div class="film-poster-container h-full">
                         <img src="${film.affiche}" alt="${film.nom}" class="film-poster">
@@ -690,13 +624,48 @@
                 
                 filmsContainer.appendChild(filmCard);
                 
-                // Add event listener only to the button
+                // Add event listener to the entire card for mobile
+                filmCard.addEventListener('click', function(e) {
+                    // Only handle click on mobile devices
+                    if (window.innerWidth <= 768) {
+                        e.stopPropagation();
+                        
+                        // If this card is already active, don't do anything
+                        // Let the button click handler take over
+                        if (this.classList.contains('active')) {
+                            return;
+                        }
+                        
+                        // Remove active class from previous card
+                        if (activeFilmCard) {
+                            activeFilmCard.classList.remove('active');
+                        }
+                        
+                        // Add active class to this card
+                        this.classList.add('active');
+                        activeFilmCard = this;
+                    }
+                });
+                
+                // Add event listener to the button
                 const detailsBtn = filmCard.querySelector('.view-details-btn');
                 detailsBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); // Prevent event bubbling
                     const filmIndex = parseInt(detailsBtn.getAttribute('data-film-index'));
                     openFilmDetails(films[filmIndex]);
                 });
+            });
+            
+            // Add click event to document to close active card when clicking elsewhere
+            document.addEventListener('click', function(e) {
+                // Only on mobile
+                if (window.innerWidth <= 768) {
+                    // Check if click is outside any film card
+                    if (!e.target.closest('.film-card') && activeFilmCard) {
+                        activeFilmCard.classList.remove('active');
+                        activeFilmCard = null;
+                    }
+                }
             });
         }
 
@@ -709,14 +678,17 @@
             detailsSynopsis.textContent = film.synopsis;
             detailsGenre.textContent = film.genre;
             
-            // Make navbar sticky before showing film details
-            makeNavbarSticky();
-            
             filmDetailsPage.classList.add('active');
             document.body.style.overflow = 'hidden';
             
             // Scroll to top of details page
             filmDetailsPage.scrollTo(0, 0);
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
+            }
         }
 
         // Close film details page
@@ -792,6 +764,9 @@
             sectionBilleterie.classList.add('hidden');
             sectionBilleterie.classList.remove('block');
             
+            // Show page title in accueil section
+            pageTitle.style.display = 'block';
+            
             // Close film details if open
             if (filmDetailsPage.classList.contains('active')) {
                 closeFilmDetails();
@@ -800,6 +775,12 @@
             // Close mobile menu if open
             if (mobileMenu.classList.contains('active')) {
                 toggleMobileMenu();
+            }
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
             }
             
             // Scroll to top
@@ -818,6 +799,9 @@
             sectionAccueil.classList.add('hidden');
             sectionAccueil.classList.remove('block');
             
+            // Hide page title in billetterie section
+            pageTitle.style.display = 'none';
+            
             // Close film details if open
             if (filmDetailsPage.classList.contains('active')) {
                 closeFilmDetails();
@@ -826,6 +810,12 @@
             // Close mobile menu if open
             if (mobileMenu.classList.contains('active')) {
                 toggleMobileMenu();
+            }
+            
+            // Reset active film card
+            if (activeFilmCard) {
+                activeFilmCard.classList.remove('active');
+                activeFilmCard = null;
             }
             
             // Scroll to top
@@ -859,30 +849,12 @@
         });
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
-        
-        // Handle sticky navbar on scroll
-        window.addEventListener('scroll', handleStickyNavbar);
-        
-        // Recalculate navbar position on resize
-        window.addEventListener('resize', () => {
-            navbarHeight = navbar.offsetHeight;
-            if (!isNavbarFixed) {
-                navbarOffset = navbar.offsetTop;
-            }
-        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();
             updateFloatingButton();
-            
-            // Initial calculation of navbar position
-            navbarHeight = navbar.offsetHeight;
-            navbarOffset = navbar.offsetTop;
-            
-            // Check if navbar should be sticky on page load
-            handleStickyNavbar();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'946731dde55045d4',t:'MTc0ODM2NjU1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467452d769498d2',t:'MTc0ODM2NzM0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

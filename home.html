@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -39,6 +41,7 @@
         
         .film-card {
             transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
             position: relative;
             overflow: hidden;
             background-color: white;
@@ -214,6 +217,7 @@
             overflow-y: auto;
             transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
             transform: translateX(100%);
+            padding-top: 56px; /* Height of the navbar */
         }
         
         .page.active {
@@ -270,7 +274,7 @@
         
         .back-btn {
             position: fixed;
-            top: 120px; /* Further below navbar */
+            top: 70px; /* Below navbar */
             left: 20px;
             z-index: 51;
             background-color: white;
@@ -290,32 +294,24 @@
         }
         
         .navbar {
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             z-index: 1000;
         }
         
-        .navbar.fixed {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .content-wrapper {
+            padding-top: 56px; /* Height of the navbar */
         }
         
         .reduced-margin {
             margin-top: 0.5rem;
         }
-        
-        .view-details-btn {
-            cursor: pointer;
-        }
-        
-        .film-details-poster {
-            border-radius: 12px;
-        }
     </style>
 </head>
 <body>
-    <header class="bg-white shadow-sm py-6 header-animation" id="main-header">
+    <header class="bg-white shadow-sm py-6 header-animation desktop-header">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div>
@@ -331,14 +327,10 @@
         </div>
     </header>
     
-    <nav class="bg-white shadow-sm navbar" id="main-navbar">
+    <nav class="bg-white shadow-sm sticky top-0 z-1000 navbar">
         <div class="container mx-auto px-4">
             <div class="flex justify-between items-center">
-                <div class="md:flex-1">
-                    <button id="mobile-menu-btn" class="md:hidden p-4">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
+                <div class="md:flex-1"></div> <!-- Spacer for desktop -->
                 <div class="hidden md:flex justify-center md:flex-1">
                     <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
                         <i class="fas fa-film mr-2"></i> Programmation
@@ -351,7 +343,9 @@
                     <h2 class="text-lg font-medium py-4">Courts Métrages</h2>
                 </div>
                 <div class="md:flex-1 flex justify-end">
-                    <!-- Spacer for mobile -->
+                    <button id="mobile-menu-btn" class="md:hidden p-4">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -373,7 +367,7 @@
     </div>
     <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
     
-    <main class="container mx-auto px-4 py-4">
+    <main class="container mx-auto px-4 py-4 content-wrapper">
         <section id="section-accueil" class="block">
             <div class="mb-6 text-center reduced-margin">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
@@ -429,7 +423,7 @@
         <button class="back-btn" id="back-btn">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <div class="container mx-auto px-4 py-8 pt-16">
+        <div class="container mx-auto px-4 py-8">
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div class="bg-[#f5f5f7] p-6 flex justify-center rounded-t-xl">
                     <img id="details-poster" class="film-details-poster" src="" alt="">
@@ -504,10 +498,15 @@
                     <h3 class="text-xl font-bold mb-2">Festival de Courts Métrages</h3>
                     <p class="text-gray-600">Cinéma La Grenette - 1 juillet 2025</p>
                 </div>
-                <div>
-                    <a href="https://lalande.ent.auvergnerhonealpes.fr/" target="_blank" class="text-gray-600 hover:text-[#e94560] transition-colors flex items-center">
-                        <i class="fas fa-globe text-xl mr-2"></i>
-                        <span>Site du lycée Lalande</span>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
+                        <i class="fab fa-facebook-f text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-600 hover:text-[#e94560] transition-colors">
+                        <i class="fab fa-twitter text-xl"></i>
                     </a>
                 </div>
             </div>
@@ -577,22 +576,9 @@
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
-        const navbar = document.getElementById('main-navbar');
-        const mainHeader = document.getElementById('main-header');
 
         let currentFilm = null;
         let currentSection = 'accueil';
-
-        // Handle navbar position based on film details
-        function updateNavbarPosition() {
-            if (filmDetailsPage.classList.contains('active')) {
-                navbar.classList.add('fixed');
-                mainHeader.style.display = 'none';
-            } else {
-                navbar.classList.remove('fixed');
-                mainHeader.style.display = 'block';
-            }
-        }
 
         // Initialize films
         function initializeFilms() {
@@ -609,22 +595,15 @@
                         <div class="film-overlay">
                             <span class="genre-badge mb-2">${film.genre}</span>
                             <h3 class="text-xl font-bold text-white mb-3">${film.nom}</h3>
-                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm view-details-btn" data-film-index="${index}">
+                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm">
                                 Voir détails
                             </button>
                         </div>
                     </div>
                 `;
                 
+                filmCard.addEventListener('click', () => openFilmDetails(film));
                 filmsContainer.appendChild(filmCard);
-                
-                // Add event listener only to the button
-                const detailsBtn = filmCard.querySelector('.view-details-btn');
-                detailsBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    const filmIndex = parseInt(detailsBtn.getAttribute('data-film-index'));
-                    openFilmDetails(films[filmIndex]);
-                });
             });
         }
 
@@ -640,9 +619,6 @@
             filmDetailsPage.classList.add('active');
             document.body.style.overflow = 'hidden';
             
-            // Update navbar position
-            updateNavbarPosition();
-            
             // Scroll to top of details page
             filmDetailsPage.scrollTo(0, 0);
         }
@@ -651,9 +627,6 @@
         function closeFilmDetails() {
             filmDetailsPage.classList.remove('active');
             document.body.style.overflow = 'auto';
-            
-            // Update navbar position
-            updateNavbarPosition();
         }
 
         // Open share popup
@@ -795,8 +768,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();
             updateFloatingButton();
-            updateNavbarPosition();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467221072cc45d4',t:'MTc0ODM2NTkwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467095cf159536e',t:'MTc0ODM2NDg5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

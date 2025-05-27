@@ -43,6 +43,7 @@
             position: relative;
             overflow: hidden;
             background-color: white;
+            height: 100%;
         }
         
         .film-card:hover {
@@ -50,49 +51,37 @@
             box-shadow: 0 20px 30px rgba(0,0,0,0.1);
         }
         
-        .film-card:hover .film-info {
-            opacity: 1;
-            transform: translateY(0);
+        .film-poster-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
         
         .film-poster {
-            height: auto;
             width: 100%;
-            object-fit: contain;
-            aspect-ratio: 2/3;
+            height: 100%;
+            object-fit: cover;
             transition: all 0.4s ease;
         }
         
-        .film-info {
+        .film-overlay {
             position: absolute;
-            bottom: 0;
+            top: 0;
             left: 0;
             width: 100%;
-            padding: 1.5rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5), transparent);
+            height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.4), transparent);
             opacity: 0;
-            transform: translateY(20px);
             transition: all 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
         }
         
-        .modal {
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-        
-        .modal.active {
+        .film-card:hover .film-overlay {
             opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            transform: translateY(30px);
-            transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-        
-        .modal.active .modal-content {
-            transform: translateY(0);
         }
         
         .btn-primary {
@@ -198,20 +187,6 @@
             transform: translateY(-5px);
         }
         
-        .modal-poster-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #f5f5f7;
-            padding: 1rem;
-        }
-        
-        .modal-poster {
-            max-height: 500px;
-            width: auto;
-            object-fit: contain;
-        }
-        
         .section-title {
             position: relative;
             display: inline-block;
@@ -227,10 +202,95 @@
             height: 3px;
             background-color: var(--accent);
         }
+        
+        .page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f5f5f7;
+            z-index: 100;
+            overflow-y: auto;
+            transition: transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform: translateX(100%);
+        }
+        
+        .page.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 80%;
+            height: 100%;
+            background-color: white;
+            z-index: 200;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 199;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        @media (max-width: 768px) {
+            .desktop-header {
+                display: none;
+            }
+        }
+        
+        .film-details-poster {
+            max-height: 70vh;
+            object-fit: contain;
+            margin: 0 auto;
+        }
+        
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            background-color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
     </style>
 </head>
 <body>
-    <header class="bg-white shadow-sm py-6 header-animation">
+    <header class="bg-white shadow-sm py-6 header-animation desktop-header">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div>
@@ -248,25 +308,50 @@
     
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-4">
-            <div class="flex justify-center">
-                <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
-                    <i class="fas fa-film mr-2"></i> Programmation
+            <div class="flex justify-between md:justify-center items-center">
+                <button id="mobile-menu-btn" class="md:hidden p-4">
+                    <i class="fas fa-bars text-xl"></i>
                 </button>
-                <button id="tab-billeterie" class="px-8 py-4 text-lg transition-all duration-300">
-                    <i class="fas fa-ticket-alt mr-2"></i> Billetterie
-                </button>
+                <div class="hidden md:flex">
+                    <button id="tab-accueil" class="tab-active px-8 py-4 text-lg transition-all duration-300">
+                        <i class="fas fa-film mr-2"></i> Programmation
+                    </button>
+                    <button id="tab-billeterie" class="px-8 py-4 text-lg transition-all duration-300">
+                        <i class="fas fa-ticket-alt mr-2"></i> Billetterie
+                    </button>
+                </div>
+                <div class="md:hidden">
+                    <h2 class="text-lg font-medium py-4">Courts Métrages</h2>
+                </div>
+                <div class="w-10 md:hidden"></div> <!-- Spacer for mobile -->
             </div>
         </div>
     </nav>
     
-    <main class="container mx-auto px-4 py-12">
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold mb-1">Festival de Courts Métrages</h3>
+            <p class="text-sm text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
+        </div>
+        <div class="p-4">
+            <button id="mobile-tab-accueil" class="w-full text-left py-4 border-b border-gray-200">
+                <i class="fas fa-film mr-2"></i> Programmation
+            </button>
+            <button id="mobile-tab-billeterie" class="w-full text-left py-4 border-b border-gray-200">
+                <i class="fas fa-ticket-alt mr-2"></i> Billetterie
+            </button>
+        </div>
+    </div>
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    
+    <main class="container mx-auto px-4 py-8">
         <section id="section-accueil" class="block">
             <div class="mb-12 text-center">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
                 <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Découvrez notre sélection de courts métrages exceptionnels qui seront diffusés le mardi 1 juillet 2025 à 19h00.</p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="films-container">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="films-container">
                 <!-- Films will be inserted here by JavaScript -->
             </div>
         </section>
@@ -312,26 +397,25 @@
         </section>
     </main>
     
-    <div class="modal fixed inset-0 flex items-center justify-center z-50" id="film-modal">
-        <div class="absolute inset-0 bg-black bg-opacity-75 backdrop-blur-sm" id="modal-overlay"></div>
-        <div class="modal-content bg-white rounded-xl shadow-xl max-w-5xl w-full mx-4 relative z-10 overflow-hidden">
-            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl z-10 bg-white bg-opacity-80 w-10 h-10 rounded-full flex items-center justify-center" id="close-modal">
-                <i class="fas fa-times"></i>
-            </button>
-            <div class="flex flex-col md:flex-row">
-                <div class="md:w-2/5 modal-poster-container">
-                    <img id="modal-poster" class="modal-poster" src="" alt="Affiche du film">
+    <div class="page" id="film-details-page">
+        <button class="back-btn" id="back-btn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="container mx-auto px-4 py-12">
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                <div class="bg-[#f5f5f7] p-6 flex justify-center">
+                    <img id="details-poster" class="film-details-poster" src="" alt="">
                 </div>
-                <div class="md:w-3/5 p-8">
-                    <span id="modal-genre" class="genre-badge mb-3"></span>
-                    <h3 id="modal-title" class="text-3xl font-bold mb-4"></h3>
-                    <p id="modal-synopsis" class="text-gray-700 mb-8"></p>
+                <div class="p-6 md:p-8">
+                    <span id="details-genre" class="genre-badge mb-3"></span>
+                    <h2 id="details-title" class="text-3xl font-bold mb-4"></h2>
+                    <p id="details-synopsis" class="text-gray-700 mb-8"></p>
                     
                     <div class="flex flex-wrap gap-4">
-                        <button class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center" id="modal-tickets">
+                        <button class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center" id="details-tickets">
                             <i class="fas fa-ticket-alt mr-2"></i> Réserver
                         </button>
-                        <button class="btn-secondary px-6 py-3 rounded-lg font-medium flex items-center" id="modal-share">
+                        <button class="btn-secondary px-6 py-3 rounded-lg font-medium flex items-center" id="details-share">
                             <i class="fas fa-share-alt mr-2"></i> Partager
                         </button>
                     </div>
@@ -444,17 +528,18 @@
         const filmsContainer = document.getElementById('films-container');
         const tabAccueil = document.getElementById('tab-accueil');
         const tabBilleterie = document.getElementById('tab-billeterie');
+        const mobileTabAccueil = document.getElementById('mobile-tab-accueil');
+        const mobileTabBilleterie = document.getElementById('mobile-tab-billeterie');
         const sectionAccueil = document.getElementById('section-accueil');
         const sectionBilleterie = document.getElementById('section-billeterie');
-        const filmModal = document.getElementById('film-modal');
-        const modalOverlay = document.getElementById('modal-overlay');
-        const closeModal = document.getElementById('close-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalPoster = document.getElementById('modal-poster');
-        const modalSynopsis = document.getElementById('modal-synopsis');
-        const modalGenre = document.getElementById('modal-genre');
-        const modalTickets = document.getElementById('modal-tickets');
-        const modalShare = document.getElementById('modal-share');
+        const filmDetailsPage = document.getElementById('film-details-page');
+        const backBtn = document.getElementById('back-btn');
+        const detailsPoster = document.getElementById('details-poster');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsSynopsis = document.getElementById('details-synopsis');
+        const detailsGenre = document.getElementById('details-genre');
+        const detailsTickets = document.getElementById('details-tickets');
+        const detailsShare = document.getElementById('details-share');
         const sharePopup = document.getElementById('share-popup');
         const shareOverlay = document.getElementById('share-overlay');
         const closeShare = document.getElementById('close-share');
@@ -465,6 +550,9 @@
         const shareTwitter = document.getElementById('share-twitter');
         const btnTicketsHeader = document.getElementById('btn-tickets-header');
         const floatingTickets = document.getElementById('floating-tickets');
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
 
         let currentFilm = null;
 
@@ -478,43 +566,39 @@
                 filmCard.className = `film-card rounded-xl overflow-hidden shadow-sm film-card-animation`;
                 filmCard.style.animationDelay = `${delay}ms`;
                 filmCard.innerHTML = `
-                    <div class="p-4">
-                        <img src="${film.affiche}" alt="${film.nom}" class="film-poster rounded-lg shadow-sm">
-                        <div class="pt-4 pb-2 px-1">
-                            <h3 class="text-lg font-semibold">${film.nom}</h3>
-                            <span class="text-sm text-gray-600">${film.genre}</span>
+                    <div class="film-poster-container h-full">
+                        <img src="${film.affiche}" alt="${film.nom}" class="film-poster">
+                        <div class="film-overlay">
+                            <span class="genre-badge mb-2">${film.genre}</span>
+                            <h3 class="text-xl font-bold text-white mb-3">${film.nom}</h3>
+                            <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm">
+                                Voir détails
+                            </button>
                         </div>
-                    </div>
-                    <div class="film-info text-white">
-                        <span class="genre-badge mb-2">${film.genre}</span>
-                        <h3 class="text-xl font-bold mb-2">${film.nom}</h3>
-                        <button class="bg-white text-[#1a1a2e] px-4 py-2 rounded-lg font-medium text-sm">
-                            Voir détails
-                        </button>
                     </div>
                 `;
                 
-                filmCard.addEventListener('click', () => openFilmModal(film));
+                filmCard.addEventListener('click', () => openFilmDetails(film));
                 filmsContainer.appendChild(filmCard);
             });
         }
 
-        // Open film modal
-        function openFilmModal(film) {
+        // Open film details page
+        function openFilmDetails(film) {
             currentFilm = film;
-            modalTitle.textContent = film.nom;
-            modalPoster.src = film.affiche;
-            modalPoster.alt = film.nom;
-            modalSynopsis.textContent = film.synopsis;
-            modalGenre.textContent = film.genre;
+            detailsTitle.textContent = film.nom;
+            detailsPoster.src = film.affiche;
+            detailsPoster.alt = film.nom;
+            detailsSynopsis.textContent = film.synopsis;
+            detailsGenre.textContent = film.genre;
             
-            filmModal.classList.add('active');
+            filmDetailsPage.classList.add('active');
             document.body.style.overflow = 'hidden';
         }
 
-        // Close film modal
-        function closeFilmModal() {
-            filmModal.classList.remove('active');
+        // Close film details page
+        function closeFilmDetails() {
+            filmDetailsPage.classList.remove('active');
             document.body.style.overflow = 'auto';
         }
 
@@ -551,6 +635,13 @@
             });
         }
 
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('active');
+            mobileMenuOverlay.classList.toggle('active');
+            document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : 'auto';
+        }
+
         // Switch tabs
         function switchToAccueil() {
             tabAccueil.classList.add('tab-active');
@@ -559,6 +650,11 @@
             sectionAccueil.classList.add('block');
             sectionBilleterie.classList.add('hidden');
             sectionBilleterie.classList.remove('block');
+            
+            // Close mobile menu if open
+            if (mobileMenu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
         }
 
         function switchToBilleterie() {
@@ -568,25 +664,36 @@
             sectionBilleterie.classList.add('block');
             sectionAccueil.classList.add('hidden');
             sectionAccueil.classList.remove('block');
+            
+            // Close mobile menu if open
+            if (mobileMenu.classList.contains('active')) {
+                toggleMobileMenu();
+            }
         }
 
         // Event listeners
         tabAccueil.addEventListener('click', switchToAccueil);
         tabBilleterie.addEventListener('click', switchToBilleterie);
-        modalOverlay.addEventListener('click', closeFilmModal);
-        closeModal.addEventListener('click', closeFilmModal);
-        modalTickets.addEventListener('click', switchToBilleterie);
-        modalShare.addEventListener('click', openSharePopup);
+        mobileTabAccueil.addEventListener('click', switchToAccueil);
+        mobileTabBilleterie.addEventListener('click', switchToBilleterie);
+        backBtn.addEventListener('click', closeFilmDetails);
+        detailsTickets.addEventListener('click', () => {
+            closeFilmDetails();
+            switchToBilleterie();
+        });
+        detailsShare.addEventListener('click', openSharePopup);
         shareOverlay.addEventListener('click', closeSharePopup);
         closeShare.addEventListener('click', closeSharePopup);
         copyShare.addEventListener('click', copyShareText);
         btnTicketsHeader.addEventListener('click', switchToBilleterie);
         floatingTickets.addEventListener('click', switchToBilleterie);
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466e70443d1da11',t:'MTc0ODM2MzQ4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9466f08ee083aa2c',t:'MTc0ODM2Mzg3NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

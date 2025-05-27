@@ -322,11 +322,16 @@
         
         .page-title {
             animation: fadeIn 1s ease-out;
-            margin-top: 20px; /* Increased space below navbar */
+            margin-top: 40px; /* Increased space below navbar */
+            margin-bottom: 40px; /* Space below title */
         }
         
         .content-spacing {
             margin-top: 20px; /* Increased space below navbar */
+        }
+        
+        .billeterie-spacing {
+            margin-top: 40px; /* Increased space for billeterie section */
         }
     </style>
 </head>
@@ -348,7 +353,7 @@
                     </button>
                 </div>
                 <div class="md:hidden flex-1 flex justify-center">
-                    <h2 class="text-lg font-medium py-4">Courts Métrages</h2>
+                    <h2 class="text-lg font-medium py-4">Courts Métrages Lalande</h2>
                 </div>
                 <div class="md:flex-1 flex justify-end">
                     <!-- Spacer for mobile -->
@@ -375,33 +380,23 @@
     
     <main class="container mx-auto px-4 py-4 content-spacing" id="main-content">
         <section id="section-accueil" class="block">
-            <div class="bg-white shadow-sm py-6 mb-8 rounded-lg page-title" id="page-title">
-                <div class="container mx-auto px-4">
-                    <div class="flex flex-col md:flex-row justify-between items-center">
-                        <div>
-                            <h1 class="text-3xl md:text-4xl font-bold mb-1 text-[#1a1a2e]">Festival de Courts Métrages</h1>
-                            <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
-                        </div>
-                        <div class="mt-4 md:mt-0">
-                            <button id="btn-tickets-header" class="btn-primary px-6 py-3 rounded-lg font-medium text-lg shadow-sm">
-                                <i class="fas fa-ticket-alt mr-2"></i> Réserver
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <!-- Festival title - now centered without white background -->
+            <div class="text-center page-title" id="page-title">
+                <h1 class="text-3xl md:text-4xl font-bold mb-2 text-[#1a1a2e]">Festival de Courts Métrages</h1>
+                <p class="text-lg text-gray-600">1 juillet 2025 - Cinéma La Grenette</p>
             </div>
             
             <div class="mb-6 text-center">
                 <h2 class="text-3xl font-bold section-title mx-auto">Sélection Officielle</h2>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6" id="films-container">
+<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mx-[100px]" id="films-container">
                 <!-- Films will be inserted here by JavaScript -->
             </div>
         </section>
         
-        <section id="section-billeterie" class="hidden">
-            <div class="mb-8 text-center">
+        <section id="section-billeterie" class="hidden billeterie-spacing">
+            <div class="mb-8 text-center mt-10">
                 <h2 class="text-3xl font-bold section-title mx-auto">Réservez vos places</h2>
                 <p class="text-lg max-w-2xl mx-auto mt-6 text-gray-600">Achetez vos billets pour la séance du mardi 1 juillet 2025 à 19h00 au Cinéma La Grenette.</p>
             </div>
@@ -411,10 +406,12 @@
             </div>
             
             <div class="bg-white rounded-xl p-8 shadow-sm">
-                <h3 class="text-2xl font-bold mb-6 section-title">Informations pratiques</h3>
+<h3 class="text-2xl font-bold mb-6 section-title" style="margin-left: 70px; margin-right: 70px;">
+  Informations pratiques
+</h3>
                 <div class="flex flex-col md:flex-row gap-8 mt-8">
                     <div class="flex-1">
-                        <div class="flex items-start mb-6">
+<div class="flex items-start mb-6" style="margin-left: 70px">
                             <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
                                 <i class="fas fa-map-marker-alt text-[#e94560] text-xl"></i>
                             </div>
@@ -423,7 +420,7 @@
                                 <p class="text-gray-600">Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
                             </div>
                         </div>
-                        <div class="flex items-start">
+<div class="flex items-start" style="margin-left: 70px">
                             <div class="bg-[#f5f5f7] p-3 rounded-lg mr-4">
                                 <i class="fas fa-clock text-[#e94560] text-xl"></i>
                             </div>
@@ -433,7 +430,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex-1">
+<div class="flex-1" style="margin-right: 70px;">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2763.1088923372144!2d5.2238!3d46.2052!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f353f9e067bd11%3A0x8f1c1807c525cc17!2sCin%C3%A9ma%20La%20Grenette!5e0!3m2!1sfr!2sfr!4v1625123456789!5m2!1sfr!2sfr" width="100%" height="250" style="border:0; border-radius: 12px;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
@@ -515,7 +512,7 @@
     
     <footer class="bg-white py-8 mt-16 border-t border-gray-200">
         <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
+<div class="flex flex-col md:flex-row justify-between items-center mx-[50px]">
                 <div class="mb-4 md:mb-0">
                     <h3 class="text-xl font-bold mb-2">Festival de Courts Métrages</h3>
                     <p class="text-gray-600">Cinéma La Grenette - 1 juillet 2025</p>
@@ -587,7 +584,6 @@
         const shareWhatsapp = document.getElementById('share-whatsapp');
         const shareFacebook = document.getElementById('share-facebook');
         const shareTwitter = document.getElementById('share-twitter');
-        const btnTicketsHeader = document.getElementById('btn-tickets-header');
         const floatingTickets = document.getElementById('floating-tickets');
         const floatingTicketBtn = document.getElementById('floating-ticket-btn');
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
@@ -839,7 +835,6 @@
         shareOverlay.addEventListener('click', closeSharePopup);
         closeShare.addEventListener('click', closeSharePopup);
         copyShare.addEventListener('click', copyShareText);
-        btnTicketsHeader.addEventListener('click', switchToBilleterie);
         floatingTickets.addEventListener('click', () => {
             // Make sure it works even when in film details
             if (filmDetailsPage.classList.contains('active')) {
@@ -856,5 +851,5 @@
             updateFloatingButton();
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9467452d769498d2',t:'MTc0ODM2NzM0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94674f942223189a',t:'MTc0ODM2Nzc2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>

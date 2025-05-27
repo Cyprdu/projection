@@ -320,7 +320,7 @@
                                     <i class="fas fa-eye mr-2"></i>
                                     Découvrir le film
                                 </button>
-                                <button id="tickets-film1" 
+                                <button id="tickets-film2" 
                                     class="btn-secondary inline-block font-bold py-2 px-5 rounded-lg transition-all flex items-center justify-center">
                                     <i class="fas fa-ticket-alt mr-2"></i>
                                     Prendre mes places
@@ -477,6 +477,59 @@
         </div>
     </div>
     
+
+    <!-- Impulsion -->
+    <div id="modal-impulsion" class="film-detail-modal">
+        <div class="modal-backdrop" style="background-image: url('https://raw.githubusercontent.com/Cyprdu/projection/main/Capture%20d%E2%80%99%C3%A9cran%202025-05-06%20%C3%A0%2017.18.49.png');"></div>
+        <div class="modal-content">
+            <div class="close-button">
+                <i class="fas fa-times text-xl"></i>
+            </div>
+            
+            <div class="container mx-auto py-8">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Left Column - Poster -->
+                    <div class="lg:w-1/3 flex flex-col items-center">
+                        <div style="width: 100%; max-width: 300px; aspect-ratio: 2/3;">
+                            <img src="https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true" 
+                                alt="Affiche verticale de impulsion" 
+                                class="film-poster-vertical">
+                        </div>
+                             
+                        <button id="tickets-modal-film2" 
+                            class="glass-button py-3 px-8 rounded-lg text-lg font-bold flex items-center justify-center reserve-button">
+                            <i class="fas fa-ticket-alt mr-3"></i>
+                            Réserver mes places
+                        </button>
+                    </div>
+                    
+                    <!-- Right Column - Details -->
+                    <div class="lg:w-2/3">
+                        <div class="glass-panel p-8">
+                            <h2 class="text-4xl font-bold mb-2 text-red-500">Impulsion</h2>
+                            <div class="flex items-center mb-6">
+                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">Court-métrage</span>
+                                <span class="text-slate-300"><i class="far fa-clock mr-1"></i>Fantastique</span>
+                            </div>
+                            
+                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Synopsis</h3>
+                            <p class="text-slate-300 mb-8 leading-relaxed">
+                                Un jeune homme commence à apercevoir une mystérieuse fille à chaque coin de rue, dans ses rêves, même dans les reflets. Au début, il pense à une simple coïncidence… mais bientôt, il comprend que sa présence n’est pas le fruit du hasard. Qui est-elle vraiment, et pourquoi le hante-t-elle ?
+                            </p>
+                            
+                            <div class="flex flex-wrap">
+                                <button class="glass-button py-2 px-5 rounded-lg flex items-center share-btn" data-film="impulsion">
+                                    <i class="fas fa-share-alt mr-2"></i>
+                                    Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- La Vie Rêvée Modal -->
     <div id="modal-la-vie-revee" class="film-detail-modal">
         <div class="modal-backdrop" style="background-image: url('https://raw.githubusercontent.com/Cyprdu/projection/main/Capture%20d%E2%80%99%C3%A9cran%202025-05-06%20%C3%A0%2017.18.49.png');"></div>
@@ -529,57 +582,6 @@
         </div>
     </div>
 
-    <!-- Impulsion -->
-    <div id="modal-impulsion" class="film-detail-modal">
-        <div class="modal-backdrop" style="background-image: url('https://raw.githubusercontent.com/Cyprdu/projection/main/Capture%20d%E2%80%99%C3%A9cran%202025-05-06%20%C3%A0%2017.18.49.png');"></div>
-        <div class="modal-content">
-            <div class="close-button">
-                <i class="fas fa-times text-xl"></i>
-            </div>
-            
-            <div class="container mx-auto py-8">
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <!-- Left Column - Poster -->
-                    <div class="lg:w-1/3 flex flex-col items-center">
-                        <div style="width: 100%; max-width: 300px; aspect-ratio: 2/3;">
-                            <img src="https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png" 
-                                alt="Affiche verticale de impulsion" 
-                                class="film-poster-vertical">
-                        </div>
-                             
-                        <button id="tickets-modal-film2" 
-                            class="glass-button py-3 px-8 rounded-lg text-lg font-bold flex items-center justify-center reserve-button">
-                            <i class="fas fa-ticket-alt mr-3"></i>
-                            Réserver mes places
-                        </button>
-                    </div>
-                    
-                    <!-- Right Column - Details -->
-                    <div class="lg:w-2/3">
-                        <div class="glass-panel p-8">
-                            <h2 class="text-4xl font-bold mb-2 text-red-500">Impulsion</h2>
-                            <div class="flex items-center mb-6">
-                                <span class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold mr-3">Court-métrage</span>
-                                <span class="text-slate-300"><i class="far fa-clock mr-1"></i>Fantastique</span>
-                            </div>
-                            
-                            <h3 class="text-2xl font-semibold mb-4 text-slate-200">Synopsis</h3>
-                            <p class="text-slate-300 mb-8 leading-relaxed">
-                                Un jeune homme commence à apercevoir une mystérieuse fille à chaque coin de rue, dans ses rêves, même dans les reflets. Au début, il pense à une simple coïncidence… mais bientôt, il comprend que sa présence n’est pas le fruit du hasard. Qui est-elle vraiment, et pourquoi le hante-t-elle ?
-                            </p>
-                            
-                            <div class="flex flex-wrap">
-                                <button class="glass-button py-2 px-5 rounded-lg flex items-center share-btn" data-film="impulsion">
-                                    <i class="fas fa-share-alt mr-2"></i>
-                                    Partager
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     
     <!-- Nature Morte Modal -->
     <div id="modal-nature-morte" class="film-detail-modal">
@@ -673,7 +675,7 @@
         });
         
         // Ticket buttons functionality
-        document.querySelectorAll('#tickets-film1, #tickets-film2, #tickets-film3, #tickets-modal-film1, #tickets-modal-film2, #tickets-modal-film3').forEach(button => {
+        document.querySelectorAll('#tickets-film1, #tickets-film2, #tickets-film3, #tickets-film4 #tickets-modal-film1, #tickets-modal-film2, #tickets-modal-film3, #tickets-modal-film4').forEach(button => {
             button.addEventListener('click', () => {
                 // Close any open modals
                 document.querySelectorAll('.film-detail-modal').forEach(modal => {

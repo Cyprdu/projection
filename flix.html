@@ -18,11 +18,10 @@
         }
 
         .large-screen .my-container {
-    padding: 2rem;
-    max-width: 1200px;
-    margin: auto;
-}
-
+            padding: 2rem;
+            max-width: 1200px;
+            margin: auto;
+        }
 
         * {
             margin: 0;
@@ -120,15 +119,10 @@
             pointer-events: auto;
         }
 
-.recommendation-poster {
-    width: 160px;
-    height: 240px;
-    margin: 10px;
-}
-
-
-
-
+        .recommendation-poster {
+            width: 160px;
+            height: 240px;
+            margin: 10px;
         }
 
         .recommendation-poster img {
@@ -156,7 +150,7 @@
 
         .row-container {
             position: relative;
-            
+            margin-bottom: 50px;
         }
 
         .scroll-btn {
@@ -373,17 +367,19 @@
         }
 
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--accent-color);
-            animation: spin 1s linear infinite;
+            width: 300px;
+            height: 300px;
+            background-image: url('https://github.com/Cyprdu/projection/blob/main/CIN%C3%A9.png?raw=true');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            animation: pulse 2s infinite;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         .fade-in {
@@ -414,35 +410,35 @@
             max-height: 100px;
             margin-bottom: 20px;
         }
+
         /* Scrollbar design moderne */
-::-webkit-scrollbar {
-  width: 12px;
-}
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
 
-::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(5px);
-  border-radius: 10px;
-}
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+        }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(8px);
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-}
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
     </style>
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar fixed top-0 left-0 w-full z-50 px-6 py-4 flex items-center justify-between">
         <div class="flex items-center">
-            <h1 class="text-2xl font-bold text-white mr-10">CinéStream</h1>
+            <a href="#" id="home-link" class="text-2xl font-bold text-white mr-10">CinéStream</a>
             <div class="hidden md:flex space-x-8">
                 <a href="#" class="nav-link active text-white" data-page="home">Accueil</a>
                 <a href="#" class="nav-link text-gray-300 hover:text-white" data-page="movies">Films</a>
@@ -515,21 +511,9 @@
                     <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </section>
-
-            <!-- Recommendations Section -->
-            <section class="mb-12 reduce-poster-size">
-                <h2 class="section-title text-2xl font-bold">Recommandations pour vous</h2>
-                <div class="row-container">
-                    <button class="scroll-btn left"><i class="fas fa-chevron-left"></i></button>
-                    <div class="movie-row recommendations-row">
-                        <!-- Recommendations will be added here -->
-                    </div>
-                    <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </section>
         </div>
     </div>
-<br><br><br><br>
+    <div style="margin-bottom: 10px;"></div>
     <!-- Movies Catalog Page -->
     <div id="movies-page" class="catalog-page">
         <div class="container mx-auto px-6">
@@ -581,7 +565,7 @@
     <div id="detail-page" class="detail-page">
         <div class="detail-backdrop"></div>
         <div class="detail-gradient"></div>
-        <div class="container mx-auto px-6 detail-content">
+<div class="container mx-auto px-6 detail-content mb-[100px]">
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="md:w-1/3">
                     <img id="detail-poster" src="" alt="Poster" class="rounded-lg shadow-lg w-full">
@@ -613,14 +597,6 @@
                         <h2 class="text-xl font-semibold mb-2">Genres</h2>
                         <div id="detail-genres" class="flex flex-wrap gap-2"></div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Recommendations section -->
-            <div class="mt-12">
-                <h2 class="text-2xl font-bold mb-4">Recommandations</h2>
-                <div id="recommendations-list" class="flex flex-wrap">
-                    <!-- Recommendations will be added here -->
                 </div>
             </div>
 
@@ -678,316 +654,255 @@
         const availableContent = [
     {
         tmdb_id: "movie-575264",
-        url: "https://cinefocus.xyz/movies/Mission-Impossible-Dead-Reckoning-Partie-1.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Mission-Impossible-Dead-Reckoning-Partie-1.mp4"
     },
     {
         tmdb_id: "movie-954",
         url: "https://share32140.sharecloudy.com/files/aa/L4PgAvUWxOfZ0Ggug1YQ7fPn2QH7YhtJli0.m3u8",
-        m3u8: true,
-        genres: ["Action", "Aventure", "Thriller"]
+        m3u8: true
     },
     {
         tmdb_id: "movie-353081",
-        url: "https://cinefocus.xyz/movies/Mission-Impossible-Fallout.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Mission-Impossible-Fallout.mp4"
     },
     {
         tmdb_id: "movie-299536",
-        url: "https://cinefocus.xyz/movies/Avengers-Infinity-War.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Avengers-Infinity-War.mp4"
     },
     {
         tmdb_id: "movie-299534",
-        url: "https://cinefocus.xyz/movies/Avengers-endgame.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Avengers-endgame.mp4"
     },
     {
         tmdb_id: "movie-24428",
-        url: "https://cinefocus.xyz/movies/Avengers.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Avengers.mp4"
     },
     {
         tmdb_id: "movie-157336",
-        url: "https://cinefocus.xyz/movies/Interstellar.mp4",
-        genres: ["Science-Fiction", "Aventure", "Drame"]
+        url: "https://cinecactus.xyz/movies/Interstellar.mp4"
     },
     {
         tmdb_id: "movie-27205",
-        url: "https://cinefocus.xyz/movies/Inception.mp4",
-        genres: ["Science-Fiction", "Action", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Inception.mp4"
     },
     {
         tmdb_id: "movie-155",
-        url: "https://cinefocus.xyz/movies/The-Dark-Knight-Rises.mp4",
-        genres: ["Action", "Thriller", "Crime"]
+        url: "https://cinecactus.xyz/movies/The-Dark-Knight-Rises.mp4"
     },
     {
         tmdb_id: "movie-550",
-        url: "https://cinefocus.xyz/movies/Fight-Club.mp4",
-        genres: ["Drame", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Fight-Club.mp4"
     },
     {
         tmdb_id: "movie-278",
-        url: "https://cinefocus.xyz/movies/Les-Evades.mp4",
-        genres: ["Drame"]
+        url: "https://cinecactus.xyz/movies/Les-Evades.mp4"
     },
     {
         tmdb_id: "movie-238",
-        url: "https://cinefocus.xyz/movies/Le-Parrain.mp4?cb_z2ruuir7wk=1747236006455",
-        genres: ["Drame", "Crime"]
+        url: "https://cinecactus.xyz/movies/Le-Parrain.mp4?cb_z2ruuir7wk=1747236006455"
     },
     {
         tmdb_id: "movie-680",
-        url: "https://cinefocus.xyz/movies/Pulp-Fiction.mp4",
-        genres: ["Crime", "Drame"]
+        url: "https://cinecactus.xyz/movies/Pulp-Fiction.mp4"
     },
     {
         tmdb_id: "movie-13",
-        url: "https://cinefocus.xyz/movies/Forrest-Gump.mp4",
-        genres: ["Drame", "Romance"]
+        url: "https://cinecactus.xyz/movies/Forrest-Gump.mp4"
     },
     {
         tmdb_id: "movie-429617",
-        url: "https://cinefocus.xyz/movies/Spider-Man-Far-From-Home.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Spider-Man-Far-From-Home.mp4"
     },
     {
         tmdb_id: "movie-569094",
-        url: "https://cinefocus.xyz/movies/Spider-Man-Across-The-Spider-Verse.mp4",
-        genres: ["Animation", "Action", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Spider-Man-Across-The-Spider-Verse.mp4"
     },
     {
         tmdb_id: "movie-950387",
-        url: "https://up33.topstrime.online/hls2/02/01210/,mc2zfawscnjq_x,lang/eng/mc2zfawscnjq_eng,lang/fre/mc2zfawscnjq_fre,.urlset/master.m3u8?t=07sg2iyr8d6cOmZfUNMNAfmxD8Z9V4PaTGGYkZW5UCE&s=1747236944&e=43200&f=6052314&i=0.0&sp=0&fr=mc2zfawscnjq&cb_ki1wxue2ju=1747237200044",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://up33.topstrime.online/hls2/02/01210/,mc2zfawscnjq_x,lang/eng/mc2zfawscnjq_eng,lang/fre/mc2zfawscnjq_fre,.urlset/master.m3u8?t=07sg2iyr8d6cOmZfUNMNAfmxD8Z9V4PaTGGYkZW5UCE&s=1747236944&e=43200&f=6052314&i=0.0&sp=0&fr=mc2zfawscnjq&cb_ki1wxue2ju=1747237200044"
     },
     {
         tmdb_id: "movie-974576",
-        url: "https://share22147.sharecloudy.com/files/aa/mWyrOTDN0XEBmiGpg036ajpLDAbI8NAuJ9W.m3u8",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://share22147.sharecloudy.com/files/aa/mWyrOTDN0XEBmiGpg036ajpLDAbI8NAuJ9W.m3u8"
     },
     {
         tmdb_id: "movie-516729",
-        url: "https://cinefocus.xyz/movies/Paddington-au-Perou.mp4",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://cinecactus.xyz/movies/Paddington-au-Perou.mp4"
     },
     {
         tmdb_id: "movie-116149",
-        url: "https://cinefocus.xyz/movies/Paddington.mp4",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://cinecactus.xyz/movies/Paddington.mp4"
     },
     {
         tmdb_id: "movie-346648",
-        url: "https://cinefocus.xyz/movies/Paddington-2.mp4",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://cinecactus.xyz/movies/Paddington-2.mp4"
     },
     {
         tmdb_id: "movie-1084736",
-        url: "https://cinefocus.xyz/movies/Le-Comte-de-Monte-Cristo.mp4",
-        genres: ["Action", "Aventure", "Drame"]
+        url: "https://cinecactus.xyz/movies/Le-Comte-de-Monte-Cristo.mp4"
     },
     {
         tmdb_id: "movie-956",
-        url: "https://cinefocus.xyz/movies/Mission-Impossible-3.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Mission-Impossible-3.mp4"
     },
     {
         tmdb_id: "movie-955",
-        url: "https://cinefocus.xyz/movies/Mission-Impossible-2.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Mission-Impossible-2.mp4"
     },
     {
         tmdb_id: "movie-56292",
-        url: "https://beers22147.beerscloud.com/files/aa/EOV91W3VdU6YCwxmhey1m8IcugG7QzuunqE.m3u8",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://beers22147.beerscloud.com/files/aa/EOV91W3VdU6YCwxmhey1m8IcugG7QzuunqE.m3u8"
     },
     {
         tmdb_id: "movie-177677",
-        url: "https://cinefocus.xyz/movies/Mission-Impossible-Rogue-Nation.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://cinecactus.xyz/movies/Mission-Impossible-Rogue-Nation.mp4"
     },
     {
         tmdb_id: "movie-575265",
-        url: "https://vid8.cine974.com/mission-impossible-the-final-reckoning-44015-1744434656.mp4",
-        genres: ["Action", "Aventure", "Thriller"]
+        url: "https://vid8.cine974.com/mission-impossible-the-final-reckoning-44015-1744434656.mp4"
     },
     {
         tmdb_id: "movie-671",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-a-l'ecole-des-sorciers.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-a-l'ecole-des-sorciers.mp4"
     },
     {
         tmdb_id: "movie-672",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-la-Chambre-des-secrets.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-la-Chambre-des-secrets.mp4"
     },
     {
         tmdb_id: "movie-673",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-le-Prisonnier-d'Azkaban.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-le-Prisonnier-d'Azkaban.mp4"
     },
     {
         tmdb_id: "movie-674",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-la-Coupe-de-feu.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-la-Coupe-de-feu.mp4"
     },
     {
         tmdb_id: "movie-675",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-l'Ordre-du-Phenix.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-l'Ordre-du-Phenix.mp4"
     },
     {
         tmdb_id: "movie-767",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-le-Prince-de-sang-mele.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-le-Prince-de-sang-mele.mp4"
     },
     {
         tmdb_id: "movie-12444",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-les-Reliques-de-la-mort-1ere-partie.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-les-Reliques-de-la-mort-1ere-partie.mp4"
     },
     {
         tmdb_id: "movie-12445",
-        url: "https://cinefocus.xyz/movies/Harry-Potter-et-les-Reliques-de-la-mort-2eme-partie.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Harry-Potter-et-les-Reliques-de-la-mort-2eme-partie.mp4"
     },
     {
         tmdb_id: "movie-634649",
-        url: "https://cinefocus.xyz/movies/Spider-Man-No-Way-Home.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Spider-Man-No-Way-Home.mp4"
     },
     {
         tmdb_id: "movie-315635",
-        url: "https://cinefocus.xyz/movies/Spider-Man-Homecoming.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Spider-Man-Homecoming.mp4"
     },
     {
         tmdb_id: "movie-447273",
-        url: "https://file-na-lax-1.gofile.io/download/direct/66ec70bc-d79d-4850-92b5-4644f57aef02/blancheneigelaneuille2025.mp4",
-        genres: ["Animation", "Famille", "Fantasy"]
+        url: "https://file-na-lax-1.gofile.io/download/direct/66ec70bc-d79d-4850-92b5-4644f57aef02/blancheneigelaneuille2025.mp4"
     },
     {
         tmdb_id: "movie-109445",
-        url: "https://cinecactus.xyz/movies/La-Reine-des-neiges.mp4",
-        genres: ["Animation", "Famille", "Fantasy"]
+        url: "https://cinecactus.xyz/movies/La-Reine-des-neiges.mp4"
     },
     {
         tmdb_id: "movie-330457",
-        url: "https://cinecactus.xyz/movies/La-Reine-Des-Neiges-II.mp4",
-        genres: ["Animation", "Famille", "Fantasy"]
+        url: "https://cinecactus.xyz/movies/La-Reine-Des-Neiges-II.mp4"
     },
     {
         tmdb_id: "movie-120",
-        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-La-Communaute-de-l-anneau.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-La-Communaute-de-l-anneau.mp4"
     },
     {
         tmdb_id: "movie-121",
-        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-Les-Deux-Tours.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-Les-Deux-Tours.mp4"
     },
     {
         tmdb_id: "movie-122",
-        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-Le-Retour-du-roi.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Seigneur-des-anneaux-Le-Retour-du-roi.mp4"
     },
     {
         tmdb_id: "movie-49051",
-        url: "https://cinecactus.xyz/movies/Le-Hobbit-Un-voyage-inattendu.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Hobbit-Un-voyage-inattendu.mp4"
     },
     {
         tmdb_id: "movie-57158",
-        url: "https://cinecactus.xyz/movies/Le-Hobbit-La-Desolation-De-Smaug.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Hobbit-La-Desolation-De-Smaug.mp4"
     },
     {
         tmdb_id: "movie-122917",
-        url: "https://cinecactus.xyz/movies/Le-Hobbit-La-Bataille-Des-Cinq-Armees.mp4",
-        genres: ["Fantasy", "Aventure"]
+        url: "https://cinecactus.xyz/movies/Le-Hobbit-La-Bataille-Des-Cinq-Armees.mp4"
     },
     {
         tmdb_id: "movie-822119",
-        url: "https://cinecactus.xyz/movies/Captaine-America-Brave-New-World.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Captaine-America-Brave-New-World.mp4"
     },
     {
         tmdb_id: "movie-100402",
-        url: "https://cinecactus.xyz/movies/Captain-America-Le-Soldat-de-l'hiver.mp4",
-        genres: ["Action", "Aventure", "Science-Fiction"]
+        url: "https://cinecactus.xyz/movies/Captain-America-Le-Soldat-de-l'hiver.mp4"
     },
     {
         tmdb_id: "movie-1000866",
-        url: "https://beers22147.beerscloud.com/files/aa/00SBk5FhOdWGoK7WkiVDeOU0fLUWgq8gq1R.m3u8",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://beers22147.beerscloud.com/files/aa/00SBk5FhOdWGoK7WkiVDeOU0fLUWgq8gq1R.m3u8"
     },
     {
         tmdb_id: "movie-1002155",
-        url: "https://cinecactus.xyz/movies/Monsieur-Aznavour.mp4",
-        genres: ["Documentaire", "Musique"]
+        url: "https://cinecactus.xyz/movies/Monsieur-Aznavour.mp4"
     },
     {
         tmdb_id: "movie-1152014",
-        url: "https://share32140.sharecloudy.com/files/aa/kYo4hQwhOQOF7UvF8LSDcJb6xP3wVBKfA8k.m3u8",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://share32140.sharecloudy.com/files/aa/kYo4hQwhOQOF7UvF8LSDcJb6xP3wVBKfA8k.m3u8"
     },
     {
         tmdb_id: "movie-762509",
-        url: "https://file-eu-par-3.gofile.io/download/direct/278ab4fc-0b7f-4512-9199-66fac264e9d2/mufasa.mp4",
-        genres: ["Animation", "Aventure", "Drame"]
+        url: "https://file-eu-par-3.gofile.io/download/direct/278ab4fc-0b7f-4512-9199-66fac264e9d2/mufasa.mp4"
     },
     {
         tmdb_id: "movie-420818",
-        url: "https://cinecactus.xyz/movies/Le-Roi-Lion-2019.mp4",
-        genres: ["Animation", "Aventure", "Drame"]
+        url: "https://cinecactus.xyz/movies/Le-Roi-Lion-2019.mp4"
     },
     {
         tmdb_id: "movie-1211472",
-        url: "https://share22147.sharecloudy.com/files/aa/X91PyclsxwYknbAuI1WmVj6eL1UZYXHW7JL.m3u8",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://share22147.sharecloudy.com/files/aa/X91PyclsxwYknbAuI1WmVj6eL1UZYXHW7JL.m3u8"
     },
     {
         tmdb_id: "movie-872585",
-        url: "https://cinecactus.xyz/movies/Oppenheimer.mp4",
-        genres: ["Drame", "Histoire"]
+        url: "https://cinecactus.xyz/movies/Oppenheimer.mp4"
     },
     {
         tmdb_id: "movie-1039512",
-        url: "https://share32148.sharecloudy.com/files/aa/y8yA0LqqwFyraPabzM2hhTYQClCtwcv4l4F.m3u8",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://share32148.sharecloudy.com/files/aa/y8yA0LqqwFyraPabzM2hhTYQClCtwcv4l4F.m3u8"
     },
     {
         tmdb_id: "movie-98",
-        url: "https://cinecactus.xyz/movies/Gladiator.mp4",
-        genres: ["Action", "Aventure", "Drame"]
+        url: "https://cinecactus.xyz/movies/Gladiator.mp4"
     },
     {
         tmdb_id: "movie-558449",
-        url: "https://cinecactus.xyz/movies/Gladiator-II.mp4",
-        genres: ["Action", "Aventure", "Drame"]
+        url: "https://cinecactus.xyz/movies/Gladiator-II.mp4"
     },
     {
         tmdb_id: "movie-1166749",
-        url: "https://www.dailymotion.com/cdn/manifest/video/x90h8vk.m3u8?sec=CUwRmJ7J9wsJ6UaiONV4PbY6f3X1D6xLSB6zNcAG-fTvfmB7LFK3jtWtqXQ-ybFyqySBBDF3Zd2U-CI4GyVkRA&dmTs=550000&dmV1st=5057a825-6d93-4293-ac9b-ec5f4484bfb5",
-        genres: ["Animation", "Aventure", "Comédie"]
+        url: "https://www.dailymotion.com/cdn/manifest/video/x90h8vk.m3u8?sec=CUwRmJ7J9wsJ6UaiONV4PbY6f3X1D6xLSB6zNcAG-fTvfmB7LFK3jtWtqXQ-ybFyqySBBDF3Zd2U-CI4GyVkRA&dmTs=550000&dmV1st=5057a825-6d93-4293-ac9b-ec5f4484bfb5"
     },
-     {
-        tmdb_id: "tv-96677/season/1/episode/1",
-        url: "https://cinecactus.xyz/series/Lupin/S01/Lupin-S01-E01.mp4",
-        genres: ["Drame", "Mystère"]
+    {
+        tmdb_id: "tv-1399",
+        url: ""
     },
-     {
-        tmdb_id: "tv/96677/season/1/episode/2",
-        url: "https://cinecactus.xyz/series/Lupin/S01/Lupin-S01-E02.mp4",
-        genres: ["Drame", "Mystère"]
+    {
+        tmdb_id: "tv/1399/season/1/episode/1",
+        url: "https://cinecactus.xyz/series/Game-of-Thrones/S01/Game-of-Thrones-S01-E01.mp4"
     },
-     {
-        tmdb_id: "tv/112738/season/1/episode/2",
-        url: "https://cinecactus.xyz/series/Lupin/S01/Lupin-S01-E02.mp4",
-        genres: ["Drame", "Mystère"]
+    {
+        tmdb_id: "tv/1399/season/1/episode/2",
+        url: "https://cinecactus.xyz/series/Game-of-Thrones/S01E02.mp4"
     }
 ];
+
 
         // Lists for specific sections
         const actionMovies = [
@@ -1001,7 +916,7 @@
         const popularSeries = [
             { id: 96677 },
             { id: 112738 },
-            { id: 63174 },
+            { id: 1399 },
             { id: 66732 },
             { id: 85552 }
         ];
@@ -1025,6 +940,7 @@
         const backLink = document.getElementById('back-link');
         const movieTitle = document.getElementById('movie-title');
         const loading = document.getElementById('loading');
+        const homeLink = document.getElementById('home-link');
 
         // State Management
         let currentPage = 'home';
@@ -1051,6 +967,11 @@
                     const page = link.dataset.page;
                     navigateToPage(page);
                 });
+            });
+
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateToPage('home');
             });
 
             // Handle scroll for navbar styling
@@ -1499,28 +1420,28 @@
             // Fetch logo if available
             let logoHtml = `<h1 class="text-4xl md:text-5xl font-bold mb-4">${title}</h1>`;
 
-           slide.innerHTML = `
-    <!-- Fondu devant l'image de fond mais derrière le contenu -->
-    <div class="absolute inset-0 bg-gradient-to-r from-black to-transparent z-10"></div>
+            slide.innerHTML = `
+                <!-- Fondu devant l'image de fond mais derrière le contenu -->
+                <div class="absolute inset-0 bg-gradient-to-r from-black to-transparent z-10"></div>
 
-    <!-- Contenu principal au-dessus du fondu -->
-    <div class="relative z-20 container mx-auto px-6 h-full flex items-center">
-        <div class="w-full md:w-1/2 text-white">
-            <div class="logo-container">
-                ${logoHtml}
-            </div>
-            <p class="text-gray-300 mb-6 line-clamp-3">${overview}</p>
-            <div class="flex gap-4">
-                <button class="hero-play-btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md flex items-center gap-2">
-                    <i class="fas fa-play"></i> Lire
-                </button>
-                <button class="hero-info-btn bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-md flex items-center gap-2">
-                    <i class="fas fa-info-circle"></i> Plus d'infos
-                </button>
-            </div>
-        </div>
-    </div>
-`;
+                <!-- Contenu principal au-dessus du fondu -->
+                <div class="relative z-20 container mx-auto px-6 h-full flex items-center">
+                    <div class="w-full md:w-1/2 text-white">
+                        <div class="logo-container">
+                            ${logoHtml}
+                        </div>
+                        <p class="text-gray-300 mb-6 line-clamp-3">${overview}</p>
+                        <div class="flex gap-4">
+                            <button class="hero-play-btn bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-md flex items-center gap-2">
+                                <i class="fas fa-play"></i> Lire
+                            </button>
+                            <button class="hero-info-btn bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-md flex items-center gap-2">
+                                <i class="fas fa-info-circle"></i> Plus d'infos
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             // Add event listeners
             const playBtn = slide.querySelector('.hero-play-btn');
@@ -1617,26 +1538,6 @@
             });
 
             return item;
-        }
-
-        function createRecommendationPoster(item) {
-            const type = item.media_type || (item.first_air_date ? 'tv' : 'movie');
-            const id = item.id;
-            const title = type === 'tv' ? item.name : item.title;
-            const posterPath = item.poster_path;
-
-            const poster = document.createElement('div');
-            poster.className = 'recommendation-poster cursor-pointer';
-
-            poster.innerHTML = `
-                <img src="${getImageUrl(posterPath)}" alt="${title}" class="rounded">
-            `;
-
-            poster.addEventListener('click', () => {
-                showDetailPage(type, id);
-            });
-
-            return poster;
         }
 
         // Page Loading Functions
@@ -1800,37 +1701,8 @@
                     sagasRow.innerHTML = '<p class="text-gray-400 p-4">Aucune saga disponible</p>';
                 }
 
-                // Load recommendations
-                await loadRecommendations();
-
             } catch (error) {
                 console.error('Error loading home page:', error);
-            } finally {
-                hideLoading();
-            }
-        }
-
-        async function loadRecommendations() {
-            showLoading();
-            try {
-                // Load recommendations from TMDB
-                const recommendationsResponse = await fetchFromTMDB('/movie/top_rated?language=fr-FR');
-                const recommendationsRow = document.querySelector('.recommendations-row');
-                recommendationsRow.innerHTML = '';
-
-                const availableRecommendations = recommendationsResponse.results.filter(movie =>
-                    movie.poster_path && isContentAvailable('movie', movie.id)
-                );
-
-                if (availableRecommendations.length === 0) {
-                    recommendationsRow.innerHTML = '<p class="text-gray-400 p-4">Aucune recommandation disponible</p>';
-                } else {
-                    availableRecommendations.forEach(movie => {
-                        recommendationsRow.appendChild(createPosterCard(movie, 'movie'));
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading recommendations:', error);
             } finally {
                 hideLoading();
             }
@@ -2033,40 +1905,6 @@
                     genreTag.textContent = genre.name;
                     genresContainer.appendChild(genreTag);
                 });
-
-                // Load recommendations
-                const recommendationsContainer = document.getElementById('recommendations-list');
-                recommendationsContainer.innerHTML = '';
-
-                // Get genres of the current media
-                const currentGenres = details.genres.map(genre => genre.name);
-
-                // Find similar content
-                const similarContent = availableContent.filter(content => {
-                    // Skip the current content
-                    if (content.tmdb_id === `movie-${id}` || content.tmdb_id === `tv-${id}`) {
-                        return false;
-                    }
-
-                    // Check if content has at least one matching genre
-                    return content.genres.some(genre => currentGenres.includes(genre));
-                });
-
-                // Limit to 7 recommendations
-                const limitedRecommendations = similarContent.slice(0, 7);
-
-                // Display recommendations
-                for (const content of limitedRecommendations) {
-                    const id = content.tmdb_id.split('-')[1];
-                    const type = content.tmdb_id.startsWith('movie') ? 'movie' : 'tv';
-
-                    try {
-                        const details = await fetchFromTMDB(`/${type}/${id}?language=fr-FR`);
-                        recommendationsContainer.appendChild(createRecommendationPoster(details));
-                    } catch (error) {
-                        console.error(`Error fetching details for recommendation ${type} ${id}:`, error);
-                    }
-                }
 
                 // Set up play button
                 const playBtn = document.getElementById('play-btn');
@@ -2312,32 +2150,33 @@
         function hideLoading() {
             loading.classList.add('hidden');
         }
+
         function handleResizeFix() {
-    // Forcer un reflow ou un recalcul si nécessaire
-    document.body.style.display = 'none';
-    // Forcer le navigateur à recalculer la mise en page
-    void document.body.offsetHeight;
-    document.body.style.display = '';
-}
+            // Forcer un reflow ou un recalcul si nécessaire
+            document.body.style.display = 'none';
+            // Forcer le navigateur à recalculer la mise en page
+            void document.body.offsetHeight;
+            document.body.style.display = '';
+        }
 
-// Attacher la fonction à l'événement resize
-window.addEventListener('resize', () => {
-    handleResizeFix();
-});
-function adjustLayout() {
-    const width = window.innerWidth;
+        // Attacher la fonction à l'événement resize
+        window.addEventListener('resize', () => {
+            handleResizeFix();
+        });
 
-    // Exemple : ajouter une classe si largeur dépasse un seuil
-    if (width > 1200) {
-        document.body.classList.add('large-screen');
-    } else {
-        document.body.classList.remove('large-screen');
-    }
-}
+        function adjustLayout() {
+            const width = window.innerWidth;
 
-window.addEventListener('resize', adjustLayout);
-window.addEventListener('load', adjustLayout);
+            // Exemple : ajouter une classe si largeur dépasse un seuil
+            if (width > 1200) {
+                document.body.classList.add('large-screen');
+            } else {
+                document.body.classList.remove('large-screen');
+            }
+        }
 
+        window.addEventListener('resize', adjustLayout);
+        window.addEventListener('load', adjustLayout);
     </script>
 </body>
 </html>

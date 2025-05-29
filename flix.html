@@ -478,7 +478,7 @@
 
             <!-- Action Movies Section -->
             <section class="mb-12 reduce-poster-size">
-                <h2 class="section-title text-2xl font-bold">Tendanses</h2>
+                <h2 class="section-title text-2xl font-bold">Tendances</h2>
                 <div class="row-container">
                     <button class="scroll-btn left"><i class="fas fa-chevron-left"></i></button>
                     <div class="movie-row tend-movies-row">
@@ -523,14 +523,6 @@
                     <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </section>
-
-
-
-
-
-
-
-
         </div>
     </div>
     <div style="margin-bottom: 10px;"></div>
@@ -542,11 +534,8 @@
         <div class="catalog-grid alls-movies-grid">
             <!-- All movies will be added here -->
         </div>
-        
     </div>
 </div>
-
-    </div>
 
     <!-- Series Catalog Page -->
     <div id="series-page" class="catalog-page">
@@ -588,7 +577,7 @@
     <div id="detail-page" class="detail-page">
         <div class="detail-backdrop"></div>
         <div class="detail-gradient"></div>
-<div class="container mx-auto px-6 detail-content mb-[100px]">
+        <div class="container mx-auto px-6 detail-content mb-[100px]">
             <div class="flex flex-col md:flex-row gap-8">
                 <div class="md:w-1/3">
                     <img id="detail-poster" src="" alt="Poster" class="rounded-lg shadow-lg w-full">
@@ -620,6 +609,14 @@
                         <h2 class="text-xl font-semibold mb-2">Genres</h2>
                         <div id="detail-genres" class="flex flex-wrap gap-2"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Same Saga Section -->
+            <div id="same-saga-section" class="mt-12 hidden">
+                <h2 class="text-2xl font-bold mb-4">De la même saga</h2>
+                <div id="same-saga-list" class="flex flex-wrap gap-4">
+                    <!-- Same saga movies will be added here -->
                 </div>
             </div>
 
@@ -674,7 +671,7 @@
         const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
         // Sample movie data structure (would be fetched from your JSON)
-        const availableContent = [
+const availableContent = [
     {
         tmdb_id: "movie-575264",
         url: "https://cinecactus.xyz/movies/Mission-Impossible-Dead-Reckoning-Partie-1.mp4"
@@ -1280,7 +1277,6 @@
     },
 ];
 
-
         // Lists for specific sections
         const TendMovies = [
             { id: 575265 },
@@ -1295,14 +1291,14 @@
         ];
 
             const actionMovies = [
+            { id: 76600 },
             { id: 575265 },
             { id: 950387 },
             { id: 822119 },
+            { id: 762509 },
             { id: 516729 },
             { id: 575264 },
-            { id: 76600 },
             { id: 753342 },
-            { id: 1084736 },
         ];
 
         const popularSeries = [
@@ -1932,6 +1928,27 @@
             return item;
         }
 
+        function createSameSagaItem(movie) {
+            const item = document.createElement('div');
+            item.className = 'poster-card relative cursor-pointer w-40';
+
+            const title = movie.title;
+            const posterPath = movie.poster_path;
+
+            item.innerHTML = `
+                <img src="${getImageUrl(posterPath)}" alt="${title}" class="w-full h-auto rounded-lg shadow-lg">
+                <div class="poster-info absolute bottom-0 left-0 w-full p-2 bg-gradient-to-t from-black to-transparent rounded-b-lg">
+                    <h3 class="text-white font-semibold text-sm">${title}</h3>
+                </div>
+            `;
+
+            item.addEventListener('click', () => {
+                showDetailPage('movie', movie.id);
+            });
+
+            return item;
+        }
+
         // Page Loading Functions
         async function loadHomePage() {
             showLoading();
@@ -2069,7 +2086,6 @@
                     { id: 119, name: "Le Seigneur des Anneaux" },
                     { id: 121938, name: "Le Hobbit" },
                     { id: 295130, name: "X-Men" },
-                    
                 ];
 
                 let sagasAdded = 0;
@@ -2123,10 +2139,6 @@
             }
         }
 
-
-
-
-
 async function loadMoviesPage() {
     showLoading();
     try {
@@ -2164,14 +2176,6 @@ async function loadMoviesPage() {
         hideLoading();
     }
 }
-
-
-
-
-
-
-
-
 
         async function loadSeriesPage() {
             showLoading();
@@ -2299,7 +2303,7 @@ async function loadMoviesPage() {
                 currentMediaId = id;
 
                 // Fetch media details
-                const details = await fetchFromTMDB(`/${mediaType}/${id}?language=fr-FR&append_to_response=credits,videos,images,content_ratings`);
+                const details = await fetchFromTMDB(`/${mediaType}/${id}?language=fr-FR&append_to_response=credits,videos,images,content_ratings,belongs_to_collection`);
 
                 // Update UI elements
                 document.getElementById('detail-title').textContent = mediaType === 'tv' ? details.name : details.title;
@@ -2409,6 +2413,29 @@ async function loadMoviesPage() {
                     };
                 } else {
                     episodesSection.classList.add('hidden');
+                }
+
+                // Check if this movie belongs to a collection (saga)
+                if (details.belongs_to_collection) {
+                    const collectionId = details.belongs_to_collection.id;
+                    const collectionDetails = await fetchFromTMDB(`/collection/${collectionId}?language=fr-FR`);
+
+                    // Filter movies that are available in our library and not the current movie
+                    const availableMovies = collectionDetails.parts.filter(movie =>
+                        isContentAvailable('movie', movie.id) && movie.id !== id
+                    );
+
+                    if (availableMovies.length > 0) {
+                        const sameSagaSection = document.getElementById('same-saga-section');
+                        sameSagaSection.classList.remove('hidden');
+
+                        const sameSagaList = document.getElementById('same-saga-list');
+                        sameSagaList.innerHTML = '';
+
+                        availableMovies.forEach(movie => {
+                            sameSagaList.appendChild(createSameSagaItem(movie));
+                        });
+                    }
                 }
 
                 // Show detail page

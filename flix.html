@@ -432,6 +432,27 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.5);
         }
+
+        /* Style pour la croix de fermeture */
+        .close-detail {
+            position: fixed;
+            top: 80px; /* Ajusté pour être sous la barre de navigation */
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 1001;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(10, 20, 40, 0.5);
+            border-radius: 50%;
+            backdrop-filter: blur(5px);
+            margin-top: 5px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -632,6 +653,9 @@
                     <!-- Episodes will be added here -->
                 </div>
             </div>
+        </div>
+        <div id="close-detail" class="close-detail">
+            <i class="fas fa-times"></i>
         </div>
     </div>
 
@@ -1272,7 +1296,7 @@ const availableContent = [
         "url": "https://cinecactus.xyz/series/Lupin/S02/Lupin-S02-E08.mp4"
     },
     {
-        tmdb_id: "tv-112738",
+        "tmdb_id": "tv-112738",
         url: ""
     },
 ];
@@ -1329,6 +1353,7 @@ const availableContent = [
         const movieTitle = document.getElementById('movie-title');
         const loading = document.getElementById('loading');
         const homeLink = document.getElementById('home-link');
+        const closeDetail = document.getElementById('close-detail');
 
         // State Management
         let currentPage = 'home';
@@ -1405,6 +1430,11 @@ const availableContent = [
                     const castContainer = document.getElementById('detail-cast');
                     castContainer.scrollBy({ left: direction * 300, behavior: 'smooth' });
                 });
+            });
+
+            // Initialize close detail button
+            closeDetail.addEventListener('click', () => {
+                navigateToPage(currentPage);
             });
         }
 
@@ -2436,6 +2466,9 @@ async function loadMoviesPage() {
                             sameSagaList.appendChild(createSameSagaItem(movie));
                         });
                     }
+                } else {
+                    const sameSagaSection = document.getElementById('same-saga-section');
+                    sameSagaSection.classList.add('hidden');
                 }
 
                 // Show detail page

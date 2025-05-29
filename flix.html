@@ -435,23 +435,24 @@
 
         /* Style pour la croix de fermeture */
         .close-detail {
-            position: fixed;
-            top: 80px; /* Ajusté pour être sous la barre de navigation */
-            left: 20px;
-            width: 40px;
-            height: 40px;
-            cursor: pointer;
-            z-index: 1001;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: rgba(10, 20, 40, 0.5);
-            border-radius: 50%;
-            backdrop-filter: blur(5px);
-            margin-top: 5px;
-            margin-top: 5px;
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(10, 20, 40, 0.5);
+    border-radius: 50%;
+    backdrop-filter: blur(5px);
+    margin-top: 5px;
+    z-index: 0; /* Changez cette valeur pour qu'elle soit inférieure à celle du lecteur */
+}
+
         }
     </style>
 </head>
@@ -778,7 +779,7 @@ const availableContent = [
         url: "https://cinecactus.xyz/movies/Paddington.mp4"
     },
     {
-        tmdb_id: "movie-346648",
+        tmdb_id: "movie-324852",
         url: "https://cinecactus.xyz/movies/Paddington-2.mp4"
     },
     {
@@ -1204,6 +1205,26 @@ const availableContent = [
         tmdb_id: "movie-338952",
         url: "https://share32140.sharecloudy.com/files/aa/HQiNOnqApytYMb57edsVez4X7woWFO4mEma.m3u8"
     },
+       {
+        tmdb_id: "movie-411",
+        url: "https://cinecactus.xyz/movies/Le-Monde-De-Narnia-Le-Lion-La-Sorciere-Blanche-Et-Larmoire-Magique.mp4"
+    },
+       {
+        tmdb_id: "movie-2454",
+        url: "https://cinecactus.xyz/movies/Le-Monde-de-Narnia-Le-Prince-caspian.mp4"
+    },
+       {
+        tmdb_id: "movie-10140",
+        url: "https://cinecactus.xyz/movies/Le-Monde-De-Narnia-Lodyssee-Du-Passeur-Daurore.mp4"
+    },
+       {
+        tmdb_id: "movie-11",
+        url: "https://share32146.sharecloudy.com/files/aa/7U8lY6cwZChjcRGHm1X77JJQfIQiYWn6Rvr.m3u8"
+    },
+
+
+
+
 
 
 
@@ -1221,7 +1242,7 @@ const availableContent = [
     },
         {
         tmdb_id: "tv-96677",
-        url: ""
+        url: "https://videos2.ecranlarge.com//2022/1664196249_480p_77547.mp4"
     },
  {
         "tmdb_id": "tv/96677/season/1/episode/1",
@@ -1578,9 +1599,14 @@ const availableContent = [
 
                 player = new Playerjs({
                     id: "player",
-                    file: playlist,
-                    plstart: currentEpisode || 1,
+                    file: url,
+                    poster: "https://github.com/Cyprdu/projection/blob/main/black.png?raw=true",
                     autoplay: 1,
+                    subtitle: "",
+                    default_subtitle: "",
+                    rename_audio: {"French": "Français"},
+                    default_audio: "Français",
+                    title: title,
                     start: startTime // Start from saved position
                 });
             }

@@ -481,8 +481,8 @@
                 <h2 class="section-title text-2xl font-bold">Tendanses</h2>
                 <div class="row-container">
                     <button class="scroll-btn left"><i class="fas fa-chevron-left"></i></button>
-                    <div class="movie-row action-movies-row">
-                        <!-- Action movies will be added here -->
+                    <div class="movie-row tend-movies-row">
+                        <!-- Tend movies will be added here -->
                     </div>
                     <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
                 </div>
@@ -511,6 +511,26 @@
                     <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
                 </div>
             </section>
+
+            <!-- Action Movies Section -->
+            <section class="mb-12 reduce-poster-size">
+                <h2 class="section-title text-2xl font-bold">Actions</h2>
+                <div class="row-container">
+                    <button class="scroll-btn left"><i class="fas fa-chevron-left"></i></button>
+                    <div class="movie-row action-movies-row">
+                        <!-- Action movies will be added here -->
+                    </div>
+                    <button class="scroll-btn right"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </section>
+
+
+
+
+
+
+
+
         </div>
     </div>
     <div style="margin-bottom: 10px;"></div>
@@ -1262,11 +1282,22 @@
 
 
         // Lists for specific sections
-        const actionMovies = [
+        const TendMovies = [
             { id: 575265 },
             { id: 950387 },
             { id: 822119 },
             { id: 974576 },
+            { id: 516729 },
+            { id: 575264 },
+            { id: 76600 },
+            { id: 753342 },
+            { id: 1084736 },
+        ];
+
+            const actionMovies = [
+            { id: 575265 },
+            { id: 950387 },
+            { id: 822119 },
             { id: 516729 },
             { id: 575264 },
             { id: 76600 },
@@ -1968,6 +1999,25 @@
                 }
 
                 // Load action movies section - only available content from our list
+                const TendMoviesRow = document.querySelector('.tend-movies-row');
+                TendMoviesRow.innerHTML = '';
+
+                if (TendMovies.length === 0) {
+                    TendMoviesRow.innerHTML = '<p class="text-gray-400 p-4">Aucun film d\'action disponible</p>';
+                } else {
+                    for (const movie of TendMovies) {
+                        try {
+                            const details = await fetchFromTMDB(`/movie/${movie.id}?language=fr-FR`);
+                            if (details.poster_path && isContentAvailable('movie', details.id)) {
+                                TendMoviesRow.appendChild(createPosterCard(details, 'movie'));
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching details for action movie ${movie.id}:`, error);
+                        }
+                    }
+                }
+
+                                // Load action movies section - only available content from our list
                 const actionMoviesRow = document.querySelector('.action-movies-row');
                 actionMoviesRow.innerHTML = '';
 

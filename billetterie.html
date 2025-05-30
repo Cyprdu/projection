@@ -14,7 +14,7 @@
             --primary: #1a1a2e;
             --secondary: #16213e;
             --accent: #e94560;
-            --light: #f8f9fa;
+            --light: #f5f5f7;
             --dark: #0f3460;
             --text: #333333;
         }
@@ -307,6 +307,32 @@
         .billeterie-spacing {
             margin-top: 40px;
         }
+
+               .floating-ticket-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: #e94560;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            cursor: pointer;
+            display: none;
+        }
+
+        .floating-ticket-btn i {
+            font-size: 24px;
+            margin-left: 17px; /* Assurez-vous qu'il n'y a pas de marges supplémentaires */
+            margin-top: 17px; /* Assurez-vous qu'il n'y a pas de marges supplémentaires */
+
+        }
+        }
     </style>
 </head>
 <body>
@@ -442,6 +468,10 @@
         </div>
     </div>
 
+    <div class="floating-ticket-btn" id="floating-ticket-btn">
+        <i class="fas fa-ticket-alt"></i>
+    </div>
+
     <div class="overlay" id="share-overlay"></div>
     <div class="share-popup" id="share-popup">
         <h3 class="text-2xl font-bold mb-4">Partager ce film</h3>
@@ -551,6 +581,7 @@
         const mobileMenu = document.getElementById('mobile-menu');
         const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
         const pageTitle = document.getElementById('page-title');
+        const floatingTicketBtn = document.getElementById('floating-ticket-btn');
 
         let currentFilm = null;
         let currentSection = 'accueil';
@@ -642,12 +673,12 @@
         function openSharePopup() {
             if (!currentFilm) return;
 
-            const shareMessage = `Je t'invite à venir voir "${currentFilm.nom}" au cinéma La Grenette le 1 juillet 2025, viens vite prendre tes places sur ${window.location.href}`;
+            const shareMessage = `Je t'invite à venir voir "${currentFilm.nom}" au cinéma La Grenette le 1 juillet 2025, viens vite prendre tes places sur https://projection-2025.netlify.app`;
             shareText.textContent = shareMessage;
 
             const encodedMessage = encodeURIComponent(shareMessage);
             shareWhatsapp.href = `https://wa.me/?text=${encodedMessage}`;
-            shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}&quote=${encodedMessage}`;
+            shareFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=https://projection-2025.netlify.app&quote=${encodedMessage}`;
             shareTwitter.href = `https://twitter.com/intent/tweet?text=${encodedMessage}`;
 
             sharePopup.style.display = 'block';
@@ -759,6 +790,7 @@
         copyShare.addEventListener('click', copyShareText);
         mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         mobileMenuOverlay.addEventListener('click', toggleMobileMenu);
+        floatingTicketBtn.addEventListener('click', switchToBilleterie);
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeFilms();

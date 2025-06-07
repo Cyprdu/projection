@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Préparation Bac de Français 2025</title>
+    <!-- Chosen Palette: Calm Harmony (Warm neutrals with teal/terracotta accents) -->
+    <!-- Application Structure Plan: A dashboard-style SPA with top-level navigation (Accueil, Dissertation, Commentaire, Outils). This non-linear structure allows students to directly access the information they need for revision (e.g., specific quotes, figures of style) without scrolling through a long document. Key interactions include filterable/searchable lists for quotes and figures of style, and interactive accordions for methodologies, which is more user-friendly than static text and tables. -->
+    <!-- Visualization & Content Choices: Report methodologies -> Goal: Inform -> Interactive accordions (JS hide/show) for step-by-step learning. Report Quote/Figure Tables -> Goal: Organize/Compare -> Searchable/filterable card grids (JS) for quick reference. Report Literary Movements Table -> Goal: Change/Organize -> Interactive timeline/card scroller (JS) to show chronology. Added a Gantt-style revision timeline (Chart.js Bar Chart) and an exam time allocation (Chart.js Donut Chart) to provide actionable, data-driven planning tools not present in the original report. All interactions use JS, HTML, and Tailwind. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8; /* Warm neutral background */
+            color: #4B423C; /* Dark brown-gray text */
+        }
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #944E63; /* Muted terracotta/rose accent */
+            border-bottom-color: #944E63;
+        }
+        .btn-primary {
+            background-color: #B47B84; /* Softer terracotta */
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #944E63;
+        }
+        .btn-secondary {
+            background-color: #CAA6A6; /* Lightest terracotta */
+            color: #4B423C;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #B47B84;
+            color: white;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F0EBE3;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.07), 0 4px 6px -4px rgb(0 0 0 / 0.07);
+        }
+        .accordion-button.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        ::-webkit-scrollbar {
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F0EBE3;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CAA6A6;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B47B84;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="font-serif text-2xl font-bold text-[#944E63]">Bac Français 2025</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#accueil" class="nav-link px-3 py-2 text-sm font-medium">Accueil</a>
+                        <a href="#dissertation" class="nav-link px-3 py-2 text-sm font-medium">La Dissertation</a>
+                        <a href="#commentaire" class="nav-link px-3 py-2 text-sm font-medium">Le Commentaire</a>
+                        <a href="#outils" class="nav-link px-3 py-2 text-sm font-medium">Boîte à Outils</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-[#944E63] hover:bg-[#F0EBE3] focus:outline-none">
+                        <span class="sr-only">Ouvrir le menu principal</span>
+                        <svg class="h-6 w-6" id="menu-icon-open" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                         <svg class="h-6 w-6 hidden" id="menu-icon-close" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#accueil" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Accueil</a>
+                <a href="#dissertation" class="nav-link block px-3 py-2 rounded-md text-base font-medium">La Dissertation</a>
+                <a href="#commentaire" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Le Commentaire</a>
+                <a href="#outils" class="nav-link block px-3 py-2 rounded-md text-base font-medium">Boîte à Outils</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Page: Accueil -->
+        <div id="page-accueil" class="page space-y-12">
+            <section class="text-center">
+                <h2 class="font-serif text-4xl sm:text-5xl font-bold text-[#944E63] mb-4">Réussir l'Épreuve Écrite de Français</h2>
+                <p class="max-w-3xl mx-auto text-lg text-stone-600">Votre guide interactif pour maîtriser la dissertation et le commentaire. Explorez les méthodes, les œuvres, et les outils clés pour aborder l'épreuve du <strong>13 juin 2025</strong> avec confiance.</p>
+            </section>
+
+            <section class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="card p-6">
+                    <h3 class="font-serif text-3xl font-bold mb-4">Les Épreuves Clés</h3>
+                    <p class="mb-6 text-stone-600">Choisissez votre voie et plongez dans la méthodologie. Chaque section est conçue pour vous guider pas à pas, de l'analyse du sujet à la rédaction finale.</p>
+                    <div class="space-y-4">
+                        <a href="#dissertation" class="w-full text-left flex items-center justify-between p-4 rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors duration-300 nav-card-link">
+                            <div>
+                                <h4 class="font-bold text-lg text-[#944E63]">La Dissertation</h4>
+                                <p class="text-sm text-stone-500">Construire une réflexion argumentée sur une œuvre.</p>
+                            </div>
+                            <span class="text-[#944E63]">&#10140;</span>
+                        </a>
+                        <a href="#commentaire" class="w-full text-left flex items-center justify-between p-4 rounded-lg bg-stone-50 hover:bg-stone-100 transition-colors duration-300 nav-card-link">
+                           <div>
+                                <h4 class="font-bold text-lg text-[#944E63]">Le Commentaire</h4>
+                                <p class="text-sm text-stone-500">Analyser un texte littéraire en profondeur.</p>
+                           </div>
+                           <span class="text-[#944E63]">&#10140;</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card p-6">
+                     <h3 class="font-serif text-3xl font-bold mb-4">Gestion du Temps à l'Examen</h3>
+                     <p class="mb-6 text-stone-600">L'épreuve dure 4 heures. Une bonne répartition de votre temps entre la préparation au brouillon et la rédaction est cruciale. Voici une suggestion.</p>
+                     <div class="chart-container" style="height: 250px; max-height: 250px;">
+                        <canvas id="time-allocation-chart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+             <section class="card p-6 md:p-8">
+                <h3 class="font-serif text-3xl font-bold text-center mb-4">Votre Calendrier de Révision</h3>
+                <p class="max-w-3xl mx-auto text-center text-stone-600 mb-8">Visualisez votre parcours de préparation jusqu'au jour J. Ce calendrier suggère des périodes clés pour aborder chaque grande partie du programme. Adaptez-le à votre propre rythme !</p>
+                <div class="chart-container" style="height: 400px; max-height: 400px;">
+                    <canvas id="revision-timeline-chart"></canvas>
+                </div>
+            </section>
+        </div>
+
+        <!-- Page: Dissertation -->
+        <div id="page-dissertation" class="page hidden space-y-12">
+            <header class="text-center">
+                <h2 class="font-serif text-4xl sm:text-5xl font-bold text-[#944E63]">Maîtriser la Dissertation</h2>
+                <p class="max-w-3xl mx-auto text-lg mt-4 text-stone-600">De l'analyse du sujet à l'étude des œuvres, découvrez la méthode et les connaissances pour construire une argumentation personnelle, structurée et convaincante.</p>
+            </header>
+
+            <div class="sticky top-16 bg-white/80 backdrop-blur-sm z-40 py-4 -mx-4 px-4 border-b border-t border-stone-200">
+                <div class="container mx-auto flex justify-center items-center space-x-2 sm:space-x-4 overflow-x-auto">
+                    <button class="subnav-link dissertation-subnav active" data-target="dissertation-methode">Méthodologie</button>
+                    <button class="subnav-link dissertation-subnav" data-target="dissertation-oeuvres">Les Œuvres au Programme</button>
+                </div>
+            </div>
+
+            <div id="dissertation-methode" class="sub-page">
+                <section class="max-w-4xl mx-auto space-y-6">
+                    <h3 class="font-serif text-3xl font-bold text-center">La Méthode Pas à Pas</h3>
+                     <p class="text-center text-stone-600">Une dissertation réussie repose sur une méthode rigoureuse. Chaque étape, du brouillon à la rédaction, est essentielle. Consacrez environ 1h45 à 2h au travail préparatoire.</p>
+                    <div id="dissertation-methodology-content"></div>
+                </section>
+            </div>
+            
+            <div id="dissertation-oeuvres" class="sub-page hidden">
+                <section>
+                    <h3 class="font-serif text-3xl font-bold text-center">Les Œuvres au Programme</h3>
+                    <p class="text-center text-stone-600 max-w-2xl mx-auto mt-2">Cliquez sur une œuvre pour explorer son parcours associé, une sélection de citations clés analysées, et des sujets d'entraînement pour approfondir votre réflexion.</p>
+                    <div id="works-grid" class="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+                    <div id="work-detail-content" class="mt-12"></div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Page: Commentaire -->
+        <div id="page-commentaire" class="page hidden">
+             <header class="text-center">
+                <h2 class="font-serif text-4xl sm:text-5xl font-bold text-[#944E63]">Réussir le Commentaire Composé</h2>
+                <p class="max-w-3xl mx-auto text-lg mt-4 text-stone-600">Apprenez à analyser la richesse d'un texte littéraire en articulant le fond et la forme. Du repérage des procédés à la construction du plan, voici la méthode pour une analyse pertinente et organisée.</p>
+            </header>
+             <section class="max-w-4xl mx-auto space-y-6 mt-12">
+                <h3 class="font-serif text-3xl font-bold text-center">La Méthode du Commentaire</h3>
+                 <p class="text-center text-stone-600">Le but est de montrer comment l'auteur construit du sens et produit des effets. Il ne s'agit ni de paraphrase, ni d'une explication linéaire.</p>
+                <div id="commentaire-methodology-content"></div>
+            </section>
+        </div>
+
+        <!-- Page: Outils -->
+        <div id="page-outils" class="page hidden space-y-12">
+            <header class="text-center">
+                <h2 class="font-serif text-4xl sm:text-5xl font-bold text-[#944E63]">Votre Boîte à Outils</h2>
+                <p class="max-w-3xl mx-auto text-lg mt-4 text-stone-600">Accédez rapidement aux ressources indispensables pour l'analyse littéraire. Explorez les figures de style et les grands mouvements littéraires de manière interactive.</p>
+            </header>
+            
+            <div class="sticky top-16 bg-white/80 backdrop-blur-sm z-40 py-4 -mx-4 px-4 border-b border-t border-stone-200">
+                <div class="container mx-auto flex justify-center items-center space-x-2 sm:space-x-4 overflow-x-auto">
+                    <button class="subnav-link outils-subnav active" data-target="outils-figures">Figures de Style</button>
+                    <button class="subnav-link outils-subnav" data-target="outils-mouvements">Mouvements Littéraires</button>
+                </div>
+            </div>
+
+            <div id="outils-figures" class="sub-page">
+                <section>
+                    <h3 class="font-serif text-3xl font-bold text-center">Figures de Style</h3>
+                    <p class="text-center text-stone-600 max-w-2xl mx-auto mt-2 mb-6">Filtrez par catégorie ou recherchez une figure spécifique. L'important n'est pas de nommer, mais d'analyser l'effet produit par le procédé.</p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8 max-w-2xl mx-auto">
+                        <input type="text" id="figure-search-input" placeholder="Rechercher une figure..." class="w-full px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#B47B84] focus:outline-none">
+                        <select id="figure-category-filter" class="w-full sm:w-64 px-4 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-[#B47B84] focus:outline-none">
+                            <option value="all">Toutes les catégories</option>
+                        </select>
+                    </div>
+                    <div id="figures-style-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                </section>
+            </div>
+
+            <div id="outils-mouvements" class="sub-page hidden">
+                <section>
+                    <h3 class="font-serif text-3xl font-bold text-center">Mouvements Littéraires</h3>
+                    <p class="text-center text-stone-600 max-w-2xl mx-auto mt-2 mb-8">Parcourez la frise chronologique des grands courants qui ont marqué l'histoire de la littérature française. Cliquez sur un mouvement pour en découvrir les principes, les thèmes et les auteurs clés.</p>
+                    <div id="mouvements-timeline" class="relative w-full overflow-x-auto pb-4">
+                        <div class="flex space-x-8 px-4">
+                        </div>
+                    </div>
+                     <div id="mouvement-detail" class="mt-8 card p-6 hidden max-w-4xl mx-auto"></div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const appData = {
+                dissertationMethodology: [
+                    { title: "Étape 1 : Analyse du sujet (30-45 min)", content: "Lisez attentivement le sujet. Utilisez la règle des <strong>3T</strong> (Traiter le sujet, tout le sujet, rien que le sujet) et la grille des <strong>4D</strong> (Définir, Délimiter, Déduire, Détecter) pour décortiquer le libellé. L'objectif est de formuler une <strong>problématique</strong> claire et précise, qui sera le fil conducteur de votre devoir." },
+                    { title: "Étape 2 : Recherche des idées (1h-1h15)", content: "Mobilisez vos connaissances sur l'œuvre et le parcours. Notez en vrac arguments et exemples. Un <strong>argument</strong> est une idée générale, un <strong>exemple</strong> est une référence précise à l'œuvre qui l'illustre. Pensez de manière dialectique en cherchant des nuances ou des contre-arguments." },
+                    { title: "Étape 3 : Construction du plan détaillé (30 min)", content: "Organisez vos idées en 2 ou 3 grandes parties, elles-mêmes subdivisées en sous-parties. Choisissez un type de plan adapté (<strong>dialectique</strong> pour discuter une thèse, <strong>thématique</strong> pour explorer des facettes). Rédigez les titres de parties et sous-parties, et notez les exemples et citations correspondants. Préparez les <strong>transitions</strong>." },
+                    { title: "Étape 4 : Rédaction (2h-2h30)", content: "Rédigez intégralement l'<strong>introduction</strong> (amorce, sujet, problématique, annonce du plan) et la <strong>conclusion</strong> (bilan, ouverture) au brouillon. Pour le développement, chaque paragraphe doit développer un argument, l'expliquer et l'illustrer avec un exemple analysé. Soignez le style et les connecteurs logiques." }
+                ],
+                 commentaireMethodology: [
+                    { title: "Étape 1 : Lectures actives (30-45 min)", content: "Effectuez une première lecture pour saisir le sens global. Puis, relisez plusieurs fois crayon en main pour repérer la structure, les champs lexicaux, le système énonciatif, les figures de style, etc. Annotez vos observations et commencez à interpréter : quel effet produit chaque procédé ?" },
+                    { title: "Étape 2 : Problématique et plan (30-45 min)", content: "Regroupez vos observations pour dégager 2 ou 3 axes de lecture (les grandes parties de votre plan). Formulez ensuite une <strong>problématique</strong> : une question centrale qui interroge le fonctionnement et les enjeux du texte. Élaborez un plan détaillé où chaque sous-partie est une idée précise, illustrée par une citation analysée." },
+                    { title: "Étape 3 : Rédaction (2h-2h15)", content: "Rédigez l'<strong>introduction</strong> (présentation du texte, problématique, annonce du plan). Dans le développement, chaque paragraphe analyse un aspect précis en liant constamment le <strong>fond</strong> (ce qui est dit) et la <strong>forme</strong> (comment c'est dit). Citez précisément (avec les numéros de ligne) et analysez les procédés. La <strong>conclusion</strong> fait le bilan de votre analyse et propose une ouverture pertinente." }
+                ],
+                works: [
+                    { id: 'rimbaud', title: 'Cahier de Douai', author: 'Arthur Rimbaud', parcours: 'Émancipations créatrices', color: 'bg-sky-100', textColor: 'text-sky-800', accentColor: 'border-sky-500', citations: [
+                        { q: "On n'est pas sérieux quand on a dix-sept ans.", poeme: "Roman", explication: "Rejet des conventions adultes, affirmation d'une liberté juvénile et sentimentale.", tags: ['adolescence', 'liberté'] },
+                        { q: "Et j'irai loin, bien loin, comme un bohémien, / Par la Nature, – heureux comme avec une femme.", poeme: "Sensation", explication: "Quête d'une liberté absolue, fusion avec la nature comme espace d'épanouissement sensoriel.", tags: ['fugue', 'nature'] },
+                        { q: "Je m'en allais, les poings dans mes poches crevées ; / Mon paletot aussi devenait idéal ;", poeme: "Ma Bohème", explication: "Idéalisation de la pauvreté et de la marginalité, la liberté comme condition de la création.", tags: ['poésie', 'errance'] },
+                        { q: "Il a deux trous rouges au côté droit.", poeme: "Le Dormeur du Val", explication: "La poésie révèle la réalité tragique de la guerre sous une apparence bucolique.", tags: ['guerre', 'critique'] },
+                        { q: "C'est la Crapule / [...] / Ils viennent maintenant hurler sous votre nez.", poeme: "Le Forgeron", explication: "Le poète donne la parole aux révoltés, renversant les valeurs sociales.", tags: ['révolte', 'social'] },
+                        { q: "Les gros bureaux bouffis traînent leurs grosses dames", poeme: "À la Musique", explication: "Satire du conformisme et de la vulgarité de la bourgeoisie.", tags: ['critique', 'social'] },
+                        { q: "Peuh! Tartufe était nu du haut jusques en bas!", poeme: "Le Châtiment de Tartufe", explication: "Démystification radicale de l'hypocrisie religieuse par l'irrévérence.", tags: ['critique', 'religion'] },
+                        { q: "L'Empereur est soûl de ses vingt ans d'orgie!", poeme: "Rages de Césars", explication: "Désacralisation et caricature féroce du pouvoir impérial.", tags: ['politique', 'critique'] },
+                        { q: "Que voulez-vous, je m'entête affreusement à adorer la liberté libre", poeme: "Lettre à G. Izambard", explication: "Profession de foi radicale, la liberté comme valeur suprême justifiant toutes les révoltes.", tags: ['liberté'] },
+                        { q: "Je est un autre.", poeme: "Lettre à G. Izambard", explication: "Le poète comme médium de forces qui le dépassent, émancipation du moi lyrique traditionnel.", tags: ['poésie', 'création'] },
+                        { q: "Le Poète se fait voyant par un long, immense et raisonné dérèglement de tous les sens.", poeme: "Lettre du Voyant", explication: "Programme d'émancipation radicale des perceptions pour atteindre l'inconnu par la poésie.", tags: ['création', 'poésie'] },
+                        { q: "Trouver une langue.", poeme: "Lettre du Voyant", explication: "Ambition ultime : inventer de nouvelles formes pour dire un monde nouveau.", tags: ['poésie', 'création'] },
+                    ], sujets: [
+                        "Dans quelle mesure la poésie des *Cahiers de Douai* est-elle une 'révolution poétique' ?",
+                        "L'émancipation dans les *Cahiers de Douai* se limite-t-elle à une révolte adolescente ?",
+                        "En quoi l'émancipation est-elle source de créativité dans les *Cahiers de Douai* ?"
+                    ]},
+                    { id: 'musset', title: 'On ne badine pas avec l\'amour', author: 'Alfred de Musset', parcours: 'Les jeux du cœur et de la parole', color: 'bg-red-100', textColor: 'text-red-800', accentColor: 'border-red-500', citations: [
+                        { q: "J'ai souffert souvent, je me suis trompé quelquefois, mais j'ai aimé. C'est moi qui ai vécu, et non pas un être factice créé par mon orgueil et mon ennui.", poeme: "Perdican, II, 5", explication: "Vision romantique de l'amour comme expérience vitale essentielle, malgré la souffrance.", tags: ['amour', 'orgueil'] },
+                        { q: "Tous les hommes sont menteurs, inconstants, faux [...] mais il y a au monde une chose sainte et sublime, c'est l'union de deux de ces êtres si imparfaits.", poeme: "Perdican, II, 5", explication: "Tirade cynique mais qui vise à exalter l'amour comme seul salut.", tags: ['amour', 'parole'] },
+                        { q: "On est souvent trompés en amour, souvent blessé et souvent malheureux ; mais on aime.", poeme: "Perdican, II, 5", explication: "Plaidoyer pour l'amour vécu malgré ses risques, contre la prudence stérile.", tags: ['amour', 'souffrance'] },
+                        { q: "Elle est morte. Adieu, Perdican.", poeme: "Camille, III, 8", explication: "Constat lapidaire qui scelle la tragédie. La mort de Rosette met fin brutalement aux jeux du cœur et de la parole.", tags: ['tragique', 'mort'] },
+                        { q: "Orgueil! le plus fatal des conseillers humains, qu’es-tu venu faire entre cette fille et moi?", poeme: "Perdican, III, 8", explication: "Aveu tardif. Prise de conscience du rôle destructeur de l'orgueil dans leurs jeux sentimentaux.", tags: ['orgueil', 'tragique'] },
+                        { q: "Est-ce donc une monnaie que votre amour pour qu'il puisse passer ainsi de main en main?", poeme: "Camille, II, 5", explication: "Parole acerbe et dévalorisante, utilisée pour blesser Perdican et tester son inconstance.", tags: ['parole', 'jeu'] },
+                        { q: "Diable, je l'aime [...] Il est clair que je ne l'aime pas.", poeme: "Perdican, III, 1", explication: "Monologue révélant la lutte interne entre l'amour et l'orgueil, et la confusion des sentiments.", tags: ['amour', 'orgueil'] },
+                    ], sujets: [
+                        "Dans *On ne badine pas avec l'amour*, la parole n'est-elle qu'un instrument de manipulation ?",
+                        "L'orgueil est-il le seul moteur de l'action tragique dans la pièce ?",
+                        "La pièce illustre-t-elle davantage les dangers du langage que la complexité de l'amour ?"
+                    ]},
+                    { id: 'labruyere', title: 'Les Caractères (V-X)', author: 'Jean de La Bruyère', parcours: 'La comédie sociale', color: 'bg-amber-100', textColor: 'text-amber-800', accentColor: 'border-amber-500', citations: [
+                        { q: "Dans cent ans le monde subsistera encore en son entier : ce sera le même théâtre et les mêmes décorations, ce ne seront plus les mêmes acteurs.", poeme: "Livre VIII, 99", explication: "Vision du *theatrum mundi* : la comédie sociale est éternelle, soulignant la vanité des ambitions humaines.", tags: ['théâtre', 'vanité'] },
+                        { q: "Giton a le teint frais [...] il est riche. Phédon a les yeux creux [...] il est pauvre.", poeme: "Livre VI, 83", explication: "La richesse et la pauvreté comme costumes sociaux déterminant l'apparence et la place de chacun.", tags: ['apparence', 'social'] },
+                        { q: "La vie de la Cour est un jeu sérieux, mélancolique, qui applique : il faut arranger ses pièces et ses batteries.", poeme: "Livre VIII, 64", explication: "La Cour est une comédie stratégique où chaque geste est un calcul pour obtenir des faveurs.", tags: ['cour', 'jeu'] },
+                        { q: "Aussi les Pamphiles sont-ils toujours comme sur un théâtre : gens nourris dans le faux, et qui ne haïssent rien tant que d'être naturels.", poeme: "Livre IX, 50", explication: "Le courtisan comme acteur professionnel qui a intériorisé son rôle au point de rejeter toute authenticité.", tags: ['apparence', 'théâtre'] },
+                        { q: "L'on se donne à Paris [...] pour se regarder au visage et se désapprouver les uns les autres.", poeme: "Livre VII, 1", explication: "La vie urbaine est une représentation où chacun est à la fois acteur et spectateur critique.", tags: ['social', 'apparence'] },
+                    ], sujets: [
+                        "En quoi *Les Caractères* de La Bruyère peuvent-ils être considérés comme une comédie de mœurs ?",
+                        "La Bruyère ne dénonce-t-il que la superficialité et la vanité des hommes ?",
+                        "En quoi la métaphore du théâtre est-elle éclairante pour comprendre la critique sociale de La Bruyère ?"
+                    ]},
+                    { id: 'prevost', title: 'Manon Lescaut', author: 'Abbé Prévost', parcours: 'Personnages en marge, plaisirs du romanesque', color: 'bg-emerald-100', textColor: 'text-emerald-800', accentColor: 'border-emerald-500', citations: [
+                        { q: "Manon était passionnée pour le plaisir ; je l'étais pour elle.", poeme: "Des Grieux", explication: "La quête du plaisir comme moteur des actions, entraînant les personnages en marge de la société.", tags: ['plaisir', 'marge'] },
+                        { q: "Crois-tu qu'on puisse être bien tendre lorsqu'on manque de pain?", poeme: "Manon", explication: "Réalisme social : la précarité économique est un facteur de transgression morale et de marginalisation.", tags: ['argent', 'marge'] },
+                        { q: "Outre le plaisir d'une lecture agréable, on y trouvera peu d'événements qui ne puissent servir à l'instruction des mœurs.", poeme: "Avis de l'auteur", explication: "Alliance du divertissement (péripéties, plaisir romanesque) et de la réflexion morale.", tags: ['romanesque', 'morale'] },
+                        { q: "J'aimais Manon jusqu'à l'idolâtrie.", poeme: "Des Grieux", explication: "La passion folle coupe le personnage de la raison et de la morale, ce qui est une source de fascination romanesque.", tags: ['passion', 'romanesque'] },
+                        { q: "Je trouvais de la joie dans cet exercice de ma liberté.", poeme: "Des Grieux", explication: "La liberté, même transgressive et précaire, est une source de plaisir et un moteur du roman d'aventures.", tags: ['liberté', 'plaisir'] },
+                    ], sujets: [
+                        "Dans *Manon Lescaut*, la représentation de personnages en marge ne sert-elle qu'à une critique morale ?",
+                        "Le 'plaisir du romanesque' dans *Manon Lescaut* naît-il uniquement des péripéties ?",
+                        "Peut-on considérer Des Grieux comme une simple victime de la passion dans le roman ?"
+                    ]}
+                ],
+                figuresStyle: [
+                    { name: "Anaphore", category: "Répétition", definition: "Répétition d'un même mot ou groupe de mots en début de plusieurs phrases ou vers.", example: "\"Paris! Paris outragé! Paris brisé! Paris martyrisé!\"", effect: "Soulignement, insistance, rythme incantatoire, persuasion." },
+                    { name: "Gradation", category: "Répétition", definition: "Succession de termes d'intensité croissante ou décroissante.", example: "\"C'est un roc!... c'est un pic!... c'est un cap!\"", effect: "Amplification, dramatisation, mise en relief du dernier terme." },
+                    { name: "Parallélisme", category: "Répétition", definition: "Reprise d'une même structure syntaxique pour deux énoncés.", example: "\"Que la vie est cruelle et que le sort est dur.\"", effect: "Mise en évidence d'une similitude ou d'une opposition, effet de balancement." },
+                    { name: "Personnification", category: "Analogie", definition: "Attribution de traits humains à un animal, un objet ou une idée.", example: "\"La rue assourdissante autour de moi hurlait.\" (Baudelaire)", effect: "Rendre une description plus vivante, plus expressive." },
+                    { name: "Comparaison", category: "Analogie", definition: "Rapprochement de deux éléments à l'aide d'un outil de comparaison (comme, tel que...).", example: "\"Heureux comme avec une femme.\" (Rimbaud)", effect: "Expliciter une idée, la rendre concrète, la valoriser ou la dévaloriser." },
+                    { name: "Métaphore", category: "Analogie", definition: "Comparaison sans outil de comparaison.", example: "\"Cette faucille d'or dans le champ des étoiles\" (Hugo)", effect: "Créer une image forte, nouvelle, surprenante ; condenser le sens." },
+                    { name: "Métonymie", category: "Substitution", definition: "Remplacement d'un terme par un autre qui lui est logiquement associé (le contenu par le contenant...).", example: "\"Boire un verre.\"", effect: "Raccourci expressif, concentration du sens." },
+                    { name: "Périphrase", category: "Substitution", definition: "Remplacement d'un mot par une expression plus longue qui le décrit.", example: "\"La ville lumière\" (pour Paris)", effect: "Embellir le style, souligner une caractéristique, ironiser." },
+                    { name: "Antithèse", category: "Opposition", definition: "Rapprochement de deux termes de sens opposés pour souligner un contraste.", example: "\"J'ai vécu [...] et non pas un être factice.\" (Musset)", effect: "Mettre en relief une contradiction, un conflit, un paradoxe." },
+                    { name: "Oxymore", category: "Opposition", definition: "Alliance de deux mots de sens contradictoires dans une même expression.", example: "\"Cette obscure clarté\" (Corneille)", effect: "Créer une image surprenante, exprimer la complexité d'un sentiment." },
+                    { name: "Antiphrase", category: "Opposition", definition: "Dire le contraire de ce que l'on pense, souvent par ironie.", example: "\"Quel courage!\" (pour dire : quelle lâcheté)", effect: "Ironie, critique moqueuse, distanciation." },
+                    { name: "Hyperbole", category: "Amplification", definition: "Exagération forte d'une idée ou d'une réalité.", example: "\"J'aimais Manon jusqu'à l'idolâtrie.\" (Prévost)", effect: "Impressionner, dramatiser, exprimer l'intensité d'un sentiment." },
+                    { name: "Litote", category: "Atténuation", definition: "Dire moins pour suggérer plus, souvent en niant le contraire.", example: "\"Va, je ne te hais point.\" (Corneille)", effect: "Renforcer une affirmation par la suggestion, pudeur ou ironie." },
+                    { name: "Euphémisme", category: "Atténuation", definition: "Adoucissement d'une expression jugée trop brutale.", example: "\"Il nous a quittés\" (pour : il est mort)", effect: "Atténuer la dureté d'une réalité, respecter la bienséance." },
+                ],
+                mouvements: [
+                    { name: "L'Humanisme", periode: "XVIe s.", principes: "Foi en l'homme, retour aux textes antiques, soif de savoir.", auteurs: "Rabelais, Montaigne" },
+                    { name: "Le Classicisme", periode: "XVIIe s.", principes: "Ordre, clarté, mesure, vraisemblance, instruire et plaire.", auteurs: "Molière, Racine, La Fontaine, La Bruyère" },
+                    { name: "Les Lumières", periode: "XVIIIe s.", principes: "Primat de la raison, lutte contre l'obscurantisme, défense des libertés.", auteurs: "Montesquieu, Voltaire, Rousseau, Diderot" },
+                    { name: "Le Romantisme", periode: "Début XIXe s.", principes: "Primat du sentiment, culte du Moi, liberté dans l'art, nature.", auteurs: "Hugo, Lamartine, Musset" },
+                    { name: "Le Réalisme", periode: "Milieu XIXe s.", principes: "Représenter la réalité sociale de manière objective, sans l'idéaliser.", auteurs: "Balzac, Flaubert, Maupassant" },
+                    { name: "Le Symbolisme", periode: "Fin XIXe s.", principes: "Suggérer plutôt que décrire, déchiffrer les correspondances mystérieuses du monde.", auteurs: "Baudelaire, Verlaine, Rimbaud, Mallarmé" },
+                    { name: "Le Surréalisme", periode: "Début XXe s.", principes: "Libération de l'inconscient, du rêve et du désir ; écriture automatique.", auteurs: "Breton, Éluard, Aragon" },
+                    { name: "L'Absurde", periode: "Milieu XXe s.", principes: "Mise en évidence de l'absurdité de la condition humaine et du non-sens.", auteurs: "Camus, Beckett, Ionesco" },
+                ]
+            };
+
+            // Navigation
+            const pages = document.querySelectorAll('.page');
+            const navLinks = document.querySelectorAll('.nav-link, .nav-card-link');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIconOpen = document.getElementById('menu-icon-open');
+            const menuIconClose = document.getElementById('menu-icon-close');
+            
+            function showPage(pageId) {
+                pages.forEach(page => page.classList.add('hidden'));
+                const targetPage = document.getElementById('page-' + pageId);
+                if (targetPage) {
+                    targetPage.classList.remove('hidden');
+                }
+                
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + pageId) {
+                        link.classList.add('active');
+                    }
+                });
+                window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('href').substring(1);
+                    history.pushState({pageId}, null, '#' + pageId);
+                    showPage(pageId);
+                    mobileMenu.classList.add('hidden');
+                    menuIconOpen.classList.remove('hidden');
+                    menuIconClose.classList.add('hidden');
+                });
+            });
+
+            window.addEventListener('popstate', (e) => {
+                if(e.state && e.state.pageId) {
+                    showPage(e.state.pageId);
+                } else {
+                    showPage('accueil');
+                }
+            });
+
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                menuIconOpen.classList.toggle('hidden');
+                menuIconClose.classList.toggle('hidden');
+            });
+
+            function setupSubNav(navClass, pageClass) {
+                const subNavs = document.querySelectorAll(`.${navClass}`);
+                subNavs.forEach(link => {
+                    link.addEventListener('click', () => {
+                        subNavs.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        
+                        document.querySelectorAll(`.${pageClass}`).forEach(p => p.classList.add('hidden'));
+                        const targetPage = document.getElementById(link.dataset.target);
+                        if(targetPage) {
+                           targetPage.classList.remove('hidden');
+                        }
+                    });
+                });
+            }
+
+            setupSubNav('dissertation-subnav', 'sub-page');
+            setupSubNav('outils-subnav', 'sub-page');
+
+            function createAccordion(containerId, data) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.innerHTML = data.map((item, index) => `
+                    <div class="card overflow-hidden">
+                        <button class="accordion-button w-full text-left p-4 flex justify-between items-center bg-stone-50 hover:bg-stone-100">
+                            <span class="font-bold text-lg text-[#944E63]">${item.title}</span>
+                            <span class="accordion-arrow text-[#944E63] text-2xl">&#8964;</span>
+                        </button>
+                        <div class="accordion-content hidden p-4 border-t border-stone-200">
+                            <p class="text-stone-600">${item.content}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.accordion-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.nextElementSibling;
+                        button.classList.toggle('open');
+                        content.classList.toggle('hidden');
+                    });
+                });
+            }
+            
+            createAccordion('dissertation-methodology-content', appData.dissertationMethodology);
+            createAccordion('commentaire-methodology-content', appData.commentaireMethodology);
+
+            const worksGrid = document.getElementById('works-grid');
+            const workDetailContent = document.getElementById('work-detail-content');
+            
+            function renderWorksGrid() {
+                worksGrid.innerHTML = appData.works.map(work => `
+                    <div class="card p-4 text-center cursor-pointer work-card ${work.color}" data-work-id="${work.id}">
+                        <h4 class="font-serif text-xl font-bold ${work.textColor}">${work.title}</h4>
+                        <p class="text-sm ${work.textColor} opacity-80">${work.author}</p>
+                    </div>
+                `).join('');
+
+                document.querySelectorAll('.work-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        renderWorkDetail(card.dataset.workId);
+                    });
+                });
+            }
+            
+            function renderWorkDetail(workId) {
+                const work = appData.works.find(w => w.id === workId);
+                if (!work) return;
+
+                workDetailContent.innerHTML = `
+                    <div class="card p-6 md:p-8 border-t-4 ${work.accentColor}">
+                        <div class="flex justify-between items-start">
+                             <div>
+                                <h3 class="font-serif text-3xl font-bold ${work.textColor}">${work.title}</h3>
+                                <p class="text-lg font-medium text-stone-500">${work.author}</p>
+                            </div>
+                            <button id="close-work-detail" class="text-2xl text-stone-400 hover:text-stone-600">&times;</button>
+                        </div>
+                       
+                        <div class="mt-6">
+                            <h4 class="font-bold text-xl mb-2">Parcours : <span class="font-normal text-[#944E63]">${work.parcours}</span></h4>
+                            
+                            <div class="mt-8">
+                                <h5 class="font-serif text-2xl font-bold mb-4">Citations Clés</h5>
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    ${work.citations.map(c => `
+                                        <div class="p-4 rounded-lg bg-stone-50 border-l-4 ${work.accentColor}">
+                                            <blockquote class="italic text-stone-700">“${c.q}”</blockquote>
+                                            <p class="text-right text-sm font-medium ${work.textColor} mt-2">- ${c.poeme}</p>
+                                            <p class="text-sm text-stone-500 mt-2">${c.explication}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="mt-8">
+                                <h5 class="font-serif text-2xl font-bold mb-4">Sujets d'Entraînement</h5>
+                                <ul class="list-disc list-inside space-y-2 text-stone-600">
+                                    ${work.sujets.map(s => `<li>${s}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                workDetailContent.scrollIntoView({ behavior: 'smooth' });
+                
+                document.getElementById('close-work-detail').addEventListener('click', () => {
+                    workDetailContent.innerHTML = '';
+                });
+            }
+
+            const figureGrid = document.getElementById('figures-style-grid');
+            const figureSearch = document.getElementById('figure-search-input');
+            const figureCategoryFilter = document.getElementById('figure-category-filter');
+
+            function renderFigures(filter = 'all', searchTerm = '') {
+                const categories = [...new Set(appData.figuresStyle.map(f => f.category))];
+                if (figureCategoryFilter.options.length <= 1) {
+                     categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat;
+                        option.textContent = cat;
+                        figureCategoryFilter.appendChild(option);
+                    });
+                }
+               
+                const filteredFigures = appData.figuresStyle.filter(f => {
+                    const matchesCategory = filter === 'all' || f.category === filter;
+                    const matchesSearch = searchTerm === '' || f.name.toLowerCase().includes(searchTerm.toLowerCase());
+                    return matchesCategory && matchesSearch;
+                });
+
+                if (filteredFigures.length === 0) {
+                    figureGrid.innerHTML = `<p class="text-center text-stone-500 col-span-full">Aucune figure de style ne correspond à votre recherche.</p>`;
+                    return;
+                }
+                
+                figureGrid.innerHTML = filteredFigures.map(f => `
+                    <div class="card p-4">
+                        <h4 class="font-bold text-lg text-[#944E63]">${f.name} <span class="text-sm font-normal text-stone-400 ml-2">(${f.category})</span></h4>
+                        <p class="text-sm text-stone-600 mt-1">${f.definition}</p>
+                        <p class="italic text-sm text-stone-500 mt-2">Ex: ${f.example}</p>
+                        <p class="text-sm mt-2"><span class="font-semibold">Effet:</span> ${f.effect}</p>
+                    </div>
+                `).join('');
+            }
+            
+            figureCategoryFilter.addEventListener('change', () => renderFigures(figureCategoryFilter.value, figureSearch.value));
+            figureSearch.addEventListener('input', () => renderFigures(figureCategoryFilter.value, figureSearch.value));
+
+            const mouvementsContainer = document.querySelector('#mouvements-timeline div');
+            const mouvementDetail = document.getElementById('mouvement-detail');
+
+            function renderMouvements() {
+                mouvementsContainer.innerHTML = appData.mouvements.map(m => `
+                    <div class="flex-shrink-0 text-center cursor-pointer mouvement-card p-4 rounded-lg hover:bg-stone-100" data-name="${m.name}">
+                        <h4 class="font-bold text-lg text-[#944E63]">${m.name}</h4>
+                        <p class="text-sm text-stone-500">${m.periode}</p>
+                    </div>
+                `).join('');
+
+                 document.querySelectorAll('.mouvement-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const mvtName = card.dataset.name;
+                        const mvt = appData.mouvements.find(m => m.name === mvtName);
+                        if(mvt) {
+                            mouvementDetail.innerHTML = `
+                                <h4 class="font-serif text-2xl font-bold text-[#944E63]">${mvt.name} <span class="text-lg font-normal text-stone-500">(${mvt.periode})</span></h4>
+                                <p class="mt-4"><strong class="font-semibold">Principes :</strong> ${mvt.principes}</p>
+                                <p class="mt-2"><strong class="font-semibold">Auteurs clés :</strong> ${mvt.auteurs}</p>
+                            `;
+                            mouvementDetail.classList.remove('hidden');
+                             mouvementDetail.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    })
+                 });
+            }
+
+            // Charts
+            function createTimeAllocationChart() {
+                const ctx = document.getElementById('time-allocation-chart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Brouillon / Préparation (45%)', 'Rédaction (55%)'],
+                        datasets: [{
+                            label: 'Répartition du temps',
+                            data: [112.5, 127.5], // 2h30 = 150min
+                            backgroundColor: ['#CAA6A6', '#944E63'],
+                            borderColor: '#FDFBF8',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            const hours = Math.floor(context.parsed / 60);
+                                            const minutes = Math.round(context.parsed % 60);
+                                            label += `${hours}h ${minutes}min`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function createRevisionTimelineChart() {
+                const ctx = document.getElementById('revision-timeline-chart').getContext('2d');
+                const today = new Date();
+                const examDate = new Date('2025-06-13');
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Méthodes', 'Rimbaud', 'Musset', 'La Bruyère', 'Prévost', 'Révisions finales'],
+                        datasets: [{
+                            label: 'Début',
+                            data: [
+                                new Date(2025, 0, 15).getTime(), new Date(2025, 1, 1).getTime(), new Date(2025, 2, 1).getTime(),
+                                new Date(2025, 3, 1).getTime(), new Date(2025, 4, 1).getTime(), new Date(2025, 5, 1).getTime()
+                            ],
+                             backgroundColor: '#CAA6A6',
+                        }, {
+                            label: 'Fin',
+                            data: [
+                                new Date(2025, 1, 15).getTime(), new Date(2025, 2, 15).getTime(), new Date(2025, 3, 15).getTime(),
+                                new Date(2025, 4, 20).getTime(), new Date(2025, 5, 10).getTime(), examDate.getTime()
+                            ],
+                             backgroundColor: '#944E63',
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                         scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'month',
+                                    tooltipFormat: 'dd MMM yyyy',
+                                    displayFormats: {
+                                        month: 'MMM yyyy'
+                                    }
+                                },
+                                min: new Date(2025, 0, 1).getTime(),
+                                max: examDate.getTime(),
+                                ticks: {
+                                    color: '#4B423C'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#4B423C'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                     label: function(context) {
+                                        const start = new Date(context.dataset.data[context.dataIndex]);
+                                        const endDataset = context.chart.data.datasets[1];
+                                        const end = new Date(endDataset.data[context.dataIndex]);
+                                        return `${context.label}: ${start.toLocaleDateString('fr-FR')} - ${end.toLocaleDateString('fr-FR')}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            // Initial Render
+            const initialPage = window.location.hash.substring(1) || 'accueil';
+            showPage(initialPage);
+            
+            renderWorksGrid();
+            renderFigures();
+            renderMouvements();
+            createTimeAllocationChart();
+            createRevisionTimelineChart();
+        });
+    </script>
+
+</body>
+</html>

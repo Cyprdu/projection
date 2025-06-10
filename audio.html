@@ -15,8 +15,8 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
+            width: 18px; /* Taille légèrement augmentée pour le tactile */
+            height: 18px;
             background-color: white;
             border: 2px solid #3b82f6; /* blue-500 */
             border-radius: 50%;
@@ -36,32 +36,65 @@
             z-index: 5;
             pointer-events: none; /* Permet de cliquer à travers */
         }
+        /* Style pour le slider de vitesse */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: #e5e7eb; /* gray-200 */
+            height: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        input[type="range"]::-moz-range-track {
+            background: #e5e7eb; /* gray-200 */
+            height: 0.5rem;
+            border-radius: 0.5rem;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -4px;
+            background-color: #3b82f6; /* blue-500 */
+            height: 1.25rem;
+            width: 1.25rem;
+            border-radius: 50%;
+        }
+        input[type="range"]::-moz-range-thumb {
+            border: none;
+            border-radius: 50%;
+            background-color: #3b82f6; /* blue-500 */
+            height: 1.25rem;
+            width: 1.25rem;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans flex items-center justify-center min-h-screen p-4">
 
-    <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 space-y-6">
+    <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
         <header class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Répétiteur de Boucle Audio</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">Chargez un audio et sélectionnez une section à répéter.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Répétiteur de Boucle</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Chargez un audio et répétez une section.</p>
         </header>
 
         <!-- Zone de sélection de fichier -->
         <div class="flex justify-center">
             <input type="file" id="fileInput" accept="audio/*,.m4a" class="hidden">
-            <button id="fileSelectBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200">
+            <button id="fileSelectBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-lg">
                 Choisir un fichier audio
             </button>
         </div>
 
         <!-- Conteneur du lecteur audio (initialement caché) -->
         <div id="playerContainer" class="hidden space-y-4">
-            <p id="fileName" class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 truncate"></p>
+            <p id="fileName" class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 truncate px-2"></p>
             
             <audio id="audioPlayer" class="w-full"></audio>
 
             <!-- Barre de progression personnalisée -->
-            <div class="progress-bar-container w-full h-8 flex items-center">
+            <div class="progress-bar-container w-full h-8 flex items-center px-1">
                 <div id="progressBar" class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                     <div id="progress" class="absolute top-0 left-0 h-full bg-blue-500 rounded-full"></div>
                     <div id="loopSelection" class="loop-selection"></div>
@@ -71,23 +104,29 @@
             </div>
 
             <!-- Affichage des temps -->
-            <div class="flex justify-between text-sm font-mono">
+            <div class="flex justify-between text-sm font-mono px-1">
                 <span id="currentTimeDisplay">00:00</span>
-                <div class="flex items-center gap-4">
-                    <span class="text-green-500">Début: <span id="startTimeDisplay">00:00</span></span>
-                    <span class="text-red-500">Fin: <span id="endTimeDisplay">00:00</span></span>
-                </div>
                 <span id="durationDisplay">00:00</span>
+            </div>
+            <div class="flex justify-around text-sm font-mono bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
+                <span class="text-green-500">Début: <span id="startTimeDisplay" class="font-bold">00:00</span></span>
+                <span class="text-red-500">Fin: <span id="endTimeDisplay" class="font-bold">00:00</span></span>
             </div>
             
             <!-- Contrôles -->
-            <div class="flex justify-center items-center gap-4">
-                 <button id="playPauseBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-3 rounded-full">
-                    <svg id="playIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M4.018 15.132A1.25 1.25 0 0 0 6 16.25v-12.5A1.25 1.25 0 0 0 4.018 2.618L2.24 3.982A1.25 1.25 0 0 0 1 5.132V14.868a1.25 1.25 0 0 0 1.24.868l1.778-1.368zM15.5 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75zM10 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75z"></path></svg>
-                    <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 4.5a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75zm9 0a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75z"></path></svg>
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+                <button id="playPauseBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-4 rounded-full">
+                    <svg id="playIcon" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M4.018 15.132A1.25 1.25 0 0 0 6 16.25v-12.5A1.25 1.25 0 0 0 4.018 2.618L2.24 3.982A1.25 1.25 0 0 0 1 5.132V14.868a1.25 1.25 0 0 0 1.24.868l1.778-1.368zM15.5 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75zM10 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75z"></path></svg>
+                    <svg id="pauseIcon" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 4.5a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75zm9 0a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75z"></path></svg>
                 </button>
+                
+                <!-- Contrôle de la vitesse -->
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                    <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1" class="w-full">
+                    <span id="speedDisplay" class="font-mono font-bold text-lg w-16 text-center">1.0x</span>
+                </div>
             </div>
-
         </div>
     </div>
 
@@ -115,6 +154,9 @@
             const playIcon = document.getElementById('playIcon');
             const pauseIcon = document.getElementById('pauseIcon');
 
+            const speedControl = document.getElementById('speedControl');
+            const speedDisplay = document.getElementById('speedDisplay');
+
             // Variables d'état
             let loopStart = 0;
             let loopEnd = 0;
@@ -138,24 +180,26 @@
             // --- GESTION DU LECTEUR AUDIO ---
             audioPlayer.addEventListener('loadedmetadata', () => {
                 duration = audioPlayer.duration;
-                // On réinitialise la boucle à chaque nouveau fichier
                 loopStart = 0;
                 loopEnd = duration;
                 
-                // Mettre à jour l'affichage
                 startTimeDisplay.textContent = formatTime(loopStart);
                 durationDisplay.textContent = formatTime(duration);
                 endTimeDisplay.textContent = formatTime(duration);
+                
+                audioPlayer.playbackRate = 1;
+                speedControl.value = 1;
+                speedDisplay.textContent = '1.0x';
+
                 updateHandlePositions();
-                audioPlayer.play(); // Démarrer la lecture automatiquement
+                audioPlayer.play();
             });
 
             audioPlayer.addEventListener('timeupdate', () => {
-                // Logique de la boucle
+                if (duration <= 0) return;
                 if (audioPlayer.currentTime >= loopEnd || audioPlayer.currentTime < loopStart) {
                     audioPlayer.currentTime = loopStart;
                 }
-                // Mise à jour de la barre de progression
                 const progressPercent = (audioPlayer.currentTime / duration) * 100;
                 progress.style.width = `${progressPercent}%`;
                 currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
@@ -179,29 +223,35 @@
                 }
             });
 
+            speedControl.addEventListener('input', (e) => {
+                const speed = parseFloat(e.target.value);
+                audioPlayer.playbackRate = speed;
+                speedDisplay.textContent = `${speed.toFixed(1)}x`;
+            });
+
             // --- FONCTIONS UTILITAIRES ---
             const formatTime = (seconds) => {
+                if (isNaN(seconds)) return '00:00';
                 const minutes = Math.floor(seconds / 60);
                 const secs = Math.floor(seconds % 60);
                 return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
             };
 
             const updateHandlePositions = () => {
+                if (duration <= 0) return;
                 const startPercent = (loopStart / duration) * 100;
                 const endPercent = (loopEnd / duration) * 100;
-                startHandle.style.left = `calc(${startPercent}% - 8px)`; // 8px est la moitié de la largeur du curseur
-                endHandle.style.left = `calc(${endPercent}% - 8px)`;
+                startHandle.style.left = `calc(${startPercent}% - 9px)`; // 9px = moitié de la largeur du curseur (18px)
+                endHandle.style.left = `calc(${endPercent}% - 9px)`;
                 
-                // Mettre à jour la sélection de la boucle
                 loopSelection.style.left = `${startPercent}%`;
                 loopSelection.style.width = `${endPercent - startPercent}%`;
             };
 
             // --- LOGIQUE DE GLISSER-DÉPOSER (DRAG & DROP) ---
-            
-            // Fonction générique pour la gestion du mouvement
             const handleMove = (e) => {
                 if (!isDraggingStart && !isDraggingEnd) return;
+                e.preventDefault();
 
                 const rect = progressBar.getBoundingClientRect();
                 const x = (e.clientX || e.touches[0].clientX) - rect.left;
@@ -210,7 +260,6 @@
 
                 if (isDraggingStart) {
                     const newStart = (percent / 100) * duration;
-                    // Le curseur de début ne peut pas dépasser celui de fin
                     if (newStart < loopEnd) {
                         loopStart = newStart;
                         startTimeDisplay.textContent = formatTime(loopStart);
@@ -219,55 +268,43 @@
 
                 if (isDraggingEnd) {
                     const newEnd = (percent / 100) * duration;
-                    // Le curseur de fin ne peut pas être avant celui de début
                     if (newEnd > loopStart) {
                         loopEnd = newEnd;
                         endTimeDisplay.textContent = formatTime(loopEnd);
                     }
                 }
-                
                 updateHandlePositions();
             };
 
             const stopDragging = () => {
                 isDraggingStart = false;
                 isDraggingEnd = false;
-                // Si la tête de lecture est en dehors de la nouvelle boucle, la repositionner
                 if(audioPlayer.currentTime > loopEnd || audioPlayer.currentTime < loopStart) {
                     audioPlayer.currentTime = loopStart;
                 }
             };
             
-            // Écouteurs d'événements pour les curseurs
             [startHandle, endHandle].forEach((handle, index) => {
                 const startDragging = (e) => {
                     e.preventDefault();
                     if (index === 0) isDraggingStart = true;
                     else isDraggingEnd = true;
                 };
-
                 handle.addEventListener('mousedown', startDragging);
                 handle.addEventListener('touchstart', startDragging);
             });
 
-            // Écouteurs globaux pour le mouvement et l'arrêt
             window.addEventListener('mousemove', handleMove);
             window.addEventListener('touchmove', handleMove, { passive: false });
-
             window.addEventListener('mouseup', stopDragging);
             window.addEventListener('touchend', stopDragging);
             
-            // Permettre de sauter à un point en cliquant sur la barre de progression
             progressBar.addEventListener('click', (e) => {
-                // Empêcher ce comportement si on clique sur un curseur
                 if (e.target === startHandle || e.target === endHandle) return;
-                
                 const rect = progressBar.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const percent = (x / rect.width);
                 const newTime = percent * duration;
-
-                // S'assurer que le saut se fait à l'intérieur de la boucle
                 if (newTime >= loopStart && newTime <= loopEnd) {
                     audioPlayer.currentTime = newTime;
                 }

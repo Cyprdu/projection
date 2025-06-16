@@ -6,19 +6,19 @@
     <title>Répétiteur de Boucle Audio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Custom styles pour les curseurs et la barre de progression */
+        /* Styles pour une meilleure expérience tactile et visuelle */
         .progress-bar-container {
             position: relative;
-            touch-action: none; /* Empêche le défilement du navigateur lors de l'interaction tactile */
+            touch-action: none;
         }
         .handle {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 18px; /* Taille légèrement augmentée pour le tactile */
-            height: 18px;
+            width: 20px;
+            height: 20px;
             background-color: white;
-            border: 2px solid #3b82f6; /* blue-500 */
+            border: 3px solid #3b82f6; /* blue-500 */
             border-radius: 50%;
             cursor: grab;
             z-index: 10;
@@ -31,12 +31,12 @@
             top: 50%;
             transform: translateY(-50%);
             height: 8px;
-            background-color: #3b82f6; /* blue-500 */
+            background-color: #3b82f6;
             opacity: 0.5;
             z-index: 5;
-            pointer-events: none; /* Permet de cliquer à travers */
+            pointer-events: none;
         }
-        /* Style pour le slider de vitesse */
+        /* Style pour les sliders */
         input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
@@ -48,26 +48,37 @@
             height: 0.5rem;
             border-radius: 0.5rem;
         }
+        .dark input[type="range"]::-webkit-slider-runnable-track {
+             background: #4b5563; /* gray-600 */
+        }
         input[type="range"]::-moz-range-track {
-            background: #e5e7eb; /* gray-200 */
+            background: #e5e7eb;
             height: 0.5rem;
             border-radius: 0.5rem;
+        }
+        .dark input[type="range"]::-moz-range-track {
+            background: #4b5563;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            margin-top: -4px;
-            background-color: #3b82f6; /* blue-500 */
-            height: 1.25rem;
-            width: 1.25rem;
+            margin-top: -5px; /* Ajustement pour centrer */
+            background-color: #3b82f6;
+            height: 1.5rem;
+            width: 1.5rem;
             border-radius: 50%;
         }
         input[type="range"]::-moz-range-thumb {
             border: none;
             border-radius: 50%;
-            background-color: #3b82f6; /* blue-500 */
-            height: 1.25rem;
-            width: 1.25rem;
+            background-color: #3b82f6;
+            height: 1.5rem;
+            width: 1.5rem;
+        }
+        /* Style pour le conteneur du lecteur YouTube */
+        #youtube-player-iframe {
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
@@ -75,26 +86,23 @@
 
     <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
         <header class="text-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Répétiteur de Boucle</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">Chargez un audio et répétez une section.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Concentration Audio</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">Répétez un audio et ajoutez une musique de fond.</p>
         </header>
 
-        <!-- Zone de sélection de fichier -->
+        <!-- Zone de sélection de fichier principal -->
         <div class="flex justify-center">
             <input type="file" id="fileInput" accept="audio/*,.m4a" class="hidden">
             <button id="fileSelectBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-lg">
-                Choisir un fichier audio
+                Choisir un audio à répéter
             </button>
         </div>
 
-        <!-- Conteneur du lecteur audio (initialement caché) -->
+        <!-- Conteneur du lecteur audio principal (initialement caché) -->
         <div id="playerContainer" class="hidden space-y-4">
             <p id="fileName" class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 truncate px-2"></p>
-            
             <audio id="audioPlayer" class="w-full"></audio>
-
-            <!-- Barre de progression personnalisée -->
-            <div class="progress-bar-container w-full h-8 flex items-center px-1">
+             <div class="progress-bar-container w-full h-8 flex items-center px-1">
                 <div id="progressBar" class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                     <div id="progress" class="absolute top-0 left-0 h-full bg-blue-500 rounded-full"></div>
                     <div id="loopSelection" class="loop-selection"></div>
@@ -102,8 +110,6 @@
                     <div id="endHandle" class="handle"></div>
                 </div>
             </div>
-
-            <!-- Affichage des temps -->
             <div class="flex justify-between text-sm font-mono px-1">
                 <span id="currentTimeDisplay">00:00</span>
                 <span id="durationDisplay">00:00</span>
@@ -112,205 +118,235 @@
                 <span class="text-green-500">Début: <span id="startTimeDisplay" class="font-bold">00:00</span></span>
                 <span class="text-red-500">Fin: <span id="endTimeDisplay" class="font-bold">00:00</span></span>
             </div>
-            
-            <!-- Contrôles -->
             <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
                 <button id="playPauseBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-4 rounded-full">
                     <svg id="playIcon" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M4.018 15.132A1.25 1.25 0 0 0 6 16.25v-12.5A1.25 1.25 0 0 0 4.018 2.618L2.24 3.982A1.25 1.25 0 0 0 1 5.132V14.868a1.25 1.25 0 0 0 1.24.868l1.778-1.368zM15.5 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75zM10 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75z"></path></svg>
                     <svg id="pauseIcon" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 4.5a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75zm9 0a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75z"></path></svg>
                 </button>
-                
-                <!-- Contrôle de la vitesse -->
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
                     <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1" class="w-full">
                     <span id="speedDisplay" class="font-mono font-bold text-lg w-16 text-center">1.0x</span>
                 </div>
             </div>
         </div>
+
+        <!-- Section Musique d'ambiance YouTube -->
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+            <h2 class="text-center font-bold text-lg text-gray-700 dark:text-gray-300">Musique d'ambiance (YouTube)</h2>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <input type="text" id="youtubeUrlInput" placeholder="Coller l'URL d'une vidéo YouTube ici" class="flex-grow bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                <button id="loadYoutubeBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Charger</button>
+            </div>
+            <!-- Conteneur pour le lecteur et ses contrôles -->
+            <div id="youtube-player-wrapper" class="hidden space-y-3 pt-2">
+                 <!-- Le lecteur vidéo s'affichera ici -->
+                <div id="youtube-player-container" class="aspect-video w-full bg-black rounded-lg overflow-hidden">
+                    <div id="youtube-player-iframe"></div>
+                </div>
+                 <!-- Contrôles du volume -->
+                <div class="flex items-center gap-3 w-full">
+                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 0 0-2 0v12a1 1 0 1 0 2 0V4zM12 4a1 1 0 1 0-2 0v12a1 1 0 1 0 2 0V4zM4 9a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1zm12 0a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1z"></path></svg>
+                    <input type="range" id="youtubeVolume" min="0" max="100" value="50" class="w-full">
+                    <span id="youtubeStatus" class="font-mono text-sm w-24 text-center">Volume: 50%</span>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <!-- API YouTube IFrame -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Sélection des éléments du DOM
-            const fileInput = document.getElementById('fileInput');
-            const fileSelectBtn = document.getElementById('fileSelectBtn');
-            const playerContainer = document.getElementById('playerContainer');
-            const audioPlayer = document.getElementById('audioPlayer');
-            const fileNameDisplay = document.getElementById('fileName');
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
+        const fileInput = document.getElementById('fileInput');
+        const fileSelectBtn = document.getElementById('fileSelectBtn');
+        const playerContainer = document.getElementById('playerContainer');
+        const audioPlayer = document.getElementById('audioPlayer');
+        // ... (autres sélecteurs)
+        const fileNameDisplay = document.getElementById('fileName');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const startHandle = document.getElementById('startHandle');
+        const endHandle = document.getElementById('endHandle');
+        const loopSelection = document.getElementById('loopSelection');
+        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+        const startTimeDisplay = document.getElementById('startTimeDisplay');
+        const endTimeDisplay = document.getElementById('endTimeDisplay');
+        const durationDisplay = document.getElementById('durationDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const speedControl = document.getElementById('speedControl');
+        const speedDisplay = document.getElementById('speedDisplay');
+        
+        // Nouveaux éléments pour YouTube
+        const youtubeUrlInput = document.getElementById('youtubeUrlInput');
+        const loadYoutubeBtn = document.getElementById('loadYoutubeBtn');
+        const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
+        const youtubeVolumeControl = document.getElementById('youtubeVolume');
+        const youtubeStatus = document.getElementById('youtubeStatus');
 
-            const progressBar = document.getElementById('progressBar');
-            const progress = document.getElementById('progress');
-            const startHandle = document.getElementById('startHandle');
-            const endHandle = document.getElementById('endHandle');
-            const loopSelection = document.getElementById('loopSelection');
-            
-            const currentTimeDisplay = document.getElementById('currentTimeDisplay');
-            const startTimeDisplay = document.getElementById('startTimeDisplay');
-            const endTimeDisplay = document.getElementById('endTimeDisplay');
-            const durationDisplay = document.getElementById('durationDisplay');
+        // --- VARIABLES D'ÉTAT ---
+        let loopStart = 0, loopEnd = 0, duration = 0;
+        let isDraggingStart = false, isDraggingEnd = false;
+        let ytPlayer; // Instance du lecteur YouTube
 
-            const playPauseBtn = document.getElementById('playPauseBtn');
-            const playIcon = document.getElementById('playIcon');
-            const pauseIcon = document.getElementById('pauseIcon');
-
-            const speedControl = document.getElementById('speedControl');
-            const speedDisplay = document.getElementById('speedDisplay');
-
-            // Variables d'état
-            let loopStart = 0;
-            let loopEnd = 0;
-            let isDraggingStart = false;
-            let isDraggingEnd = false;
-            let duration = 0;
-
-            // --- GESTION DES FICHIERS ---
-            fileSelectBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const fileURL = URL.createObjectURL(file);
-                    audioPlayer.src = fileURL;
-                    fileNameDisplay.textContent = file.name;
-                    playerContainer.classList.remove('hidden');
-                    audioPlayer.load();
-                }
-            });
-
-            // --- GESTION DU LECTEUR AUDIO ---
-            audioPlayer.addEventListener('loadedmetadata', () => {
-                duration = audioPlayer.duration;
-                loopStart = 0;
-                loopEnd = duration;
-                
-                startTimeDisplay.textContent = formatTime(loopStart);
-                durationDisplay.textContent = formatTime(duration);
-                endTimeDisplay.textContent = formatTime(duration);
-                
-                audioPlayer.playbackRate = 1;
-                speedControl.value = 1;
-                speedDisplay.textContent = '1.0x';
-
-                updateHandlePositions();
-                audioPlayer.play();
-            });
-
-            audioPlayer.addEventListener('timeupdate', () => {
-                if (duration <= 0) return;
-                if (audioPlayer.currentTime >= loopEnd || audioPlayer.currentTime < loopStart) {
-                    audioPlayer.currentTime = loopStart;
-                }
-                const progressPercent = (audioPlayer.currentTime / duration) * 100;
-                progress.style.width = `${progressPercent}%`;
-                currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-            });
-            
-            audioPlayer.addEventListener('play', () => {
-                playIcon.classList.add('hidden');
-                pauseIcon.classList.remove('hidden');
-            });
-
-            audioPlayer.addEventListener('pause', () => {
-                playIcon.classList.remove('hidden');
-                pauseIcon.classList.add('hidden');
-            });
-
-            playPauseBtn.addEventListener('click', () => {
-                if (audioPlayer.paused) {
-                    audioPlayer.play();
-                } else {
-                    audioPlayer.pause();
-                }
-            });
-
-            speedControl.addEventListener('input', (e) => {
-                const speed = parseFloat(e.target.value);
-                audioPlayer.playbackRate = speed;
-                speedDisplay.textContent = `${speed.toFixed(1)}x`;
-            });
-
-            // --- FONCTIONS UTILITAIRES ---
-            const formatTime = (seconds) => {
-                if (isNaN(seconds)) return '00:00';
-                const minutes = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            };
-
-            const updateHandlePositions = () => {
-                if (duration <= 0) return;
-                const startPercent = (loopStart / duration) * 100;
-                const endPercent = (loopEnd / duration) * 100;
-                startHandle.style.left = `calc(${startPercent}% - 9px)`; // 9px = moitié de la largeur du curseur (18px)
-                endHandle.style.left = `calc(${endPercent}% - 9px)`;
-                
-                loopSelection.style.left = `${startPercent}%`;
-                loopSelection.style.width = `${endPercent - startPercent}%`;
-            };
-
-            // --- LOGIQUE DE GLISSER-DÉPOSER (DRAG & DROP) ---
-            const handleMove = (e) => {
-                if (!isDraggingStart && !isDraggingEnd) return;
-                e.preventDefault();
-
-                const rect = progressBar.getBoundingClientRect();
-                const x = (e.clientX || e.touches[0].clientX) - rect.left;
-                let percent = (x / rect.width) * 100;
-                percent = Math.max(0, Math.min(100, percent));
-
-                if (isDraggingStart) {
-                    const newStart = (percent / 100) * duration;
-                    if (newStart < loopEnd) {
-                        loopStart = newStart;
-                        startTimeDisplay.textContent = formatTime(loopStart);
-                    }
-                }
-
-                if (isDraggingEnd) {
-                    const newEnd = (percent / 100) * duration;
-                    if (newEnd > loopStart) {
-                        loopEnd = newEnd;
-                        endTimeDisplay.textContent = formatTime(loopEnd);
-                    }
-                }
-                updateHandlePositions();
-            };
-
-            const stopDragging = () => {
-                isDraggingStart = false;
-                isDraggingEnd = false;
-                if(audioPlayer.currentTime > loopEnd || audioPlayer.currentTime < loopStart) {
-                    audioPlayer.currentTime = loopStart;
-                }
-            };
-            
-            [startHandle, endHandle].forEach((handle, index) => {
-                const startDragging = (e) => {
-                    e.preventDefault();
-                    if (index === 0) isDraggingStart = true;
-                    else isDraggingEnd = true;
-                };
-                handle.addEventListener('mousedown', startDragging);
-                handle.addEventListener('touchstart', startDragging);
-            });
-
-            window.addEventListener('mousemove', handleMove);
-            window.addEventListener('touchmove', handleMove, { passive: false });
-            window.addEventListener('mouseup', stopDragging);
-            window.addEventListener('touchend', stopDragging);
-            
-            progressBar.addEventListener('click', (e) => {
-                if (e.target === startHandle || e.target === endHandle) return;
-                const rect = progressBar.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const percent = (x / rect.width);
-                const newTime = percent * duration;
-                if (newTime >= loopStart && newTime <= loopEnd) {
-                    audioPlayer.currentTime = newTime;
-                }
-            });
+        // --- GESTION DU LECTEUR AUDIO PRINCIPAL ---
+        fileSelectBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                audioPlayer.src = URL.createObjectURL(file);
+                fileNameDisplay.textContent = file.name;
+                playerContainer.classList.remove('hidden');
+                audioPlayer.load();
+            }
         });
-    </script>
 
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            duration = audioPlayer.duration;
+            loopStart = 0;
+            loopEnd = duration;
+            startTimeDisplay.textContent = formatTime(loopStart);
+            durationDisplay.textContent = formatTime(duration);
+            endTimeDisplay.textContent = formatTime(duration);
+            speedControl.value = 1;
+            speedDisplay.textContent = '1.0x';
+            updateHandlePositions();
+            audioPlayer.play();
+        });
+
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (duration <= 0) return;
+            if (audioPlayer.currentTime >= loopEnd || audioPlayer.currentTime < loopStart) {
+                audioPlayer.currentTime = loopStart;
+            }
+            progress.style.width = `${(audioPlayer.currentTime / duration) * 100}%`;
+            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
+        });
+
+        const togglePlayPauseIcon = () => {
+            playIcon.classList.toggle('hidden', !audioPlayer.paused);
+            pauseIcon.classList.toggle('hidden', audioPlayer.paused);
+        };
+        audioPlayer.addEventListener('play', togglePlayPauseIcon);
+        audioPlayer.addEventListener('pause', togglePlayPauseIcon);
+
+        playPauseBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) audioPlayer.play();
+            else audioPlayer.pause();
+        });
+
+        speedControl.addEventListener('input', e => {
+            const speed = parseFloat(e.target.value);
+            audioPlayer.playbackRate = speed;
+            speedDisplay.textContent = `${speed.toFixed(1)}x`;
+        });
+        
+        // --- GESTION DU LECTEUR YOUTUBE ---
+        window.onYouTubeIframeAPIReady = () => {}; // Laissé vide, on crée le lecteur au clic
+
+        loadYoutubeBtn.addEventListener('click', () => {
+            const videoUrl = youtubeUrlInput.value;
+            const videoId = parseYoutubeUrl(videoUrl);
+            
+            if (videoId) {
+                youtubePlayerWrapper.classList.remove('hidden');
+                if (ytPlayer) {
+                    ytPlayer.loadVideoById(videoId);
+                } else {
+                    ytPlayer = new YT.Player('youtube-player-iframe', {
+                        height: '100%',
+                        width: '100%',
+                        videoId: videoId,
+                        playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
+                        events: { 'onReady': onPlayerReady }
+                    });
+                }
+            } else {
+                alert("URL YouTube invalide. Veuillez vérifier le lien.");
+            }
+        });
+        
+        const onPlayerReady = (event) => {
+            event.target.setVolume(youtubeVolumeControl.value);
+            event.target.playVideo();
+        };
+
+        youtubeVolumeControl.addEventListener('input', e => {
+            const volume = e.target.value;
+            if (ytPlayer && ytPlayer.setVolume) {
+                ytPlayer.setVolume(volume);
+            }
+            youtubeStatus.textContent = `Volume: ${volume}%`;
+        });
+
+        const parseYoutubeUrl = (url) => {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        };
+        
+        // --- GESTION DES CURSEURS (DRAG & DROP) ---
+        const formatTime = (seconds) => {
+            if (isNaN(seconds)) return '00:00';
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        };
+
+        const updateHandlePositions = () => {
+            if (duration <= 0) return;
+            const startPercent = (loopStart / duration) * 100;
+            const endPercent = (loopEnd / duration) * 100;
+            startHandle.style.left = `calc(${startPercent}% - 10px)`;
+            endHandle.style.left = `calc(${endPercent}% - 10px)`;
+            loopSelection.style.left = `${startPercent}%`;
+            loopSelection.style.width = `${endPercent - startPercent}%`;
+        };
+        
+        const handleMove = (e) => {
+            if (!isDraggingStart && !isDraggingEnd) return;
+            e.preventDefault();
+            const rect = progressBar.getBoundingClientRect();
+            const x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+            if (isDraggingStart) {
+                const newStart = (percent / 100) * duration;
+                if (newStart < loopEnd) { loopStart = newStart; startTimeDisplay.textContent = formatTime(loopStart); }
+            } else if (isDraggingEnd) {
+                const newEnd = (percent / 100) * duration;
+                if (newEnd > loopStart) { loopEnd = newEnd; endTimeDisplay.textContent = formatTime(loopEnd); }
+            }
+            updateHandlePositions();
+        };
+
+        const stopDragging = () => {
+            isDraggingStart = false;
+            isDraggingEnd = false;
+            if (audioPlayer.currentTime > loopEnd || audioPlayer.currentTime < loopStart) audioPlayer.currentTime = loopStart;
+        };
+
+        [startHandle, endHandle].forEach((handle, index) => {
+            handle.addEventListener('mousedown', () => { (index === 0) ? isDraggingStart = true : isDraggingEnd = true; });
+            handle.addEventListener('touchstart', (e) => { e.preventDefault(); (index === 0) ? isDraggingStart = true : isDraggingEnd = true; });
+        });
+
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+        window.addEventListener('mouseup', stopDragging);
+        window.addEventListener('touchend', stopDragging);
+
+        progressBar.addEventListener('click', e => {
+            if (e.target === startHandle || e.target === endHandle) return;
+            const rect = progressBar.getBoundingClientRect();
+            const newTime = ((e.clientX - rect.left) / rect.width) * duration;
+            if (newTime >= loopStart && newTime <= loopEnd) audioPlayer.currentTime = newTime;
+        });
+    });
+    </script>
 </body>
 </html>

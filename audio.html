@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Looper - Thème Sombre</title>
+    <title>Audio Looper avec Player.js</title>
+    
+    <script src="https://projection-2025.netlify.app/playeraudio.js" type="text/javascript"></script>
+
     <style>
         /* --- Palette Thème Sombre --- */
         :root {
             --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
             --background-color: #121212;
             --surface-color: #1e1e1e;
             --text-color: #e0e0e0;
@@ -92,7 +94,7 @@
             min-height: 1rem;
         }
         
-        /* --- Lecteurs Audio --- */
+        /* --- Lecteur Audio Principal --- */
         .main-player audio {
             width: 100%;
             margin-top: 1rem;
@@ -161,33 +163,13 @@
             color: var(--text-muted-color);
             margin-top: 0.5rem;
         }
-        
-        /* --- Contrôles Personnalisés pour Musique de Fond --- */
-        .bg-custom-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+
+        /* --- Conteneur pour Player.js --- */
+        #bg-player-container {
             margin-top: 1rem;
+            min-height: 40px; /* Espace réservé pour le lecteur */
         }
-        #bg-play-pause-btn {
-            background: none;
-            border: 2px solid var(--text-muted-color);
-            color: var(--text-muted-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0;
-            padding-left: 3px; /* Optical alignment for play icon */
-        }
-        #bg-volume-slider {
-            flex-grow: 1;
-            accent-color: var(--primary-color); /* Modern way to color sliders */
-        }
+        
     </style>
 </head>
 <body>
@@ -219,34 +201,21 @@
     <hr style="border: none; border-top: 1px solid #333; margin: 2rem 0;">
     
     <div class="control-section bg-player">
-        <h2>2. Musique de fond (Indépendant)</h2>
+        <h2>2. Musique de fond (Player.js)</h2>
         <label for="bg-audio-input" class="file-input-label">Charger une musique de fond</label>
-        <input type="file" id="bg-audio-input" accept=".mp3">
+        <input type="file" id="bg-audio-input" accept=".mp3,.m4a">
         <div id="bg-file-name" class="file-name">Aucun fichier chargé</div>
         
-        <audio id="bg-audio"></audio>
-        
-        <div id="bg-controls-container" class="bg-custom-controls" style="display: none;">
-            <button id="bg-play-pause-btn">▶️</button>
-            <span>🔉</span>
-            <input type="range" id="bg-volume-slider" min="0" max="1" step="0.01" value="1">
-        </div>
+        <div id="bg-player-container"></div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Éléments DOM ---
+    // --- Éléments DOM Piste Principale ---
     const mainAudio = document.getElementById('main-audio');
     const mainAudioInput = document.getElementById('main-audio-input');
     const mainFileName = document.getElementById('main-file-name');
-
-    const bgAudio = document.getElementById('bg-audio');
-    const bgAudioInput = document.getElementById('bg-audio-input');
-    const bgFileName = document.getElementById('bg-file-name');
-    const bgControlsContainer = document.getElementById('bg-controls-container');
-    const bgPlayPauseBtn = document.getElementById('bg-play-pause-btn');
-    const bgVolumeSlider = document.getElementById('bg-volume-slider');
     
     const progressContainer = document.querySelector('.progress-container');
     const currentProgress = document.getElementById('current-progress');
@@ -255,6 +224,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const endHandle = document.getElementById('end-handle');
     const currentTimeDisplay = document.getElementById('current-time');
     const durationDisplay = document.getElementById('duration');
+
+    // --- Éléments DOM Musique de Fond ---
+    const bgAudioInput = document.getElementById('bg-audio-input');
+    const bgFileName = document.getElementById('bg-file-name');
+    let bgPlayerInstance = null; // Pour garder une référence au lecteur
 
     let loopStart = 0, loopEnd = 0, isDraggingStart = false, isDraggingEnd = false;
 
@@ -265,25 +239,42 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const loadAudio = (input, audio, fileNameEl, callback) => {
-        const file = input.files[0];
+    // --- Chargement Piste Principale ---
+    mainAudioInput.addEventListener('change', () => {
+        const file = mainAudioInput.files[0];
         if (file) {
-            audio.src = URL.createObjectURL(file);
-            fileNameEl.textContent = file.name;
-            audio.addEventListener('loadedmetadata', callback, { once: true });
+            mainAudio.src = URL.createObjectURL(file);
+            mainFileName.textContent = file.name;
+            mainAudio.addEventListener('loadedmetadata', () => {
+                loopEnd = mainAudio.duration;
+                durationDisplay.textContent = formatTime(mainAudio.duration);
+                updateHandlesAndRange();
+            }, { once: true });
         }
-    };
-    
-    // --- Chargement et initialisation des pistes ---
-    mainAudioInput.addEventListener('change', () => loadAudio(mainAudioInput, mainAudio, mainFileName, () => {
-        loopEnd = mainAudio.duration;
-        durationDisplay.textContent = formatTime(mainAudio.duration);
-        updateHandlesAndRange();
-    }));
+    });
 
-    bgAudioInput.addEventListener('change', () => loadAudio(bgAudioInput, bgAudio, bgFileName, () => {
-        bgControlsContainer.style.display = 'flex'; // Afficher les contrôles
-    }));
+    // --- Chargement Piste de Fond et initialisation de Player.js ---
+    bgAudioInput.addEventListener('change', () => {
+        const file = bgAudioInput.files[0];
+        if (!file) return;
+
+        bgFileName.textContent = file.name;
+
+        // Création d'une URL locale pour le fichier
+        const fileURL = URL.createObjectURL(file);
+        
+        // Si un lecteur existe déjà, on le détruit (en vidant le conteneur)
+        // La documentation de PlayerJS ne spécifie pas de méthode destroy(), 
+        // donc vider le conteneur est une approche sûre.
+        document.getElementById('bg-player-container').innerHTML = '';
+
+        // 3. Initialisation du lecteur avec le fichier local
+        bgPlayerInstance = new Playerjs({
+            id: "bg-player-container", // L'ID du conteneur
+            file: fileURL,
+            title: file.name // On peut même afficher le titre dans le lecteur
+        });
+    });
     
     // --- Logique Piste Principale ---
     mainAudio.addEventListener('timeupdate', () => {
@@ -294,7 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (mainAudio.currentTime >= loopEnd || mainAudio.currentTime < loopStart) {
             mainAudio.currentTime = loopStart;
-            // Assurer la lecture si on arrive à la fin de la boucle
             if(mainAudio.paused) mainAudio.play();
         }
     });
@@ -304,26 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
            mainAudio.currentTime = loopStart;
         }
     });
-
-    // --- Contrôles Personnalisés Musique de Fond ---
-    bgPlayPauseBtn.addEventListener('click', () => {
-        if (!bgAudio.src) return;
-        if (bgAudio.paused) {
-            bgAudio.play();
-            bgPlayPauseBtn.innerHTML = '⏸️';
-        } else {
-            bgAudio.pause();
-            bgPlayPauseBtn.innerHTML = '▶️';
-        }
-    });
-
-    bgVolumeSlider.addEventListener('input', (e) => {
-        bgAudio.volume = e.target.value;
-    });
-
-    bgAudio.addEventListener('play', () => { bgPlayPauseBtn.innerHTML = '⏸️'; });
-    bgAudio.addEventListener('pause', () => { bgPlayPauseBtn.innerHTML = '▶️'; });
-    bgAudio.addEventListener('ended', () => { bgPlayPauseBtn.innerHTML = '▶️'; });
 
     // --- Gestion des Poignées de Boucle (Drag & Drop) ---
     const updateHandlesAndRange = () => {
@@ -342,7 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         if (handle === 'start') isDraggingStart = true;
         if (handle === 'end') isDraggingEnd = true;
-        document.body.style.userSelect = 'none'; // Empêche la sélection de texte
+        document.body.style.userSelect = 'none';
     };
 
     const stopDrag = () => {
@@ -360,11 +330,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isDraggingStart) {
             const newStart = percent * mainAudio.duration;
-            loopStart = Math.min(newStart, loopEnd - 0.1); // Sécurité
+            loopStart = Math.min(newStart, loopEnd - 0.1);
         }
         if (isDraggingEnd) {
             const newEnd = percent * mainAudio.duration;
-            loopEnd = Math.max(newEnd, loopStart + 0.1); // Sécurité
+            loopEnd = Math.max(newEnd, loopStart + 0.1);
         }
         updateHandlesAndRange();
     };
@@ -381,7 +351,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchmove', onDrag);
     document.addEventListener('touchend', stopDrag);
 
-    // Initialisation
     updateHandlesAndRange();
 });
 </script>

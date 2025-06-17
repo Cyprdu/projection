@@ -62,8 +62,6 @@
         #user-input { flex-grow: 1; background-color: transparent; border: none; color: var(--color-text); font-family: inherit; font-size: 1.1em; }
         #user-input:focus { outline: none; }
         
-        #final-image-container img { max-width: 150px; margin-top: 20px; border: 2px solid var(--color-glow); }
-
     </style>
 </head>
 <body>
@@ -99,7 +97,6 @@
         const output = document.getElementById('terminal-output');
         const inputLine = document.getElementById('input-line');
         const userInput = document.getElementById('user-input');
-        const inputPrompt = document.getElementById('input-prompt');
 
         const riddles = [
             {
@@ -121,7 +118,6 @@
         ];
         
         let currentRiddleIndex = 0;
-        let allRiddlesSolved = false;
 
         function logToTerminal(html, className = '') {
             const p = document.createElement('p');
@@ -138,17 +134,25 @@
                 inputLine.style.display = 'flex';
                 userInput.focus();
             } else {
-                allRiddlesSolved = true;
+                // Toutes les énigmes sont résolues, on lance la phase finale.
                 finalStage();
             }
         }
 
         function finalStage() {
-            inputPrompt.textContent = 'CLÉ FINALE >';
-            logToTerminal("SYSTÈME > Tous les verrous conceptuels sont ouverts.", 'success');
-            logToTerminal("SYSTÈME > Pour la synchronisation finale, fusionnez les 4 concepts dans leur ordre de découverte.", 'prompt');
-            logToTerminal("SYSTÈME > Format attendu : Concept1-Concept2-Concept3-Concept4", 'prompt');
-            userInput.focus();
+            // On cache le champ de saisie car l'épreuve est terminée ici.
+            inputLine.style.display = 'none';
+
+            logToTerminal("SYSTÈME > Tous les verrous sont ouverts. Matrice de décryptage partielle générée.", 'success');
+            setTimeout(() => {
+                logToTerminal("SYSTÈME > CODE À DÉCHIFFRER : <span class='response'>Vggr-Yi3f7#Qx9m$kL!01%AnbvX--Zedh@TpCw</span>");
+                setTimeout(() => {
+                    logToTerminal("SYSTÈME > Pour obtenir l'outil de déchiffrement, envoyez le mot de passe de validation suivant par message : <span class='response'>Couche Pampers</span>");
+                    setTimeout(() => {
+                        logToTerminal("SYSTÈME > FIN DE LA TRANSMISSION.");
+                    }, 1000);
+                }, 1500);
+            }, 1000);
         }
         
         function handleInput() {
@@ -159,37 +163,21 @@
 
             logToTerminal(`> ${answer}`, 'response');
             
-            if (allRiddlesSolved) {
-                // Vérification de la clé finale
-                const finalKey = "espace-temps-écran-ombre";
-                if (answer === finalKey) {
-                    logToTerminal("SYNCHRONISATION RÉUSSIE. ACCÈS AUTORISÉ.", 'success');
-                    const imgContainer = document.createElement('div');
-                    imgContainer.id = 'final-image-container';
-                    imgContainer.innerHTML = `<img src="https://github.com/Cyprdu/projection/blob/main/qr_code_escape_game_epreuve_2.png?raw=true" alt="QR Code final">`;
-                    output.appendChild(imgContainer);
-                    inputLine.style.display = 'none'; // Fin du jeu
-                } else {
-                    logToTerminal("ERREUR DE SYNCHRONISATION. CLÉ INCORRECTE.", 'error');
-                }
+            const currentRiddle = riddles[currentRiddleIndex];
+            let isCorrect = false;
+
+            if (currentRiddle.answer === 'écran') {
+                isCorrect = (answer === 'ecran' || answer === 'écran');
             } else {
-                // Vérification des énigmes
-                const currentRiddle = riddles[currentRiddleIndex];
-                let isCorrect = false;
+                isCorrect = (answer === currentRiddle.answer);
+            }
 
-                if (currentRiddle.answer === 'écran') {
-                    isCorrect = (answer === 'ecran' || answer === 'écran');
-                } else {
-                    isCorrect = (answer === currentRiddle.answer);
-                }
-
-                if (isCorrect) {
-                    logToTerminal(`VERROU ${currentRiddleIndex + 1} OUVERT.`, 'success');
-                    currentRiddleIndex++;
-                    setTimeout(askRiddle, 1000);
-                } else {
-                    logToTerminal("ACCÈS REFUSÉ. RÉPONSE INCORRECTE.", 'error');
-                }
+            if (isCorrect) {
+                logToTerminal(`VERROU ${currentRiddleIndex + 1} OUVERT.`, 'success');
+                currentRiddleIndex++;
+                setTimeout(askRiddle, 1000);
+            } else {
+                logToTerminal("ACCÈS REFUSÉ. RÉPONSE INCORRECTE.", 'error');
             }
         }
 

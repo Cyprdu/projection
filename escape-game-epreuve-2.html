@@ -1,1 +1,211 @@
-coucou
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Épreuve 2 : Le Dialogue Silencieux</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            --primary-color: #00ff41;
+            --background-color: #000;
+            --text-color: #ccc;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 700px;
+            padding: 2rem;
+        }
+
+        #prompt {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            animation: pulse 2s infinite;
+        }
+
+        p {
+            font-size: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .input-group {
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeIn 2s 1s forwards;
+        }
+
+        input[type="text"] {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 10px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            width: 300px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+            border: none;
+            padding: 10px 15px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        #final-result {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            height: 50px;
+        }
+        
+        #final-result img {
+            max-width: 150px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .success { color: #00ff41; }
+        .error { color: #ff0000; }
+
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; text-shadow: 0 0 15px var(--primary-color); }
+            100% { opacity: 0.7; }
+        }
+        
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="prompt">> INITIATE_DIALOGUE</h1>
+        <p>L'interface est une illusion. La vraie scène est en coulisses.</p>
+        <p>Le dialogue doit commencer ailleurs...</p>
+
+        <div class="input-group">
+            <form id="final-form">
+                <label for="final-password">Clé finale :</label>
+                <input type="text" id="final-password" autocomplete="off">
+                <button type="submit">DÉVERROUILLER</button>
+            </form>
+            <div id="final-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================================================================
+        // PARTIE 1 : LOGIQUE DU JEU DANS LA CONSOLE
+        // ==================================================================
+
+        const enigme = {
+            sequence: ['Le', 'silence', 'revele', 'le', 'chemin'],
+            niveauActuel: 1,
+            jeuEnCours: false,
+
+            start: function() {
+                if (this.jeuEnCours) {
+                    console.log('%c[ERREUR] Une session est déjà en cours. Utilisez enigme.repondre("votre réponse").', 'color: #ff0000; font-weight: bold;');
+                    return;
+                }
+                this.jeuEnCours = true;
+                this.niveauActuel = 1;
+                console.log('%c[SYSTEME] Initialisation de la séquence mémorielle. Niveau 1.', 'color: #00ff41;');
+                this.montrerSequence();
+            },
+
+            montrerSequence: function() {
+                const sequenceDuNiveau = this.sequence.slice(0, this.niveauActuel);
+                console.log('%cRETENEZ LA SÉQUENCE :', 'color: #ffff00; font-size: 14px;');
+                
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < sequenceDuNiveau.length) {
+                        console.log(`%c> ${sequenceDuNiveau[i]}`, 'color: #00ffff; font-size: 18px; font-weight: bold;');
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        console.log('%cÀ vous. Utilisez enigme.repondre("mot1 mot2 ...") pour valider.', 'color: #ffff00; font-size: 14px;');
+                    }
+                }, 1000);
+            },
+
+            repondre: function(reponseUtilisateur) {
+                if (!this.jeuEnCours) {
+                    console.log('%c[ERREUR] Aucun jeu en cours. Utilisez enigme.start() pour commencer.', 'color: #ff0000; font-weight: bold;');
+                    return;
+                }
+
+                const reponseCorrecte = this.sequence.slice(0, this.niveauActuel).join(' ');
+                
+                if (reponseUtilisateur.trim().toLowerCase() === reponseCorrecte.toLowerCase()) {
+                    console.log('%c[SUCCÈS] Mémoire validée.', 'color: #00ff41;');
+                    if (this.niveauActuel === this.sequence.length) {
+                        console.log('%c[SYSTÈME] Séquence mémorielle complète !', 'color: #00ff41; font-size: 20px; font-weight: bold;');
+                        console.log(`%cLa phrase est : "${this.sequence.join(' ')}"`, 'color: #ffff00; font-size: 16px;');
+                        console.log('%cMaintenant, comment transformer cette phrase en une clé ? La syntaxe de l\'épreuve précédente devrait vous aider... Retournez sur la page principale.', 'color: #ffff00; font-size: 16px;');
+                        this.jeuEnCours = false;
+                    } else {
+                        this.niveauActuel++;
+                        console.log(`%c[SYSTEME] Passage au niveau ${this.niveauActuel}.`, 'color: #00ff41;');
+                        this.montrerSequence();
+                    }
+                } else {
+                    console.log('%c[ERREUR] Séquence incorrecte. Corruption de la mémoire. Le système doit être réinitialisé.', 'color: #ff0000; font-weight: bold;');
+                    console.log('%cUtilisez enigme.start() pour recommencer.', 'color: #ff0000;');
+                    this.jeuEnCours = false;
+                }
+            }
+        };
+
+        // Message d'accueil dans la console
+        console.log('%cBienvenue, Agent.', 'background: #000; color: #00ff41; font-size: 24px; font-weight: bold; padding: 5px;');
+        console.log('%cVous avez trouvé les coulisses. Ici, les règles sont différentes.', 'color: #ccc; font-size: 14px;');
+        console.log('%cUn objet nommé "enigme" a été chargé dans cette console.', 'color: #ccc; font-size: 14px;');
+        console.log('%cPour commencer l\'épreuve, tapez la commande suivante et appuyez sur Entrée :', 'color: #ffff00; font-size: 14px;');
+        console.log('%cenigme.start()', 'background: #222; color: #00ffff; font-family: monospace; padding: 2px 5px; border-radius: 3px;');
+        
+
+        // ==================================================================
+        // PARTIE 2 : LOGIQUE DE LA PAGE WEB POUR LE MOT DE PASSE FINAL
+        // ==================================================================
+        document.getElementById('final-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const finalInput = document.getElementById('final-password');
+            const finalResultDiv = document.getElementById('final-result');
+            
+            // Le mot de passe final est la phrase du jeu, formatée comme l'énigme précédente
+            const correctFinalPassword = "Le-silence-revele-le-chemin";
+
+            if (finalInput.value === correctFinalPassword) {
+                finalResultDiv.innerHTML = `<img src="https://www.pngall.com/wp-content/uploads/2016/07/Success-PNG-Image.png" alt="Épreuve réussie !">`; // Remplacez par votre image/QR code
+                finalResultDiv.className = 'success';
+            } else {
+                finalResultDiv.innerHTML = 'ACCÈS REFUSÉ';
+                finalResultDiv.className = 'error';
+                finalInput.value = '';
+            }
+        });
+    </script>
+
+</body>
+</html>

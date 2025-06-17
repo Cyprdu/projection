@@ -2,371 +2,360 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Répétiteur Audio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecteur Audio en Boucle</title>
     <style>
-        /* Styles pour une meilleure expérience tactile et visuelle */
-        html, body {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
+        /* --- Styles Généraux --- */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --background-color: #f8f9fa;
+            --handle-color: #dc3545;
+            --handle-size: 20px;
+            --progress-bar-height: 8px;
         }
-        .progress-bar-container {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--background-color);
+            color: #333;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+
+        /* --- Conteneur Principal --- */
+        .looper-container {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Section de Contrôle --- */
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .control-section h2 {
+            font-size: 1rem;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.5rem;
+        }
+
+        /* --- Style des Inputs de Fichier --- */
+        .file-input-label {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 0.75rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .file-input-label:hover {
+            background-color: #0056b3;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-name {
+            text-align: center;
+            font-style: italic;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        /* --- Lecteur Audio Principal --- */
+        .main-player audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        /* --- Barre de Progression Personnalisée --- */
+        .progress-container {
             position: relative;
-            touch-action: none;
+            width: 100%;
+            height: var(--handle-size);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-top: 1rem;
         }
-        .handle {
+
+        .progress-bar-bg {
             position: absolute;
-            top: 50%;
-            transform: translateY(-50%) translateX(-50%);
-            width: 22px;
-            height: 22px;
-            background-color: white;
-            border: 4px solid #3b82f6;
+            width: 100%;
+            height: var(--progress-bar-height);
+            background-color: #e9ecef;
+            border-radius: var(--progress-bar-height);
+        }
+
+        .progress-bar-current {
+            position: absolute;
+            height: var(--progress-bar-height);
+            background-color: var(--primary-color);
+            border-radius: var(--progress-bar-height);
+            left: 0;
+            width: 0;
+        }
+        
+        .loop-range {
+            position: absolute;
+            height: var(--progress-bar-height);
+            background-color: rgba(0, 123, 255, 0.3);
+            left: 0;
+            right: 0;
+        }
+
+        /* --- Poignées de Boucle (Curseurs) --- */
+        .loop-handle {
+            position: absolute;
+            width: var(--handle-size);
+            height: var(--handle-size);
+            background-color: var(--handle-color);
+            border: 2px solid white;
             border-radius: 50%;
-            cursor: grab;
-            z-index: 20;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .handle:active {
-            transform: translateY(-50%) translateX(-50%) scale(1.15);
-        }
-        .loop-selection {
-            position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            height: 6px;
-            background-color: #3b82f6;
-            opacity: 0.4;
-            z-index: 5;
-            pointer-events: none;
+            z-index: 10;
+            cursor: grab;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        /* Styles communs pour les sliders */
-        input[type="range"] {
-            -webkit-appearance: none; appearance: none;
-            background: transparent; cursor: pointer;
+        .loop-handle:active {
+            cursor: grabbing;
         }
-        /* Slider Horizontal */
-        input[type="range"]:not(.vertical) { width: 100%; }
-        input[type="range"]:not(.vertical)::-webkit-slider-runnable-track {
-            background: #e5e7eb; height: 6px; border-radius: 3px;
+
+        #start-handle {
+            left: 0%; /* Initial position */
         }
-        .dark input[type="range"]:not(.vertical)::-webkit-slider-runnable-track {
-             background: #374151;
+
+        #end-handle {
+            left: 100%; /* Initial position */
         }
-        input[type="range"]:not(.vertical)::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none;
-            margin-top: -7px;
-            background-color: #3b82f6;
-            height: 20px; width: 20px; border-radius: 50%;
-        }
-        /* Slider Vertical */
-        input[type="range"].vertical {
-            writing-mode: bt-lr; /* De bas en haut, de gauche à droite */
-            width: 8px;
-            height: 120px;
-            padding: 0 5px;
-        }
-        input[type="range"].vertical::-webkit-slider-runnable-track {
-            width: 6px;
-            height: 100%;
-            background: #e5e7eb;
-            border-radius: 3px;
-        }
-        .dark input[type="range"].vertical::-webkit-slider-runnable-track {
-            background: #374151;
-        }
-        input[type="range"].vertical::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            height: 20px;
-            width: 20px;
-            margin-left: -7px;
-            background: #3b82f6;
-            border-radius: 50%;
+        
+        /* --- Affichage des Temps --- */
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+            margin-top: 0.5rem;
         }
     </style>
 </head>
-<body class="bg-gray-200 dark:bg-black text-gray-800 dark:text-gray-200 font-sans">
+<body>
 
-    <div class="w-full max-w-md mx-auto p-4 space-y-6">
+<div class="looper-container">
+    <h1>🎧 Audio Looper</h1>
+
+    <div class="control-section main-player">
+        <h2>1. Piste à répéter</h2>
+        <label for="main-audio-input" class="file-input-label">Charger un fichier audio (.mp3, .m4a)</label>
+        <input type="file" id="main-audio-input" accept=".mp3,.m4a">
+        <div id="main-file-name" class="file-name">Aucun fichier chargé</div>
         
-        <!-- Carte pour l'audio principal -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-5">
-            <h2 class="text-xl font-bold text-center mb-5 text-gray-800 dark:text-gray-100">Audio Principal</h2>
-            
-            <div id="main-audio-dropzone" class="flex justify-center">
-                 <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3" class="hidden">
-                 <button id="fileSelectBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                    <span>Choisir un fichier</span>
-                </button>
-            </div>
-
-            <div id="playerContainer" class="hidden space-y-5">
-                <audio id="audioPlayer" class="w-full"></audio>
-                
-                <div class="progress-bar-container w-full h-10 flex items-center">
-                    <div id="progressBar" class="relative w-full h-[6px] bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div id="progress" class="absolute top-0 left-0 h-full bg-blue-500 rounded-full z-10"></div>
-                        <div id="loopSelection" class="loop-selection"></div>
-                        <div id="startHandle" class="handle"></div>
-                        <div id="endHandle" class="handle"></div>
-                    </div>
-                </div>
-
-                <div class="flex justify-between text-xs font-mono text-gray-500">
-                    <span id="currentTimeDisplay">00:00</span>
-                    <span id="durationDisplay">00:00</span>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-center text-sm font-mono bg-gray-100 dark:bg-gray-800/50 p-2 rounded-lg">
-                    <span class="text-green-500">Début: <span id="startTimeDisplay" class="font-bold">00:00</span></span>
-                    <span class="text-red-500">Fin: <span id="endTimeDisplay" class="font-bold">00:00</span></span>
-                </div>
-                
-                <div class="flex items-center justify-between gap-4 pt-2">
-                    <button id="playPauseBtn" class="bg-blue-500 text-white h-20 w-20 rounded-full shadow-lg flex items-center justify-center">
-                        <i id="playIcon" class="fa-solid fa-play fa-2x ml-1"></i>
-                        <i id="pauseIcon" class="fa-solid fa-pause fa-2x hidden"></i>
-                    </button>
-                     <div class="flex flex-col items-center flex-grow">
-                        <label for="speedControl" class="text-xs text-gray-500 mb-1">Vitesse</label>
-                        <div class="flex items-center gap-3 bg-gray-100 dark:bg-gray-800/50 p-2 rounded-lg">
-                           <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1">
-                           <span id="speedDisplay" class="font-mono font-bold text-sm w-12 text-center">1.0x</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="progress-container">
+            <div class="progress-bar-bg"></div>
+            <div class="loop-range" id="loop-range"></div>
+            <div class="progress-bar-current" id="current-progress"></div>
+            <div class="loop-handle" id="start-handle" draggable="true"></div>
+            <div class="loop-handle" id="end-handle" draggable="true"></div>
         </div>
-
-        <!-- Carte pour la musique d'ambiance -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-5">
-            <h2 class="text-xl font-bold text-center mb-5 text-gray-800 dark:text-gray-100">Ambiance Sonore</h2>
-            <audio id="backgroundAudioPlayer" loop></audio>
-
-            <div id="bg-audio-dropzone" class="flex justify-center">
-                 <input type="file" id="backgroundFileInput" accept="audio/*,.m4a,.mp3" class="hidden">
-                 <button id="backgroundFileSelectBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3">
-                    <i class="fa-solid fa-music"></i>
-                    <span>Choisir une musique</span>
-                </button>
-            </div>
-           
-            <div id="backgroundControls" class="hidden flex items-center justify-center gap-8 pt-2">
-                <button id="backgroundPlayPauseBtn" class="bg-gray-200 dark:bg-gray-700 h-14 w-14 rounded-full flex items-center justify-center">
-                    <i id="backgroundPlayIcon" class="fa-solid fa-play fa-lg"></i>
-                    <i id="backgroundPauseIcon" class="fa-solid fa-pause fa-lg hidden"></i>
-                </button>
-                <div class="flex items-center gap-4">
-                    <i class="fa-solid fa-volume-off text-gray-400"></i>
-                    <input type="range" id="backgroundVolume" min="0" max="1" step="0.01" value="0.5" class="vertical">
-                    <i class="fa-solid fa-volume-high text-gray-400"></i>
-                </div>
-            </div>
+        <div class="time-display">
+            <span id="current-time">00:00</span>
+            <span id="duration">00:00</span>
         </div>
+        
+        <audio id="main-audio" controls loop></audio>
     </div>
 
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
-        const fileInput = document.getElementById('fileInput');
-        const fileSelectBtn = document.getElementById('fileSelectBtn');
-        const playerContainer = document.getElementById('playerContainer');
-        const audioPlayer = document.getElementById('audioPlayer');
-        const mainAudioDropzone = document.getElementById('main-audio-dropzone');
-        const progressBar = document.getElementById('progressBar');
-        const progress = document.getElementById('progress');
-        const startHandle = document.getElementById('startHandle');
-        const endHandle = document.getElementById('endHandle');
-        const loopSelection = document.getElementById('loopSelection');
-        const currentTimeDisplay = document.getElementById('currentTimeDisplay');
-        const startTimeDisplay = document.getElementById('startTimeDisplay');
-        const endTimeDisplay = document.getElementById('endTimeDisplay');
-        const durationDisplay = document.getElementById('durationDisplay');
-        const playPauseBtn = document.getElementById('playPauseBtn');
-        const playIcon = document.getElementById('playIcon');
-        const pauseIcon = document.getElementById('pauseIcon');
-        const speedControl = document.getElementById('speedControl');
-        const speedDisplay = document.getElementById('speedDisplay');
+    <hr style="border: none; border-top: 1px solid #eee; margin: 2rem 0;">
+    
+    <div class="control-section bg-player">
+        <h2>2. Musique de fond (Optionnel)</h2>
+        <label for="bg-audio-input" class="file-input-label">Charger une musique de fond</label>
+        <input type="file" id="bg-audio-input" accept=".mp3">
+        <div id="bg-file-name" class="file-name">Aucun fichier chargé</div>
+        <audio id="bg-audio" controls style="width:100%; margin-top: 1rem;"></audio>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Éléments DOM ---
+    const mainAudio = document.getElementById('main-audio');
+    const bgAudio = document.getElementById('bg-audio');
+    
+    const mainAudioInput = document.getElementById('main-audio-input');
+    const bgAudioInput = document.getElementById('bg-audio-input');
+    
+    const mainFileName = document.getElementById('main-file-name');
+    const bgFileName = document.getElementById('bg-file-name');
+
+    const progressContainer = document.querySelector('.progress-container');
+    const currentProgress = document.getElementById('current-progress');
+    const loopRange = document.getElementById('loop-range');
+    
+    const startHandle = document.getElementById('start-handle');
+    const endHandle = document.getElementById('end-handle');
+    
+    const currentTimeDisplay = document.getElementById('current-time');
+    const durationDisplay = document.getElementById('duration');
+
+    // --- État de l'application ---
+    let loopStart = 0; // en secondes
+    let loopEnd = 0;   // en secondes
+    let isDraggingStart = false;
+    let isDraggingEnd = false;
+
+    // --- Fonctions Utilitaires ---
+    const formatTime = (seconds) => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    // --- Chargement des Fichiers Audio ---
+    const loadAudio = (inputElement, audioElement, fileNameElement) => {
+        const file = inputElement.files[0];
+        if (file) {
+            const fileURL = URL.createObjectURL(file);
+            audioElement.src = fileURL;
+            fileNameElement.textContent = file.name;
+            if (audioElement === mainAudio) {
+                 audioElement.addEventListener('loadedmetadata', () => {
+                    loopEnd = audioElement.duration;
+                    durationDisplay.textContent = formatTime(audioElement.duration);
+                    updateHandlesAndRange();
+                }, { once: true });
+            }
+        }
+    };
+    
+    mainAudioInput.addEventListener('change', () => loadAudio(mainAudioInput, mainAudio, mainFileName));
+    bgAudioInput.addEventListener('change', () => loadAudio(bgAudioInput, bgAudio, bgFileName));
+
+    // --- Logique de Lecture et de Boucle ---
+    mainAudio.addEventListener('timeupdate', () => {
+        if (!mainAudio.duration) return;
+
+        // Mise à jour de la barre de progression
+        const progressPercent = (mainAudio.currentTime / mainAudio.duration) * 100;
+        currentProgress.style.width = `${progressPercent}%`;
+        currentTimeDisplay.textContent = formatTime(mainAudio.currentTime);
         
-        const backgroundAudioPlayer = document.getElementById('backgroundAudioPlayer');
-        const backgroundFileInput = document.getElementById('backgroundFileInput');
-        const backgroundFileSelectBtn = document.getElementById('backgroundFileSelectBtn');
-        const backgroundControls = document.getElementById('backgroundControls');
-        const backgroundPlayPauseBtn = document.getElementById('backgroundPlayPauseBtn');
-        const backgroundPlayIcon = document.getElementById('backgroundPlayIcon');
-        const backgroundPauseIcon = document.getElementById('backgroundPauseIcon');
-        const backgroundVolume = document.getElementById('backgroundVolume');
-        const bgAudioDropzone = document.getElementById('bg-audio-dropzone');
-        
-        // --- VARIABLES & WEB AUDIO API SETUP ---
-        let loopStart = 0, loopEnd = 0, duration = 0;
-        let isDraggingStart = false, isDraggingEnd = false;
-        
-        let audioContext;
-        let backgroundSource;
-        let gainNode;
-
-        const setupAudioContext = () => {
-            if (audioContext) return;
-            try {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                backgroundSource = audioContext.createMediaElementSource(backgroundAudioPlayer);
-                gainNode = audioContext.createGain();
-                backgroundSource.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                gainNode.gain.value = backgroundVolume.value; // Set initial volume
-            } catch (e) {
-                console.error("Web Audio API is not supported in this browser", e);
-            }
-        };
-
-        // --- GESTION DU LECTEUR AUDIO PRINCIPAL ---
-        fileSelectBtn.addEventListener('click', () => fileInput.click());
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                audioPlayer.src = URL.createObjectURL(file);
-                mainAudioDropzone.classList.add('hidden');
-                playerContainer.classList.remove('hidden');
-                audioPlayer.load();
-            }
-        });
-
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            duration = audioPlayer.duration;
-            loopStart = 0; loopEnd = duration;
-            startTimeDisplay.textContent = formatTime(loopStart);
-            durationDisplay.textContent = formatTime(duration);
-            endTimeDisplay.textContent = formatTime(duration);
-            updateHandlePositions();
-            audioPlayer.play();
-        });
-
-        audioPlayer.addEventListener('timeupdate', () => {
-            if (duration <= 0) return;
-            if (audioPlayer.currentTime >= loopEnd || audioPlayer.currentTime < loopStart) {
-                audioPlayer.currentTime = loopStart;
-            }
-            progress.style.width = `${(audioPlayer.currentTime / duration) * 100}%`;
-            currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
-        });
-
-        const toggleMainPlayPauseIcon = () => {
-            playIcon.classList.toggle('hidden', !audioPlayer.paused);
-            pauseIcon.classList.toggle('hidden', audioPlayer.paused);
-        };
-        audioPlayer.addEventListener('play', toggleMainPlayPauseIcon);
-        audioPlayer.addEventListener('pause', toggleMainPlayPauseIcon);
-        playPauseBtn.addEventListener('click', () => {
-            if (audioPlayer.paused) audioPlayer.play();
-            else audioPlayer.pause();
-        });
-
-        speedControl.addEventListener('input', e => {
-            audioPlayer.playbackRate = parseFloat(e.target.value);
-            speedDisplay.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
-        });
-        
-        // --- GESTION MUSIQUE D'AMBIANCE ---
-        backgroundFileSelectBtn.addEventListener('click', () => {
-            setupAudioContext();
-            backgroundFileInput.click();
-        });
-        backgroundFileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (file) {
-                backgroundAudioPlayer.src = URL.createObjectURL(file);
-                bgAudioDropzone.classList.add('hidden');
-                backgroundControls.classList.remove('hidden');
-                backgroundControls.classList.add('flex');
-                backgroundAudioPlayer.load();
-                backgroundAudioPlayer.play();
-            }
-        });
-
-        const toggleBackgroundPlayPauseIcon = () => {
-            backgroundPlayIcon.classList.toggle('hidden', !backgroundAudioPlayer.paused);
-            backgroundPauseIcon.classList.toggle('hidden', backgroundAudioPlayer.paused);
-        };
-        backgroundAudioPlayer.addEventListener('play', toggleBackgroundPlayPauseIcon);
-        backgroundAudioPlayer.addEventListener('pause', toggleBackgroundPlayPauseIcon);
-        backgroundPlayPauseBtn.addEventListener('click', () => {
-             // Resume AudioContext if it's suspended (required by browsers)
-            if (audioContext && audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            if (backgroundAudioPlayer.paused) backgroundAudioPlayer.play();
-            else backgroundAudioPlayer.pause();
-        });
-        backgroundVolume.addEventListener('input', e => {
-            if (gainNode) {
-                gainNode.gain.value = parseFloat(e.target.value);
-            }
-        });
-
-        // --- FONCTIONS UTILITAIRES ET GESTION DES CURSEURS ---
-        const formatTime = (seconds) => {
-            if (isNaN(seconds)) return '00:00';
-            const minutes = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        };
-
-        const updateHandlePositions = () => {
-            if (duration <= 0) return;
-            const startPercent = (loopStart / duration) * 100;
-            const endPercent = (loopEnd / duration) * 100;
-            startHandle.style.left = `${startPercent}%`;
-            endHandle.style.left = `${endPercent}%`;
-            loopSelection.style.left = `${startPercent}%`;
-            loopSelection.style.width = `${endPercent - startPercent}%`;
-        };
-        
-        const handleMove = e => {
-            if (!isDraggingStart && !isDraggingEnd) return;
-            e.preventDefault();
-            const rect = progressBar.getBoundingClientRect();
-            const x = (e.clientX || e.touches[0].clientX) - rect.left;
-            let percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
-            if (isDraggingStart) {
-                const newStart = (percent / 100) * duration;
-                if (newStart < loopEnd) { loopStart = newStart; startTimeDisplay.textContent = formatTime(loopStart); }
-            } else if (isDraggingEnd) {
-                const newEnd = (percent / 100) * duration;
-                if (newEnd > loopStart) { loopEnd = newEnd; endTimeDisplay.textContent = formatTime(loopEnd); }
-            }
-            updateHandlePositions();
-        };
-
-        const stopDragging = () => {
-            isDraggingStart = false; isDraggingEnd = false;
-            if (audioPlayer.currentTime > loopEnd || audioPlayer.currentTime < loopStart) audioPlayer.currentTime = loopStart;
-        };
-
-        [startHandle, endHandle].forEach((handle, index) => {
-            const startDrag = (e) => {
-                e.preventDefault();
-                if (index === 0) isDraggingStart = true;
-                else isDraggingEnd = true;
-            };
-            handle.addEventListener('mousedown', startDrag);
-            handle.addEventListener('touchstart', startDrag, { passive: false });
-        });
-
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('touchmove', handleMove, { passive: false });
-        window.addEventListener('mouseup', stopDragging);
-        window.addEventListener('touchend', stopDragging);
-        progressBar.addEventListener('click', e => {
-            if (e.target.classList.contains('handle')) return;
-            const rect = progressBar.getBoundingClientRect();
-            const newTime = ((e.clientX - rect.left) / rect.width) * duration;
-            if (newTime >= loopStart && newTime <= loopEnd) audioPlayer.currentTime = newTime;
-        });
+        // Logique de la boucle
+        if (mainAudio.currentTime >= loopEnd || mainAudio.currentTime < loopStart) {
+            mainAudio.currentTime = loopStart;
+        }
     });
-    </script>
+    
+    // Synchroniser la musique de fond avec la piste principale
+    mainAudio.addEventListener('play', () => {
+        if (bgAudio.src && bgAudio.paused) bgAudio.play();
+    });
+    mainAudio.addEventListener('pause', () => {
+        if (!bgAudio.paused) bgAudio.pause();
+    });
+    mainAudio.addEventListener('seeking', () => {
+        if (mainAudio.currentTime < loopStart) {
+           mainAudio.currentTime = loopStart;
+        }
+    });
+
+    // --- Mise à Jour des Poignées et de la Plage de Boucle ---
+    const updateHandlesAndRange = () => {
+        if (!mainAudio.duration) return;
+        
+        const startPercent = (loopStart / mainAudio.duration) * 100;
+        const endPercent = (loopEnd / mainAudio.duration) * 100;
+
+        startHandle.style.left = `calc(${startPercent}% - ${getComputedStyle(startHandle).width} / 2)`;
+        endHandle.style.left = `calc(${endPercent}% - ${getComputedStyle(endHandle).width} / 2)`;
+        
+        loopRange.style.left = `${startPercent}%`;
+        loopRange.style.width = `${endPercent - startPercent}%`;
+    };
+
+    // --- Gestion du Glisser-Déposer des Poignées ---
+    const startDrag = (e, handle) => {
+        e.preventDefault();
+        if (handle === 'start') isDraggingStart = true;
+        if (handle === 'end') isDraggingEnd = true;
+    };
+
+    const stopDrag = () => {
+        isDraggingStart = false;
+        isDraggingEnd = false;
+    };
+    
+    const onDrag = (e) => {
+        if (!isDraggingStart && !isDraggingEnd) return;
+        if (!mainAudio.duration) return;
+        
+        const rect = progressContainer.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let percent = (clientX - rect.left) / rect.width;
+        percent = Math.max(0, Math.min(1, percent)); // Clamp between 0 and 1
+
+        if (isDraggingStart) {
+            const newStart = percent * mainAudio.duration;
+            // Empêcher la poignée de départ de dépasser celle de fin
+            if (newStart < loopEnd - 0.1) { // 0.1s buffer
+                loopStart = newStart;
+            } else {
+                loopStart = loopEnd - 0.1;
+            }
+        }
+        
+        if (isDraggingEnd) {
+            const newEnd = percent * mainAudio.duration;
+            // Empêcher la poignée de fin de passer avant celle de départ
+            if (newEnd > loopStart + 0.1) {
+                loopEnd = newEnd;
+            } else {
+                loopEnd = loopStart + 0.1;
+            }
+        }
+        updateHandlesAndRange();
+    };
+    
+    // Écouteurs d'événements pour la souris
+    startHandle.addEventListener('mousedown', (e) => startDrag(e, 'start'));
+    endHandle.addEventListener('mousedown', (e) => startDrag(e, 'end'));
+    document.addEventListener('mousemove', onDrag);
+    document.addEventListener('mouseup', stopDrag);
+    
+    // Écouteurs d'événements pour le tactile (iPhone, etc.)
+    startHandle.addEventListener('touchstart', (e) => startDrag(e, 'start'));
+    endHandle.addEventListener('touchstart', (e) => startDrag(e, 'end'));
+    document.addEventListener('touchmove', onDrag);
+    document.addEventListener('touchend', stopDrag);
+
+    // Initialisation
+    updateHandlesAndRange();
+});
+</script>
+
 </body>
 </html>

@@ -75,11 +75,6 @@
             height: 1.5rem;
             width: 1.5rem;
         }
-        /* Style pour le conteneur du lecteur YouTube */
-        #youtube-player-iframe {
-            width: 100%;
-            height: 100%;
-        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans flex items-center justify-center min-h-screen p-4">
@@ -131,31 +126,29 @@
             </div>
         </div>
 
-        <!-- Section Musique d'ambiance YouTube -->
+        <!-- Section Musique d'ambiance -->
         <div class="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-            <h2 class="text-center font-bold text-lg text-gray-700 dark:text-gray-300">Musique d'ambiance (YouTube)</h2>
-            <div class="flex flex-col sm:flex-row gap-2">
-                <input type="text" id="youtubeUrlInput" placeholder="Coller l'URL d'une vidéo YouTube ici" class="flex-grow bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                <button id="loadYoutubeBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">Charger</button>
+            <h2 class="text-center font-bold text-lg text-gray-700 dark:text-gray-300">Musique d'ambiance</h2>
+            <audio id="backgroundAudioPlayer" loop></audio>
+
+            <div class="flex justify-center">
+                 <input type="file" id="backgroundFileInput" accept="audio/*,.m4a" class="hidden">
+                 <button id="backgroundFileSelectBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+                    Choisir une musique
+                </button>
             </div>
-            <!-- Conteneur pour le lecteur et ses contrôles -->
-            <div id="youtube-player-wrapper" class="hidden space-y-3 pt-2">
-                 <!-- Le lecteur vidéo s'affichera ici -->
-                <div id="youtube-player-container" class="aspect-video w-full bg-black rounded-lg overflow-hidden">
-                    <div id="youtube-player-iframe"></div>
-                </div>
-                 <!-- Contrôles du volume -->
-                <div class="flex items-center gap-3 w-full">
-                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path d="M7 4a1 1 0 0 0-2 0v12a1 1 0 1 0 2 0V4zM12 4a1 1 0 1 0-2 0v12a1 1 0 1 0 2 0V4zM4 9a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1zm12 0a1 1 0 0 0-1 1v2a1 1 0 1 0 2 0v-2a1 1 0 0 0-1-1z"></path></svg>
-                    <input type="range" id="youtubeVolume" min="0" max="100" value="50" class="w-full">
-                    <span id="youtubeStatus" class="font-mono text-sm w-24 text-center">Volume: 50%</span>
-                </div>
+           
+            <!-- Contrôles pour la musique d'ambiance (initialement cachés) -->
+            <div id="backgroundControls" class="hidden items-center gap-3 w-full pt-2">
+                <button id="backgroundPlayPauseBtn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-600">
+                    <svg id="backgroundPlayIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    <svg id="backgroundPauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                </button>
+                <input type="range" id="backgroundVolume" min="0" max="1" step="0.01" value="0.5" class="w-full">
+                <span id="backgroundVolumeDisplay" class="font-mono text-sm w-16 text-right">50%</span>
             </div>
         </div>
     </div>
-
-    <!-- API YouTube IFrame -->
-    <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -164,7 +157,6 @@
         const fileSelectBtn = document.getElementById('fileSelectBtn');
         const playerContainer = document.getElementById('playerContainer');
         const audioPlayer = document.getElementById('audioPlayer');
-        // ... (autres sélecteurs)
         const fileNameDisplay = document.getElementById('fileName');
         const progressBar = document.getElementById('progressBar');
         const progress = document.getElementById('progress');
@@ -181,17 +173,20 @@
         const speedControl = document.getElementById('speedControl');
         const speedDisplay = document.getElementById('speedDisplay');
         
-        // Nouveaux éléments pour YouTube
-        const youtubeUrlInput = document.getElementById('youtubeUrlInput');
-        const loadYoutubeBtn = document.getElementById('loadYoutubeBtn');
-        const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
-        const youtubeVolumeControl = document.getElementById('youtubeVolume');
-        const youtubeStatus = document.getElementById('youtubeStatus');
+        // Nouveaux éléments pour la musique d'ambiance
+        const backgroundAudioPlayer = document.getElementById('backgroundAudioPlayer');
+        const backgroundFileInput = document.getElementById('backgroundFileInput');
+        const backgroundFileSelectBtn = document.getElementById('backgroundFileSelectBtn');
+        const backgroundControls = document.getElementById('backgroundControls');
+        const backgroundPlayPauseBtn = document.getElementById('backgroundPlayPauseBtn');
+        const backgroundPlayIcon = document.getElementById('backgroundPlayIcon');
+        const backgroundPauseIcon = document.getElementById('backgroundPauseIcon');
+        const backgroundVolume = document.getElementById('backgroundVolume');
+        const backgroundVolumeDisplay = document.getElementById('backgroundVolumeDisplay');
 
         // --- VARIABLES D'ÉTAT ---
         let loopStart = 0, loopEnd = 0, duration = 0;
         let isDraggingStart = false, isDraggingEnd = false;
-        let ytPlayer; // Instance du lecteur YouTube
 
         // --- GESTION DU LECTEUR AUDIO PRINCIPAL ---
         fileSelectBtn.addEventListener('click', () => fileInput.click());
@@ -245,50 +240,43 @@
             speedDisplay.textContent = `${speed.toFixed(1)}x`;
         });
         
-        // --- GESTION DU LECTEUR YOUTUBE ---
-        window.onYouTubeIframeAPIReady = () => {}; // Laissé vide, on crée le lecteur au clic
+        // --- GESTION MUSIQUE D'AMBIANCE ---
+        backgroundFileSelectBtn.addEventListener('click', () => backgroundFileInput.click());
 
-        loadYoutubeBtn.addEventListener('click', () => {
-            const videoUrl = youtubeUrlInput.value;
-            const videoId = parseYoutubeUrl(videoUrl);
-            
-            if (videoId) {
-                youtubePlayerWrapper.classList.remove('hidden');
-                if (ytPlayer) {
-                    ytPlayer.loadVideoById(videoId);
-                } else {
-                    ytPlayer = new YT.Player('youtube-player-iframe', {
-                        height: '100%',
-                        width: '100%',
-                        videoId: videoId,
-                        playerVars: { 'autoplay': 1, 'controls': 1, 'rel': 0 },
-                        events: { 'onReady': onPlayerReady }
-                    });
-                }
+        backgroundFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                backgroundAudioPlayer.src = URL.createObjectURL(file);
+                backgroundAudioPlayer.load();
+                backgroundAudioPlayer.play();
+                backgroundControls.classList.remove('hidden');
+                backgroundControls.classList.add('flex');
+            }
+        });
+
+        const toggleBackgroundPlayPauseIcon = () => {
+            backgroundPlayIcon.classList.toggle('hidden', !backgroundAudioPlayer.paused);
+            backgroundPauseIcon.classList.toggle('hidden', backgroundAudioPlayer.paused);
+        };
+
+        backgroundAudioPlayer.addEventListener('play', toggleBackgroundPlayPauseIcon);
+        backgroundAudioPlayer.addEventListener('pause', toggleBackgroundPlayPauseIcon);
+        
+        backgroundPlayPauseBtn.addEventListener('click', () => {
+            if (backgroundAudioPlayer.paused) {
+                backgroundAudioPlayer.play();
             } else {
-                alert("URL YouTube invalide. Veuillez vérifier le lien.");
+                backgroundAudioPlayer.pause();
             }
         });
-        
-        const onPlayerReady = (event) => {
-            event.target.setVolume(youtubeVolumeControl.value);
-            event.target.playVideo();
-        };
 
-        youtubeVolumeControl.addEventListener('input', e => {
-            const volume = e.target.value;
-            if (ytPlayer && ytPlayer.setVolume) {
-                ytPlayer.setVolume(volume);
-            }
-            youtubeStatus.textContent = `Volume: ${volume}%`;
+        backgroundVolume.addEventListener('input', (e) => {
+            const volume = parseFloat(e.target.value);
+            backgroundAudioPlayer.volume = volume;
+            backgroundVolumeDisplay.textContent = `${Math.round(volume * 100)}%`;
         });
 
-        const parseYoutubeUrl = (url) => {
-            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[2].length === 11) ? match[2] : null;
-        };
-        
+
         // --- GESTION DES CURSEURS (DRAG & DROP) ---
         const formatTime = (seconds) => {
             if (isNaN(seconds)) return '00:00';

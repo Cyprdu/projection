@@ -2,29 +2,35 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Répétiteur de Boucle Audio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Répétiteur Audio</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         /* Styles pour une meilleure expérience tactile et visuelle */
+        html, body {
+            touch-action: manipulation; /* Prévient le double-tap pour zoomer */
+        }
         .progress-bar-container {
             position: relative;
-            touch-action: none;
+            touch-action: none; /* Permet le glissement horizontal sans faire défiler la page */
         }
         .handle {
             position: absolute;
             top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
+            transform: translateY(-50%) translateX(-50%);
+            width: 24px;
+            height: 24px;
             background-color: white;
-            border: 3px solid #3b82f6; /* blue-500 */
+            border: 4px solid #3b82f6; /* blue-500 */
             border-radius: 50%;
             cursor: grab;
-            z-index: 10;
+            z-index: 20;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .handle:active {
             cursor: grabbing;
+            transform: translateY(-50%) translateX(-50%) scale(1.1);
         }
         .loop-selection {
             position: absolute;
@@ -32,120 +38,110 @@
             transform: translateY(-50%);
             height: 8px;
             background-color: #3b82f6;
-            opacity: 0.5;
+            opacity: 0.4;
             z-index: 5;
             pointer-events: none;
         }
-        /* Style pour les sliders */
         input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            background: transparent;
-            cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            background: transparent; cursor: pointer;
         }
         input[type="range"]::-webkit-slider-runnable-track {
-            background: #e5e7eb; /* gray-200 */
-            height: 0.5rem;
-            border-radius: 0.5rem;
+            background: #e5e7eb; height: 0.5rem; border-radius: 0.5rem;
         }
         .dark input[type="range"]::-webkit-slider-runnable-track {
-             background: #4b5563; /* gray-600 */
-        }
-        input[type="range"]::-moz-range-track {
-            background: #e5e7eb;
-            height: 0.5rem;
-            border-radius: 0.5rem;
-        }
-        .dark input[type="range"]::-moz-range-track {
-            background: #4b5563;
+             background: #4b5563;
         }
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            margin-top: -5px; /* Ajustement pour centrer */
+            -webkit-appearance: none; appearance: none;
+            margin-top: -6px;
             background-color: #3b82f6;
-            height: 1.5rem;
-            width: 1.5rem;
-            border-radius: 50%;
-        }
-        input[type="range"]::-moz-range-thumb {
-            border: none;
-            border-radius: 50%;
-            background-color: #3b82f6;
-            height: 1.5rem;
-            width: 1.5rem;
+            height: 1.75rem; width: 1.75rem; border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans flex items-center justify-center min-h-screen p-4">
+<body class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-sans">
 
-    <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 space-y-6">
-        <header class="text-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Concentration Audio</h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">Répétez un audio et ajoutez une musique de fond.</p>
-        </header>
-
-        <!-- Zone de sélection de fichier principal -->
-        <div class="flex justify-center">
-            <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3" class="hidden">
-            <button id="fileSelectBtn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 text-lg">
-                Choisir un audio à répéter
-            </button>
-        </div>
-
-        <!-- Conteneur du lecteur audio principal (initialement caché) -->
-        <div id="playerContainer" class="hidden space-y-4">
-            <p id="fileName" class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 truncate px-2"></p>
-            <audio id="audioPlayer" class="w-full"></audio>
-             <div class="progress-bar-container w-full h-8 flex items-center px-1">
-                <div id="progressBar" class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                    <div id="progress" class="absolute top-0 left-0 h-full bg-blue-500 rounded-full"></div>
-                    <div id="loopSelection" class="loop-selection"></div>
-                    <div id="startHandle" class="handle"></div>
-                    <div id="endHandle" class="handle"></div>
-                </div>
-            </div>
-            <div class="flex justify-between text-sm font-mono px-1">
-                <span id="currentTimeDisplay">00:00</span>
-                <span id="durationDisplay">00:00</span>
-            </div>
-            <div class="flex justify-around text-sm font-mono bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
-                <span class="text-green-500">Début: <span id="startTimeDisplay" class="font-bold">00:00</span></span>
-                <span class="text-red-500">Fin: <span id="endTimeDisplay" class="font-bold">00:00</span></span>
-            </div>
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
-                <button id="playPauseBtn" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 p-4 rounded-full">
-                    <svg id="playIcon" class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20"><path d="M4.018 15.132A1.25 1.25 0 0 0 6 16.25v-12.5A1.25 1.25 0 0 0 4.018 2.618L2.24 3.982A1.25 1.25 0 0 0 1 5.132V14.868a1.25 1.25 0 0 0 1.24.868l1.778-1.368zM15.5 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75zM10 4.75a.75.75 0 0 0-1.5 0v10.5a.75.75 0 0 0 1.5 0V4.75z"></path></svg>
-                    <svg id="pauseIcon" class="w-8 h-8 hidden" fill="currentColor" viewBox="0 0 20 20"><path d="M5.75 4.5a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75zm9 0a.75.75 0 0 0-.75.75v10.5a.75.75 0 0 0 1.5 0V5.25a.75.75 0 0 0-.75-.75z"></path></svg>
+    <div class="w-full max-w-md mx-auto p-4 space-y-5">
+        
+        <!-- Carte pour l'audio principal -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-5">
+            <h2 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-gray-100">Audio à Répéter</h2>
+            
+            <div id="main-audio-dropzone" class="flex justify-center">
+                 <input type="file" id="fileInput" accept="audio/*,.m4a,.mp3" class="hidden">
+                 <button id="fileSelectBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 text-lg flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <span>Choisir un fichier</span>
                 </button>
-                <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
-                    <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1" class="w-full">
-                    <span id="speedDisplay" class="font-mono font-bold text-lg w-16 text-center">1.0x</span>
+            </div>
+
+            <div id="playerContainer" class="hidden space-y-5">
+                <p id="fileName" class="text-center text-sm font-medium text-gray-500 dark:text-gray-400 truncate"></p>
+                <audio id="audioPlayer" class="w-full"></audio>
+                
+                <div class="progress-bar-container w-full h-10 flex items-center">
+                    <div id="progressBar" class="relative w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div id="progress" class="absolute top-0 left-0 h-full bg-blue-500 rounded-full z-10"></div>
+                        <div id="loopSelection" class="loop-selection"></div>
+                        <div id="startHandle" class="handle"></div>
+                        <div id="endHandle" class="handle"></div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between text-xs font-mono text-gray-500">
+                    <span id="currentTimeDisplay">00:00</span>
+                    <span id="durationDisplay">00:00</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-center text-sm font-mono bg-gray-100 dark:bg-gray-800 p-2 rounded-lg">
+                    <span class="text-green-500">Début: <span id="startTimeDisplay" class="font-bold">00:00</span></span>
+                    <span class="text-red-500">Fin: <span id="endTimeDisplay" class="font-bold">00:00</span></span>
+                </div>
+                
+                <div class="flex items-center justify-around gap-4 pt-2">
+                    <div class="flex flex-col items-center">
+                        <label for="speedControl" class="text-xs text-gray-500 mb-2">Vitesse</label>
+                        <div class="flex items-center gap-2">
+                            <input type="range" id="speedControl" min="0.5" max="2" step="0.1" value="1" class="w-24">
+                            <span id="speedDisplay" class="font-mono font-bold text-sm w-12 text-center">1.0x</span>
+                        </div>
+                    </div>
+                    <button id="playPauseBtn" class="bg-blue-500 text-white p-5 rounded-full shadow-lg">
+                        <i id="playIcon" class="fa-solid fa-play fa-2x w-8 text-center"></i>
+                        <i id="pauseIcon" class="fa-solid fa-pause fa-2x w-8 text-center hidden"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Section Musique d'ambiance -->
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
-            <h2 class="text-center font-bold text-lg text-gray-700 dark:text-gray-300">Musique d'ambiance</h2>
+        <!-- Carte pour la musique d'ambiance -->
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-5">
+            <h2 class="text-xl font-bold text-center mb-4 text-gray-800 dark:text-gray-100">Musique d'Ambiance</h2>
             <audio id="backgroundAudioPlayer" loop></audio>
 
-            <div class="flex justify-center">
+            <div id="bg-audio-dropzone" class="flex justify-center">
                  <input type="file" id="backgroundFileInput" accept="audio/*,.m4a,.mp3" class="hidden">
-                 <button id="backgroundFileSelectBtn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
-                    Choisir une musique
+                 <button id="backgroundFileSelectBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-music"></i>
+                    <span>Choisir une musique</span>
                 </button>
             </div>
            
-            <!-- Contrôles pour la musique d'ambiance (initialement cachés) -->
-            <div id="backgroundControls" class="hidden items-center gap-3 w-full pt-2">
-                <button id="backgroundPlayPauseBtn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-600">
-                    <svg id="backgroundPlayIcon" class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                    <svg id="backgroundPauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
-                </button>
-                <input type="range" id="backgroundVolume" min="0" max="1" step="0.01" value="0.5" class="w-full">
-                <span id="backgroundVolumeDisplay" class="font-mono text-sm w-16 text-right">50%</span>
+            <div id="backgroundControls" class="hidden flex-col items-center gap-4 pt-2">
+                <p id="backgroundFileName" class="text-center text-xs font-medium text-gray-500 dark:text-gray-400 truncate"></p>
+                <div class="flex items-center justify-around w-full">
+                    <button id="backgroundPlayPauseBtn" class="bg-gray-200 dark:bg-gray-700 p-3 rounded-full">
+                        <i id="backgroundPlayIcon" class="fa-solid fa-play fa-lg w-5 text-center"></i>
+                        <i id="backgroundPauseIcon" class="fa-solid fa-pause fa-lg w-5 text-center hidden"></i>
+                    </button>
+                    <div class="flex-grow flex items-center gap-2 mx-4">
+                        <i class="fa-solid fa-volume-off text-gray-500"></i>
+                        <input type="range" id="backgroundVolume" min="0" max="1" step="0.01" value="0.5" class="w-full">
+                        <i class="fa-solid fa-volume-high text-gray-500"></i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -153,11 +149,14 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         // --- SÉLECTION DES ÉLÉMENTS DU DOM ---
+        // Lecteur principal
         const fileInput = document.getElementById('fileInput');
         const fileSelectBtn = document.getElementById('fileSelectBtn');
         const playerContainer = document.getElementById('playerContainer');
         const audioPlayer = document.getElementById('audioPlayer');
         const fileNameDisplay = document.getElementById('fileName');
+        const mainAudioDropzone = document.getElementById('main-audio-dropzone');
+        // Contrôles principaux
         const progressBar = document.getElementById('progressBar');
         const progress = document.getElementById('progress');
         const startHandle = document.getElementById('startHandle');
@@ -173,7 +172,7 @@
         const speedControl = document.getElementById('speedControl');
         const speedDisplay = document.getElementById('speedDisplay');
         
-        // Nouveaux éléments pour la musique d'ambiance
+        // Lecteur d'ambiance
         const backgroundAudioPlayer = document.getElementById('backgroundAudioPlayer');
         const backgroundFileInput = document.getElementById('backgroundFileInput');
         const backgroundFileSelectBtn = document.getElementById('backgroundFileSelectBtn');
@@ -182,8 +181,9 @@
         const backgroundPlayIcon = document.getElementById('backgroundPlayIcon');
         const backgroundPauseIcon = document.getElementById('backgroundPauseIcon');
         const backgroundVolume = document.getElementById('backgroundVolume');
-        const backgroundVolumeDisplay = document.getElementById('backgroundVolumeDisplay');
-
+        const backgroundFileName = document.getElementById('backgroundFileName');
+        const bgAudioDropzone = document.getElementById('bg-audio-dropzone');
+        
         // --- VARIABLES D'ÉTAT ---
         let loopStart = 0, loopEnd = 0, duration = 0;
         let isDraggingStart = false, isDraggingEnd = false;
@@ -195,6 +195,7 @@
             if (file) {
                 audioPlayer.src = URL.createObjectURL(file);
                 fileNameDisplay.textContent = file.name;
+                mainAudioDropzone.classList.add('hidden');
                 playerContainer.classList.remove('hidden');
                 audioPlayer.load();
             }
@@ -202,13 +203,10 @@
 
         audioPlayer.addEventListener('loadedmetadata', () => {
             duration = audioPlayer.duration;
-            loopStart = 0;
-            loopEnd = duration;
+            loopStart = 0; loopEnd = duration;
             startTimeDisplay.textContent = formatTime(loopStart);
             durationDisplay.textContent = formatTime(duration);
             endTimeDisplay.textContent = formatTime(duration);
-            speedControl.value = 1;
-            speedDisplay.textContent = '1.0x';
             updateHandlePositions();
             audioPlayer.play();
         });
@@ -222,35 +220,34 @@
             currentTimeDisplay.textContent = formatTime(audioPlayer.currentTime);
         });
 
-        const togglePlayPauseIcon = () => {
+        const toggleMainPlayPauseIcon = () => {
             playIcon.classList.toggle('hidden', !audioPlayer.paused);
             pauseIcon.classList.toggle('hidden', audioPlayer.paused);
         };
-        audioPlayer.addEventListener('play', togglePlayPauseIcon);
-        audioPlayer.addEventListener('pause', togglePlayPauseIcon);
-
+        audioPlayer.addEventListener('play', toggleMainPlayPauseIcon);
+        audioPlayer.addEventListener('pause', toggleMainPlayPauseIcon);
         playPauseBtn.addEventListener('click', () => {
             if (audioPlayer.paused) audioPlayer.play();
             else audioPlayer.pause();
         });
 
         speedControl.addEventListener('input', e => {
-            const speed = parseFloat(e.target.value);
-            audioPlayer.playbackRate = speed;
-            speedDisplay.textContent = `${speed.toFixed(1)}x`;
+            audioPlayer.playbackRate = parseFloat(e.target.value);
+            speedDisplay.textContent = `${parseFloat(e.target.value).toFixed(1)}x`;
         });
         
         // --- GESTION MUSIQUE D'AMBIANCE ---
         backgroundFileSelectBtn.addEventListener('click', () => backgroundFileInput.click());
-
-        backgroundFileInput.addEventListener('change', (e) => {
+        backgroundFileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (file) {
                 backgroundAudioPlayer.src = URL.createObjectURL(file);
-                backgroundAudioPlayer.load();
-                backgroundAudioPlayer.play();
+                backgroundFileName.textContent = file.name;
+                bgAudioDropzone.classList.add('hidden');
                 backgroundControls.classList.remove('hidden');
                 backgroundControls.classList.add('flex');
+                backgroundAudioPlayer.load();
+                backgroundAudioPlayer.play();
             }
         });
 
@@ -258,26 +255,17 @@
             backgroundPlayIcon.classList.toggle('hidden', !backgroundAudioPlayer.paused);
             backgroundPauseIcon.classList.toggle('hidden', backgroundAudioPlayer.paused);
         };
-
         backgroundAudioPlayer.addEventListener('play', toggleBackgroundPlayPauseIcon);
         backgroundAudioPlayer.addEventListener('pause', toggleBackgroundPlayPauseIcon);
-        
         backgroundPlayPauseBtn.addEventListener('click', () => {
-            if (backgroundAudioPlayer.paused) {
-                backgroundAudioPlayer.play();
-            } else {
-                backgroundAudioPlayer.pause();
-            }
+            if (backgroundAudioPlayer.paused) backgroundAudioPlayer.play();
+            else backgroundAudioPlayer.pause();
+        });
+        backgroundVolume.addEventListener('input', e => {
+            backgroundAudioPlayer.volume = parseFloat(e.target.value);
         });
 
-        backgroundVolume.addEventListener('input', (e) => {
-            const volume = parseFloat(e.target.value);
-            backgroundAudioPlayer.volume = volume;
-            backgroundVolumeDisplay.textContent = `${Math.round(volume * 100)}%`;
-        });
-
-
-        // --- GESTION DES CURSEURS (DRAG & DROP) ---
+        // --- FONCTIONS UTILITAIRES ET GESTION DES CURSEURS ---
         const formatTime = (seconds) => {
             if (isNaN(seconds)) return '00:00';
             const minutes = Math.floor(seconds / 60);
@@ -289,19 +277,18 @@
             if (duration <= 0) return;
             const startPercent = (loopStart / duration) * 100;
             const endPercent = (loopEnd / duration) * 100;
-            startHandle.style.left = `calc(${startPercent}% - 10px)`;
-            endHandle.style.left = `calc(${endPercent}% - 10px)`;
+            startHandle.style.left = `${startPercent}%`;
+            endHandle.style.left = `${endPercent}%`;
             loopSelection.style.left = `${startPercent}%`;
             loopSelection.style.width = `${endPercent - startPercent}%`;
         };
         
-        const handleMove = (e) => {
+        const handleMove = e => {
             if (!isDraggingStart && !isDraggingEnd) return;
             e.preventDefault();
             const rect = progressBar.getBoundingClientRect();
             const x = (e.clientX || e.touches[0].clientX) - rect.left;
             let percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
-
             if (isDraggingStart) {
                 const newStart = (percent / 100) * duration;
                 if (newStart < loopEnd) { loopStart = newStart; startTimeDisplay.textContent = formatTime(loopStart); }
@@ -313,23 +300,26 @@
         };
 
         const stopDragging = () => {
-            isDraggingStart = false;
-            isDraggingEnd = false;
+            isDraggingStart = false; isDraggingEnd = false;
             if (audioPlayer.currentTime > loopEnd || audioPlayer.currentTime < loopStart) audioPlayer.currentTime = loopStart;
         };
 
         [startHandle, endHandle].forEach((handle, index) => {
-            handle.addEventListener('mousedown', () => { (index === 0) ? isDraggingStart = true : isDraggingEnd = true; });
-            handle.addEventListener('touchstart', (e) => { e.preventDefault(); (index === 0) ? isDraggingStart = true : isDraggingEnd = true; });
+            const startDrag = (e) => {
+                e.preventDefault();
+                if (index === 0) isDraggingStart = true;
+                else isDraggingEnd = true;
+            };
+            handle.addEventListener('mousedown', startDrag);
+            handle.addEventListener('touchstart', startDrag, { passive: false });
         });
 
         window.addEventListener('mousemove', handleMove);
         window.addEventListener('touchmove', handleMove, { passive: false });
         window.addEventListener('mouseup', stopDragging);
         window.addEventListener('touchend', stopDragging);
-
         progressBar.addEventListener('click', e => {
-            if (e.target === startHandle || e.target === endHandle) return;
+            if (e.target.classList.contains('handle')) return;
             const rect = progressBar.getBoundingClientRect();
             const newTime = ((e.clientX - rect.left) / rect.width) * duration;
             if (newTime >= loopStart && newTime <= loopEnd) audioPlayer.currentTime = newTime;

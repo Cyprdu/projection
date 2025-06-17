@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocole CERBERUS</title>
+    <title>SYSTÈME V.E.T.O.</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
         :root {
-            --color-glow: #00ffff;
+            --color-glow: #39ff14; /* Vert néon */
             --color-bg: #0d0208;
             --color-text: #e0e0e0;
             --color-prompt: #f0f0f0;
             --color-error: #ff4141;
-            --color-success: #00ff41;
-            --color-accent: #ff00ff;
+            --color-success: var(--color-glow);
         }
 
         body {
@@ -35,9 +34,9 @@
             max-width: 800px;
             height: 90vh;
             max-height: 600px;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
             border: 1px solid var(--color-glow);
-            box-shadow: 0 0 20px var(--color-glow);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.5);
             border-radius: 5px;
             display: flex;
             flex-direction: column;
@@ -53,59 +52,17 @@
         }
 
         #terminal-output p { margin: 0 0 10px 0; }
-        #terminal-output .prompt { color: var(--color-prompt); }
+        #terminal-output .prompt { color: var(--color-prompt); font-style: italic; }
         #terminal-output .response { color: var(--color-glow); }
         #terminal-output .error { color: var(--color-error); }
-        #terminal-output .success { color: var(--color-success); }
-        #terminal-output .accent { color: var(--color-accent); }
-
-        #input-line {
-            display: flex;
-            padding: 10px 20px;
-            border-top: 1px solid var(--color-glow);
-            background-color: #111;
-        }
-
-        #input-prompt {
-            color: var(--color-success);
-            margin-right: 10px;
-            white-space: nowrap;
-        }
-
-        #user-input {
-            flex-grow: 1;
-            background-color: transparent;
-            border: none;
-            color: var(--color-text);
-            font-family: inherit;
-            font-size: 1.1em;
-        }
-        #user-input:focus { outline: none; }
-
-        #button-container {
-            margin-top: 15px;
-        }
-
-        .terminal-button {
-            background: transparent;
-            border: 1px solid var(--color-glow);
-            color: var(--color-glow);
-            font-family: inherit;
-            font-size: 1em;
-            padding: 8px 15px;
-            margin: 0 10px 10px 0;
-            cursor: pointer;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        .terminal-button:hover {
-            background-color: var(--color-glow);
-            color: var(--color-bg);
-        }
+        #terminal-output .success { color: var(--color-success); font-weight: bold; }
         
-        strong.highlight {
-            color: var(--color-accent);
-            font-weight: bold;
-        }
+        #input-line { display: flex; padding: 10px 20px; border-top: 1px solid var(--color-glow); }
+        #input-prompt { color: var(--color-success); margin-right: 10px; }
+        #user-input { flex-grow: 1; background-color: transparent; border: none; color: var(--color-text); font-family: inherit; font-size: 1.1em; }
+        #user-input:focus { outline: none; }
+        
+        #final-image-container img { max-width: 150px; margin-top: 20px; border: 2px solid var(--color-glow); }
 
     </style>
 </head>
@@ -114,60 +71,58 @@
     <div class="terminal">
         <div id="terminal-output"></div>
         <div id="input-line" style="display: none;">
-            <span id="input-prompt">></span>
+            <span id="input-prompt">RÉPONSE ></span>
             <input type="text" id="user-input" autocomplete="off" autofocus>
         </div>
     </div>
 
     <script>
+        // --- MÉCANISME ANTI-TRICHE ---
+        const antiCheatMessage = "Bien tentté mais j'ai un temps d'avance ;), tu ne pourra pas inspecter le code de la page cette fois ci";
+
+        document.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            alert(antiCheatMessage);
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'F12' || 
+               (event.ctrlKey && event.shiftKey && (event.key === 'I' || event.key === 'i')) ||
+               (event.ctrlKey && (event.key === 'U' || event.key === 'u'))) {
+                event.preventDefault();
+                alert(antiCheatMessage);
+            }
+        });
+
+
+        // --- LOGIQUE DE L'ÉNIGME ---
         const output = document.getElementById('terminal-output');
         const inputLine = document.getElementById('input-line');
         const userInput = document.getElementById('user-input');
+        const inputPrompt = document.getElementById('input-prompt');
 
-        const questions = [
+        const riddles = [
             {
-                text: "Épreuve 1/4 : Logique Pure. Je n'ai pas de voix, mais je peux tout raconter. Je n'ai pas de corps, mais je peux voyager entre les esprits. Qui suis-je ?",
-                type: 'text',
-                answer: 'un mot' 
+                text: "Je me glisse entre les mots,<br>Sans moi, tout devient chaos.<br>Muette, mais je fais parler,<br>Qui suis-je, pour séparer ?",
+                answer: "espace"
             },
             {
-                text: "Épreuve 2/4 : Observation. Mon code de sécurité est affiché ci-dessous. La couleur de l'espoir est mon alliée. Comptez combien de fois elle apparaît. <br><span class='accent'>> ID_SEQ: 7B<span style='color:#00ff41'>A</span>Z<span style='color:#ff4141'>9</span>K<span style='color:#00ff41'>G</span>0<span style='color:#00ff41'>C</span>P4</span>",
-                type: 'text',
-                answer: '3'
+                text: "Je fuis sans bruit, je cours sans jambes,<br>Je suis invisible, mais je vous damne.<br>On me perd, on me gagne,<br>Mais jamais on ne me rattrape.",
+                answer: "temps"
             },
             {
-                text: "Épreuve 3/4 : Structure. Face à une porte blindée, quelle approche privilégiez-vous ?",
-                type: 'buttons',
-                options: ["La Force Brute", "L'Esprit Agile"],
-                answer: 1 // Index du bon bouton
+                text: "Je suis sans vie, mais je tue,<br>Sans bouche, mais je parle de vous.<br>Je garde tout, mais n’oublie rien,<br>Je suis partout, et parfois malsain.",
+                answer: "écran" // Acceptera "ecran" et "écran"
             },
             {
-                // Ceci n'est pas une question mais le message final.
-                text: `Analyse comportementale terminée. Sujet compatible.<br>La clé n'est pas une réponse, mais une action. Un verbe. Un mouvement agile que vous avez prouvé posséder.<br>
-                <strong class='highlight'>C</strong>onsultez <strong class='highlight'>a</strong>ttentivement <strong class='highlight'>b</strong>ien <strong class='highlight'>r</strong>apidement <strong class='highlight'>l'o</strong>rdre <strong class='highlight'>e</strong>xact <strong class='highlight'>r</strong>equis.`,
-                type: 'final'
+                text: "Je nais de l’ombre et de la lumière,<br>Je suis brève, mais je fais peur.<br>Ni vraie, ni fausse, je suis un leurre,<br>On me voit souvent en songe ou horreur.",
+                answer: "ombre"
             }
         ];
         
-        let currentQuestionIndex = 0;
+        let currentRiddleIndex = 0;
+        let allRiddlesSolved = false;
 
-        function typeText(element, text, onComplete) {
-            let i = 0;
-            const speed = 20; // Vitesse de frappe en ms
-            element.innerHTML = '';
-            
-            function typeWriter() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(typeWriter, speed);
-                } else if (onComplete) {
-                    onComplete();
-                }
-            }
-            typeWriter();
-        }
-        
         function logToTerminal(html, className = '') {
             const p = document.createElement('p');
             if (className) p.className = className;
@@ -176,100 +131,83 @@
             output.scrollTop = output.scrollHeight;
         }
 
-        function askQuestion() {
-            const question = questions[currentQuestionIndex];
-            const p = document.createElement('p');
-            p.className = 'prompt';
-            output.appendChild(p);
+        function askRiddle() {
+            if (currentRiddleIndex < riddles.length) {
+                const riddle = riddles[currentRiddleIndex];
+                logToTerminal(`VERROU ${currentRiddleIndex + 1}/4 > ${riddle.text}`, 'prompt');
+                inputLine.style.display = 'flex';
+                userInput.focus();
+            } else {
+                allRiddlesSolved = true;
+                finalStage();
+            }
+        }
 
-            typeText(p, question.text, () => {
-                if (question.type === 'text') {
-                    inputLine.style.display = 'flex';
-                    userInput.focus();
-                } else if (question.type === 'buttons') {
-                    inputLine.style.display = 'none';
-                    const buttonContainer = document.createElement('div');
-                    buttonContainer.id = 'button-container';
-                    question.options.forEach((option, index) => {
-                        const button = document.createElement('button');
-                        button.className = 'terminal-button';
-                        button.textContent = option;
-                        button.onclick = () => handleAnswer(index);
-                        buttonContainer.appendChild(button);
-                    });
-                    output.appendChild(buttonContainer);
-                    output.scrollTop = output.scrollHeight;
-                } else if (question.type === 'final') {
-                    inputLine.style.display = 'flex';
-                    userInput.placeholder = "Entrez la clé finale ici...";
-                    userInput.focus();
-                }
-            });
+        function finalStage() {
+            inputPrompt.textContent = 'CLÉ FINALE >';
+            logToTerminal("SYSTÈME > Tous les verrous conceptuels sont ouverts.", 'success');
+            logToTerminal("SYSTÈME > Pour la synchronisation finale, fusionnez les 4 concepts dans leur ordre de découverte.", 'prompt');
+            logToTerminal("SYSTÈME > Format attendu : Concept1-Concept2-Concept3-Concept4", 'prompt');
+            userInput.focus();
         }
         
-        function handleAnswer(answer) {
-            const question = questions[currentQuestionIndex];
-            let isCorrect = false;
+        function handleInput() {
+            const answer = userInput.value.trim().toLowerCase();
+            userInput.value = '';
 
-            if (question.type === 'text') {
-                logToTerminal(`> ${answer}`, 'response');
-                if (answer.trim().toLowerCase() === question.answer) {
-                    isCorrect = true;
-                }
-            } else if (question.type === 'buttons') {
-                logToTerminal(`> Choix : ${question.options[answer]}`, 'response');
-                if (answer === question.answer) {
-                    isCorrect = true;
-                }
-            }
+            if (!answer) return;
 
-            if (isCorrect) {
-                logToTerminal('// Accès autorisé. Passage au niveau suivant...', 'success');
-                currentQuestionIndex++;
-                if (currentQuestionIndex < questions.length) {
-                    setTimeout(askQuestion, 1000);
+            logToTerminal(`> ${answer}`, 'response');
+            
+            if (allRiddlesSolved) {
+                // Vérification de la clé finale
+                const finalKey = "espace-temps-écran-ombre";
+                if (answer === finalKey) {
+                    logToTerminal("SYNCHRONISATION RÉUSSIE. ACCÈS AUTORISÉ.", 'success');
+                    const imgContainer = document.createElement('div');
+                    imgContainer.id = 'final-image-container';
+                    imgContainer.innerHTML = `<img src="https://github.com/Cyprdu/projection/blob/main/qr_code_escape_game_epreuve_2.png?raw=true" alt="QR Code final">`;
+                    output.appendChild(imgContainer);
+                    inputLine.style.display = 'none'; // Fin du jeu
+                } else {
+                    logToTerminal("ERREUR DE SYNCHRONISATION. CLÉ INCORRECTE.", 'error');
                 }
             } else {
-                 logToTerminal('// Accès refusé. Incompatibilité détectée. Réessayez.', 'error');
-                 setTimeout(() => {
-                    const elementsToRemove = output.querySelectorAll('#button-container, .prompt:last-of-type, .response:last-of-type');
-                    elementsToRemove.forEach(e => e.remove());
-                    askQuestion();
-                 }, 1500);
+                // Vérification des énigmes
+                const currentRiddle = riddles[currentRiddleIndex];
+                let isCorrect = false;
+
+                if (currentRiddle.answer === 'écran') {
+                    isCorrect = (answer === 'ecran' || answer === 'écran');
+                } else {
+                    isCorrect = (answer === currentRiddle.answer);
+                }
+
+                if (isCorrect) {
+                    logToTerminal(`VERROU ${currentRiddleIndex + 1} OUVERT.`, 'success');
+                    currentRiddleIndex++;
+                    setTimeout(askRiddle, 1000);
+                } else {
+                    logToTerminal("ACCÈS REFUSÉ. RÉPONSE INCORRECTE.", 'error');
+                }
             }
         }
-        
-        userInput.addEventListener('keydown', function(event) {
+
+        userInput.addEventListener('keydown', event => {
             if (event.key === 'Enter') {
-                const answer = userInput.value;
-                userInput.value = '';
-                
-                // Si on est à la dernière étape (le mot de passe final)
-                if (questions[currentQuestionIndex].type === 'final') {
-                    if (answer.toLowerCase() === 'cabrioler') {
-                        logToTerminal(`> ${answer}`, 'response');
-                        logToTerminal('*** SYSTÈME DÉVERROUILLÉ ***', 'success');
-                        // Mettez ici l'affichage de votre image/QR code
-                        output.innerHTML += `<img src="https://github.com/Cyprdu/projection/blob/main/qr_code_escape_game_epreuve_2.png?raw=true" alt="QR Code" style="max-width:150px; margin-top:20px;">`;
-                        inputLine.style.display = 'none';
-                    } else {
-                        logToTerminal(`> ${answer}`, 'response');
-                        logToTerminal('// Clé finale incorrecte.', 'error');
-                    }
-                } else {
-                    handleAnswer(answer);
-                }
+                handleInput();
             }
         });
         
         // Démarrage de l'énigme
-        typeText(document.createElement('p'), '...', () => {
-             logToTerminal('INITIALISATION DU PROTOCOLE DE SÉCURITÉ C.E.R.B.E.R.U.S.');
-             setTimeout(() => {
-                logToTerminal('Veuillez prouver votre compatibilité pour obtenir la clé d\'accès.');
-                setTimeout(askQuestion, 1500);
-             }, 1000);
-        });
+        logToTerminal("DÉMARRAGE DU SYSTÈME V.E.T.O. (Verrouillage Espace-Temps-Ombre)...");
+        setTimeout(() => {
+            logToTerminal("Calibration des capteurs de réalité...");
+            setTimeout(() => {
+                logToTerminal("Veuillez répondre aux protocoles de sécurité pour continuer.");
+                setTimeout(askRiddle, 1500);
+            }, 1000);
+        }, 1000);
 
     </script>
 </body>

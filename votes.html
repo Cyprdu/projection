@@ -1,203 +1,52 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Vote - Projection 2025</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" href="https://github.com/Cyprdu/projection/blob/main/clap.png?raw=true" type="image/png">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f5f5f7;
-      color: #333;
-      overflow-x: hidden;
-    }
-
-    h1, h2, h3, h4 {
-      font-family: 'Montserrat', sans-serif;
-    }
-
-    /* Film cards */
-    .poster { 
-      cursor:pointer; 
-      transition: all .3s ease; 
-      border-radius: 12px;
-    }
-
-    .poster.selected { 
-      outline: 4px solid #e94560; 
-      box-shadow: 0 0 20px 5px rgba(233, 69, 96, 0.8); 
-      transform: translateY(-8px);
-    }
-
-    /* Popup confirmation */
-    #vote-popup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: white;
-        z-index: 1000;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        display: none;
-        max-width: 90%;
-        width: 400px;
-        text-align: center;
-    }
-
-    #vote-popup img {
-        max-width: 80%;
-        border-radius: 12px;
-        margin-bottom: 1rem;
-    }
-
-    #vote-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.6);
-        z-index: 900;
-        display: none;
-    }
-
-    .check-animation {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #e94560;
-      font-size: 3rem;
-      animation: bounce 0.8s ease forwards;
-    }
-
-    @keyframes bounce {
-      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-  </style>
-</head>
-<body class="bg-gray-100 min-h-screen">
-
-  <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center mb-4">Votez pour votre court-métrage préféré</h1>
-    <div id="message" class="text-center mt-3 text-green-600"></div>
-
-    <section id="films" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6"></section>
-
-    <div class="flex justify-end mt-6">
-      <button id="btn-vote" class="px-5 py-2 bg-[#e94560] text-white rounded disabled:opacity-50" disabled>
-        Valider mon vote
-      </button>
-    </div>
-  </div>
-
-  <!-- Popup confirmation -->
-  <div id="vote-overlay"></div>
-  <div id="vote-popup">
-      <img id="popup-poster" src="" alt="Film sélectionné">
-      <p class="mb-4 font-medium">Êtes-vous sûr de voter pour ce film ?<br>Vous ne pourrez pas revenir en arrière !</p>
-      <div class="flex justify-center gap-4">
-          <button id="cancel-vote" class="px-4 py-2 bg-gray-400 text-white rounded">Annuler</button>
-          <button id="confirm-vote" class="px-4 py-2 bg-[#e94560] text-white rounded">Valider</button>
-      </div>
-  </div>
-
 <script>
-// === CONFIG AIRTABLE ===
-const AIRTABLE_TOKEN = "patfaiLK9KaGI0wVF.5379c37b1ee9ac9a665f981473d523e8e3004ced12be7531d8273b7aa3608a40";
-const AIRTABLE_BASE = "appLkFCKB7ys0zr7j";
-const AIRTABLE_TABLE = "Votes";
-const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+// ==== VARIABLES POPUP ====
+const votePopup = document.getElementById("vote-popup");
+const voteOverlay = document.getElementById("vote-overlay");
+const popupPoster = document.getElementById("popup-poster");
+const cancelVote = document.getElementById("cancel-vote");
+const confirmVote = document.getElementById("confirm-vote");
 
-// === LISTE DES FILMS EN LOCAL ===
-const films = [
-    {
-        "nom": "Moins par Moins",
-        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png",
-        "synopsis": "Seul face à sa feuille blanche...",
-        "genre": "Science-Fiction"
-    },
-    {
-        "nom": "Impulsion",
-        "affiche": "https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true",
-        "synopsis": "Un jeune homme commence à apercevoir...",
-        "genre": "Fantastique"
-    },
-    {
-        "nom": "La Vie Rêvée",
-        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
-        "synopsis": "C’est l’histoire de Maëlle et Antoine...",
-        "genre": "Romance"
-    },
-    // 👉 ajoute ici tous les autres films
-];
+let selectedCard = null; // pour la carte sélectionnée
 
-// === VARIABLES ===
-let selectedFilm = null;
-let selectedCard = null;
-const VOTED_KEY = "film_voted";
+// ==== MODIFIER LA SÉLECTION DES FILMS ====
+function selectFilm(card, name, affiche){
+    if(hasVoted()) return;
+    document.querySelectorAll(".poster").forEach(p=>p.classList.remove("selected"));
+    card.querySelector(".poster").classList.add("selected");
+    selectedFilm = name;
+    selectedCard = card;
+    document.getElementById("btn-vote").disabled=false;
 
-// === AFFICHER LES FILMS ===
-function renderFilms(){
-  const container = document.getElementById("films");
-  container.innerHTML="";
-  films.forEach(f=>{
-    const card = document.createElement("div");
-    card.className="relative bg-white rounded-xl shadow-sm overflow-hidden text-center p-2";
-    card.innerHTML=`
-      <img class="poster mx-auto w-full h-52 object-cover" src="${f.affiche}">
-      <div class="mt-2 font-bold">${f.nom}</div>
-      <div class="text-sm italic text-gray-600">${f.genre}</div>
-      <p class="text-xs mt-1">${f.synopsis}</p>
-    `;
-    card.querySelector(".poster").addEventListener("click",()=>selectFilm(card,f.nom,f.affiche));
-    container.appendChild(card);
-  });
+    // Met à jour l'image dans la popup
+    popupPoster.src = affiche;
 }
 
-function selectFilm(card,name,affiche){
-  if(hasVoted()) return;
-  document.querySelectorAll(".poster").forEach(p=>p.classList.remove("selected"));
-  card.querySelector(".poster").classList.add("selected");
-  selectedFilm=name;
-  selectedCard=card;
-  document.getElementById("btn-vote").disabled=false;
-
-  // Popup affiche le film
-  document.getElementById("popup-poster").src = affiche;
-}
-
-function hasVoted(){ return !!localStorage.getItem(VOTED_KEY); }
-
-// === VOTER ===
+// ==== SUR LE BOUTON VOTER ====
 document.getElementById("btn-vote").addEventListener("click",(e)=>{
     if(!selectedFilm) return alert("Choisis un film !");
-    document.getElementById("vote-popup").style.display="block";
-    document.getElementById("vote-overlay").style.display="block";
+    // Ouvre la popup au lieu d'envoyer directement
+    votePopup.style.display = "block";
+    voteOverlay.style.display = "block";
 });
 
-// Annuler vote
-document.getElementById("cancel-vote").addEventListener("click",()=>{
-    document.getElementById("vote-popup").style.display="none";
-    document.getElementById("vote-overlay").style.display="none";
+// ==== ANNULER VOTE ====
+cancelVote.addEventListener("click",()=>{
+    votePopup.style.display = "none";
+    voteOverlay.style.display = "none";
 });
 
-// Confirmer vote
-document.getElementById("confirm-vote").addEventListener("click", async ()=>{
-    document.getElementById("vote-popup").style.display="none";
-    document.getElementById("vote-overlay").style.display="none";
+// ==== CONFIRMER VOTE ====
+confirmVote.addEventListener("click", async ()=>{
+    votePopup.style.display = "none";
+    voteOverlay.style.display = "none";
 
-    // Animation check
-    selectedCard.innerHTML += `<div class="check-animation">✔</div>`;
+    // Animation check simplifiée
+    selectedCard.querySelector(".poster").classList.add("selected"); // garde effet lueur
+    selectedCard.innerHTML += `<div class="check-animation absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[#e94560] text-5xl animate-bounce">✔</div>`;
 
     // Petite pause pour animation
     setTimeout(async ()=>{
+        // Envoi vote via API
         try {
             const res = await fetch(API_URL,{
                 method:"POST",
@@ -207,26 +56,18 @@ document.getElementById("confirm-vote").addEventListener("click", async ()=>{
                 },
                 body:JSON.stringify({fields:{Film:selectedFilm}})
             });
-            const data=await res.json();
+            const data = await res.json();
             if(res.ok){
                 localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
-                window.location.href="resultat.html";
+                window.location.href = "resultat.html";
             } else {
                 alert("Erreur: "+(data.error?.message||"inconnue"));
             }
         } catch(e){ alert("Erreur: "+e.message); }
-    },800);
+    }, 800);
 });
 
-// === INIT ===
-renderFilms();
-if(hasVoted()){
-  const v=JSON.parse(localStorage.getItem(VOTED_KEY));
-  document.getElementById("message").textContent=`Tu as déjà voté pour "${v.film}".`;
-  document.getElementById("btn-vote").disabled=true;
-}
-
-// === EMPÊCHER INSPECT ===
+// ==== EMPÊCHER INSPECT ====
 document.addEventListener("contextmenu", e=>e.preventDefault());
 document.addEventListener("keydown", e=>{
     if(e.key==="F12" || (e.ctrlKey && e.shiftKey && ["I","J","C"].includes(e.key.toUpperCase()))) {
@@ -234,6 +75,3 @@ document.addEventListener("keydown", e=>{
     }
 });
 </script>
-
-</body>
-</html>

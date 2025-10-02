@@ -27,11 +27,18 @@
       border-radius: 12px;
       height: 100%;
       cursor: pointer;
+      border: 2px solid transparent;
     }
 
     .film-card:hover {
       transform: translateY(-8px);
       box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+    }
+
+    .film-card.selected {
+      border: 3px solid #e94560;
+      transform: translateY(-4px);
+      box-shadow: 0 15px 25px rgba(233, 69, 96, 0.3);
     }
 
     .film-poster-container {
@@ -77,11 +84,6 @@
       display: inline-block;
       width: fit-content;
       margin-bottom: 0.5rem;
-    }
-
-    .poster.selected {
-      outline: 3px solid #e94560;
-      transform: translateY(-6px);
     }
 
     .fadeInUp {
@@ -216,6 +218,18 @@ if(hasVoted()){
   document.getElementById("message").textContent = `Vous avez déjà voté pour "${v.film}".`;
   document.getElementById("btn-vote").disabled = true;
 }
+
+// === INTERDICTION INSPECT ===
+document.addEventListener('keydown', function(e) {
+  if(e.key === "F12" || (e.ctrlKey && e.shiftKey && ['I','C','J'].includes(e.key.toUpperCase()))) {
+    window.location.href = "index.html";
+  }
+});
+
+document.addEventListener('contextmenu', function(e){
+  e.preventDefault();
+  window.location.href = "index.html";
+});
 </script>
 </body>
 </html>

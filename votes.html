@@ -35,10 +35,11 @@
       box-shadow: 0 20px 30px rgba(0,0,0,0.1);
     }
 
+    /* Sélection accentuée avec lueur */
     .film-card.selected {
-      border: 3px solid #e94560;
+      border: 4px solid #e94560;
       transform: translateY(-4px);
-      box-shadow: 0 15px 25px rgba(233, 69, 96, 0.3);
+      box-shadow: 0 15px 35px rgba(233, 69, 96, 0.6), 0 0 20px rgba(233,69,96,0.4) inset;
     }
 
     .film-poster-container {
@@ -97,14 +98,20 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* Bouton validé fixé en bas et centré */
     #btn-vote {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       background-color: #e94560;
       color: white;
       transition: all 0.3s ease;
+      z-index: 1000;
     }
 
     #btn-vote:hover:not(:disabled) {
-      transform: translateY(-2px);
+      transform: translate(-50%, -2px);
       box-shadow: 0 5px 15px rgba(15, 52, 96, 0.3);
     }
   </style>
@@ -117,12 +124,6 @@
     <div id="message" class="text-center mt-3 text-green-600"></div>
 
     <section id="films" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6"></section>
-
-    <div class="flex justify-end mt-6">
-      <button id="btn-vote" class="px-6 py-3 rounded-lg font-medium disabled:opacity-50" disabled>
-        Valider mon vote
-      </button>
-    </div>
   </div>
 
 <script>
@@ -152,12 +153,12 @@ const films = [
         "synopsis": "C’est l’histoire de Maëlle et Antoine...",
         "genre": "Romance"
     }
-    // ajoute ici tous les autres films
 ];
 
 let selectedFilm = null;
 const VOTED_KEY = "film_voted";
 
+// === RENDER FILMS ===
 function renderFilms() {
   const container = document.getElementById("films");
   container.innerHTML = "";
@@ -179,7 +180,7 @@ function renderFilms() {
       if(hasVoted()) return;
       document.querySelectorAll(".film-card").forEach(c => c.classList.remove("selected"));
       card.classList.add("selected");
-      selectedFilm = film.nom;
+      selectedFilm = film;
       document.getElementById("btn-vote").disabled = false;
     });
     container.appendChild(card);
@@ -188,9 +189,22 @@ function renderFilms() {
 
 function hasVoted(){ return !!localStorage.getItem(VOTED_KEY); }
 
-// === VOTER ===
-document.getElementById("btn-vote").addEventListener("click", async () => {
+// === CREATION BOUTON FIXÉ ===
+const btnVote = document.createElement("button");
+btnVote.id = "btn-vote";
+btnVote.className = "px-6 py-3 rounded-lg font-medium disabled:opacity-50";
+btnVote.disabled = true;
+btnVote.textContent = "Valider mon vote";
+document.body.appendChild(btnVote);
+
+// === VOTER AVEC POPUP ===
+btnVote.addEventListener("click", async () => {
   if(!selectedFilm) return alert("Choisis un film !");
+  
+  // Pop-up de confirmation
+  const confirmVote = confirm(`Êtes-vous sûr de voter pour "${selectedFilm.nom}" ?\nVous ne pourrez pas revenir en arrière !`);
+  if(!confirmVote) return;
+  
   try {
     const res = await fetch(API_URL,{
       method:"POST",
@@ -198,13 +212,14 @@ document.getElementById("btn-vote").addEventListener("click", async () => {
         "Authorization":`Bearer ${AIRTABLE_TOKEN}`,
         "Content-Type":"application/json"
       },
-      body:JSON.stringify({fields:{Film:selectedFilm}})
+      body:JSON.stringify({fields:{Film:selectedFilm.nom}})
     });
     const data = await res.json();
     if(res.ok){
-      localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
-      document.getElementById("message").textContent = `Merci ! Vous avez voté pour "${selectedFilm}".`;
-      document.getElementById("btn-vote").disabled = true;
+      localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm.nom}));
+      document.getElementById("message").textContent = `Merci ! Vous avez voté pour "${selectedFilm.nom}".`;
+      btnVote.disabled = true;
+      window.location.href = "résultat.html";
     } else {
       alert("Erreur: "+(data.error?.message||"inconnue"));
     }
@@ -216,7 +231,7 @@ renderFilms();
 if(hasVoted()){
   const v = JSON.parse(localStorage.getItem(VOTED_KEY));
   document.getElementById("message").textContent = `Vous avez déjà voté pour "${v.film}".`;
-  document.getElementById("btn-vote").disabled = true;
+  btnVote.disabled = true;
 }
 
 // === INTERDICTION INSPECT ===
@@ -225,7 +240,6 @@ document.addEventListener('keydown', function(e) {
     window.location.href = "index.html";
   }
 });
-
 document.addEventListener('contextmenu', function(e){
   e.preventDefault();
   window.location.href = "index.html";

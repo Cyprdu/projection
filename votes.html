@@ -4,21 +4,120 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Vote - Projection 2025</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .poster { cursor:pointer; transition: transform .2s; }
-    .poster.selected { outline:3px solid #e94560; transform: translateY(-6px); }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f5f5f7;
+      color: #333333;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Montserrat', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .film-card {
+      transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+      position: relative;
+      overflow: hidden;
+      background-color: white;
+      border-radius: 12px;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .film-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+    }
+
+    .film-poster-container {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      height: 350px;
+    }
+
+    .film-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: all 0.4s ease;
+    }
+
+    .film-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5));
+      opacity: 0;
+      transition: all 0.4s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1rem;
+    }
+
+    .film-card:hover .film-overlay {
+      opacity: 1;
+    }
+
+    .genre-badge {
+      background-color: #e94560;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: inline-block;
+      width: fit-content;
+      margin-bottom: 0.5rem;
+    }
+
+    .poster.selected {
+      outline: 3px solid #e94560;
+      transform: translateY(-6px);
+    }
+
+    .fadeInUp {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #btn-vote {
+      background-color: #e94560;
+      color: white;
+      transition: all 0.3s ease;
+    }
+
+    #btn-vote:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(15, 52, 96, 0.3);
+    }
   </style>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="min-h-screen">
   <div class="max-w-6xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center mb-4">Votez pour votre court-métrage préféré</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-center mb-8 text-[#1a1a2e]">
+      Votez pour votre court-métrage préféré
+    </h1>
     <div id="message" class="text-center mt-3 text-green-600"></div>
 
-    <section id="films" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"></section>
+    <section id="films" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6"></section>
 
     <div class="flex justify-end mt-6">
-      <button id="btn-vote" class="px-5 py-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled>
+      <button id="btn-vote" class="px-6 py-3 rounded-lg font-medium disabled:opacity-50" disabled>
         Valider mon vote
       </button>
     </div>
@@ -50,44 +149,45 @@ const films = [
         "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
         "synopsis": "C’est l’histoire de Maëlle et Antoine...",
         "genre": "Romance"
-    },
-    // 👉 ajoute ici tous les autres films
+    }
+    // ajoute ici tous les autres films
 ];
 
-// === VARIABLES ===
 let selectedFilm = null;
 const VOTED_KEY = "film_voted";
 
-// === AFFICHER LES FILMS ===
-function renderFilms(){
-  const c=document.getElementById("films");
-  c.innerHTML="";
-  films.forEach(f=>{
-    const d=document.createElement("div");
-    d.className="bg-white rounded shadow p-2 text-center";
-    d.innerHTML=`
-      <img class="poster mx-auto w-full h-52 object-cover rounded" src="${f.affiche}">
-      <div class="mt-2 font-bold">${f.nom}</div>
-      <div class="text-sm italic text-gray-600">${f.genre}</div>
-      <p class="text-xs mt-1">${f.synopsis}</p>
+function renderFilms() {
+  const container = document.getElementById("films");
+  container.innerHTML = "";
+  films.forEach((film,index) => {
+    const card = document.createElement("div");
+    card.className = "film-card fadeInUp";
+    card.style.animationDelay = `${index*100}ms`;
+    card.innerHTML = `
+      <div class="film-poster-container">
+        <img src="${film.affiche}" alt="${film.nom}" class="film-poster">
+        <div class="film-overlay">
+          <span class="genre-badge">${film.genre}</span>
+          <h3 class="text-xl font-bold text-white mb-2">${film.nom}</h3>
+          <p class="text-gray-200 text-sm">${film.synopsis}</p>
+        </div>
+      </div>
     `;
-    d.querySelector(".poster").addEventListener("click",()=>selectFilm(d,f.nom));
-    c.appendChild(d);
+    card.addEventListener("click", () => {
+      if(hasVoted()) return;
+      document.querySelectorAll(".film-card").forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+      selectedFilm = film.nom;
+      document.getElementById("btn-vote").disabled = false;
+    });
+    container.appendChild(card);
   });
-}
-
-function selectFilm(card,name){
-  if(hasVoted()) return;
-  document.querySelectorAll(".poster").forEach(p=>p.classList.remove("selected"));
-  card.querySelector(".poster").classList.add("selected");
-  selectedFilm=name;
-  document.getElementById("btn-vote").disabled=false;
 }
 
 function hasVoted(){ return !!localStorage.getItem(VOTED_KEY); }
 
 // === VOTER ===
-document.getElementById("btn-vote").addEventListener("click",async()=>{
+document.getElementById("btn-vote").addEventListener("click", async () => {
   if(!selectedFilm) return alert("Choisis un film !");
   try {
     const res = await fetch(API_URL,{
@@ -98,11 +198,11 @@ document.getElementById("btn-vote").addEventListener("click",async()=>{
       },
       body:JSON.stringify({fields:{Film:selectedFilm}})
     });
-    const data=await res.json();
+    const data = await res.json();
     if(res.ok){
       localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
-      document.getElementById("message").textContent=`Merci ! Tu as voté pour "${selectedFilm}".`;
-      document.getElementById("btn-vote").disabled=true;
+      document.getElementById("message").textContent = `Merci ! Vous avez voté pour "${selectedFilm}".`;
+      document.getElementById("btn-vote").disabled = true;
     } else {
       alert("Erreur: "+(data.error?.message||"inconnue"));
     }
@@ -112,9 +212,9 @@ document.getElementById("btn-vote").addEventListener("click",async()=>{
 // === INIT ===
 renderFilms();
 if(hasVoted()){
-  const v=JSON.parse(localStorage.getItem(VOTED_KEY));
-  document.getElementById("message").textContent=`Tu as déjà voté pour "${v.film}".`;
-  document.getElementById("btn-vote").disabled=true;
+  const v = JSON.parse(localStorage.getItem(VOTED_KEY));
+  document.getElementById("message").textContent = `Vous avez déjà voté pour "${v.film}".`;
+  document.getElementById("btn-vote").disabled = true;
 }
 </script>
 </body>

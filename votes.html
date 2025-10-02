@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Vote - Courts Métrages Lalande</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<style>
+  body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+  .poster { cursor: pointer; transition: transform .18s; }
+  .poster.selected { outline: 3px solid #e94560; transform: translateY(-6px); }
+</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-5xl mx-auto p-6">
+    <header class="text-center mb-8">
+      <h1 class="text-3xl font-bold">Votez pour votre court-métrage préféré</h1>
+      <p class="text-sm text-gray-600 mt-2">Fin des votes : <strong>02/10/2025 15:00 (CEST)</strong></p>
+      <div id="countdown" class="mt-4 text-xl font-medium text-indigo-700"></div>
+      <div id="message" class="mt-3 text-sm text-green-700"></div>
+    </header>
+
+    <main>
+      <section id="films" class="grid grid-cols-2 md:grid-cols-4 gap-6"></section>
+
+      <div class="mt-8 flex items-center justify-between">
+        <div id="vote-info" class="text-sm text-gray-600"></div>
+        <div class="flex items-center gap-3">
+          <button id="btn-view-results" class="px-4 py-2 bg-white border rounded shadow-sm">Voir résultats</button>
+          <button id="btn-vote" class="px-5 py-2 bg-indigo-600 text-white rounded disabled:opacity-60" disabled>Valider mon vote</button>
+        </div>
+      </div>
+
+      <section id="results" class="mt-8 hidden bg-white p-6 rounded shadow-sm">
+        <h3 class="font-semibold mb-4">Résultats (en direct)</h3>
+        <div id="results-list" class="space-y-3"></div>
+      </section>
+    </main>
+  </div>
+
+<script>
+// ----- CONFIGURE ICI -----
+// Remplace endpoint selon ta plateforme (Netlify par ex.)
+const VOTE_API_ENDPOINT = '/.netlify/functions/vote'; // -> Netlify
+// const VOTE_API_ENDPOINT = '/api/vote'; // -> Vercel (ou adapter)
+// -------------------------
+
+// Liste films (utilise exactement les noms que tu créeras dans Airtable)
+const films = [
+  "Moins par Moins",
+  "Impulsion",
+  "La Vie Rêvée",
+  "Lettre à un amour",
+  "Nature Morte",
+  "Un Dernier Regard",
+  "The other woman",
+  "The Middle of the World",
+  "Errance",
+  "Brouillon",
+  "Léopoldine",
+  "BOKEH",
+  "Accident"
+];
+
+const filmsContainer = document.getElementById('films');
+const btnVote = document.getElementById('btn-vote');
+const btnViewResults = document.getElementById('btn-view-results');
+const resultsSection = document.getElementById('results');
+const resultsList = document.getElementById('results-list');
+const voteInfo = document.getElementById('vote-info');
+const messageEl = document.getElementById('message');
+
+let selectedFilm = null;
+const VOTED_KEY = 'film_voted'; // localStorage key
+const COUNTDOWN_TARGET = new Date('2025-10-02T15:00:00+02:00'); // ISO (CEST)
+
+// ----- RENDER POSTERS -----
+function renderPosters() {
+  filmsContainer.innerHTML = '';
+  films.forEach(name => {
+    const card = document.createElement('div');
+    card.className = 'bg-white rounded shadow-sm p-2 text-center';
+    card.innerHTML = `
+      <img class="poster mx-auto w-full h-44 object-cover rounded" src="https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png" alt="${escapeHtml(name)}">
+      <div class="mt-2 font-medium">${escapeHtml(name)}</div>
+    `;
+    card.querySelector('.poster').addEventListener('click', () => selectFilm(card, name));
+    filmsContainer.appendChild(card);
+  });
+}
+
+// simple helper
+function escapeHtml(s){ return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+function selectFilm(card, name) {
+  // prevent selecting after vote or after deadline
+  if (hasVoted() || isVotingEnded()) return;
+  // clear prev
+  document.querySelectorAll('.poster').forEach(p => p.classList.remove('selected'));
+  card.querySelector('.poster').classList.add('selected');
+  selectedFilm = name;
+  btnVote.disabled

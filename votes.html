@@ -11,125 +11,111 @@
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="max-w-5xl mx-auto p-6">
+  <div class="max-w-6xl mx-auto p-6">
     <h1 class="text-3xl font-bold text-center mb-4">Votez pour votre court-métrage préféré</h1>
-    <p class="text-center text-sm text-gray-600">Clôture des votes : <b>02/10/2025 - 15h00</b></p>
-    <div id="countdown" class="text-center mt-2 text-indigo-700 font-semibold"></div>
     <div id="message" class="text-center mt-3 text-green-600"></div>
 
-    <section id="films" class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6"></section>
+    <section id="films" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"></section>
 
-    <div class="flex justify-between mt-6">
-      <button id="btn-view-results" class="px-4 py-2 bg-white border rounded shadow">Voir résultats</button>
-      <button id="btn-vote" class="px-5 py-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled>Valider mon vote</button>
+    <div class="flex justify-end mt-6">
+      <button id="btn-vote" class="px-5 py-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled>
+        Valider mon vote
+      </button>
     </div>
-
-    <section id="results" class="mt-8 hidden bg-white p-6 rounded shadow">
-      <h3 class="font-semibold mb-4">Résultats</h3>
-      <div id="results-list" class="space-y-2"></div>
-    </section>
   </div>
 
 <script>
-// === CONFIGURATION AIRTABLE ===
+// === CONFIG AIRTABLE ===
 const AIRTABLE_TOKEN = "patfaiLK9KaGI0wVF.5379c37b1ee9ac9a665f981473d523e8e3004ced12be7531d8273b7aa3608a40";
 const AIRTABLE_BASE = "appLkFCKB7ys0zr7j";
-const AIRTABLE_TABLE = "Films";
-const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${encodeURIComponent(AIRTABLE_TABLE)}`;
+const AIRTABLE_TABLE = "Votes";
+const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
 
-// === CONFIG SITE ===
+// === LISTE DES FILMS EN LOCAL ===
 const films = [
-  "Moins par Moins","Impulsion","La Vie Rêvée","Lettre à un amour","Nature Morte",
-  "Un Dernier Regard","The other woman","The Middle of the World","Errance","Brouillon",
-  "Léopoldine","BOKEH","Accident"
+    {
+        "nom": "Moins par Moins",
+        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png",
+        "synopsis": "Seul face à sa feuille blanche...",
+        "genre": "Science-Fiction"
+    },
+    {
+        "nom": "Impulsion",
+        "affiche": "https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true",
+        "synopsis": "Un jeune homme commence à apercevoir...",
+        "genre": "Fantastique"
+    },
+    {
+        "nom": "La Vie Rêvée",
+        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
+        "synopsis": "C’est l’histoire de Maëlle et Antoine...",
+        "genre": "Romance"
+    },
+    // 👉 ajoute ici tous les autres films
 ];
-const COUNTDOWN_TARGET = new Date("2025-10-02T15:00:00+02:00");
-const VOTED_KEY = "film_voted";
-let selectedFilm = null;
 
-// === AFFICHAGE DES FILMS ===
+// === VARIABLES ===
+let selectedFilm = null;
+const VOTED_KEY = "film_voted";
+
+// === AFFICHER LES FILMS ===
 function renderFilms(){
   const c=document.getElementById("films");
   c.innerHTML="";
-  films.forEach(name=>{
+  films.forEach(f=>{
     const d=document.createElement("div");
     d.className="bg-white rounded shadow p-2 text-center";
-    d.innerHTML=`<img class="poster mx-auto w-full h-40 object-cover rounded" src="https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png"><div class="mt-2 font-medium">${name}</div>`;
-    d.querySelector(".poster").addEventListener("click",()=>selectFilm(d,name));
+    d.innerHTML=`
+      <img class="poster mx-auto w-full h-52 object-cover rounded" src="${f.affiche}">
+      <div class="mt-2 font-bold">${f.nom}</div>
+      <div class="text-sm italic text-gray-600">${f.genre}</div>
+      <p class="text-xs mt-1">${f.synopsis}</p>
+    `;
+    d.querySelector(".poster").addEventListener("click",()=>selectFilm(d,f.nom));
     c.appendChild(d);
   });
 }
+
 function selectFilm(card,name){
-  if(hasVoted()||isEnded())return;
+  if(hasVoted()) return;
   document.querySelectorAll(".poster").forEach(p=>p.classList.remove("selected"));
   card.querySelector(".poster").classList.add("selected");
   selectedFilm=name;
   document.getElementById("btn-vote").disabled=false;
 }
-function hasVoted(){return !!localStorage.getItem(VOTED_KEY);}
-function isEnded(){return new Date()>=COUNTDOWN_TARGET;}
 
-// === COMPTE À REBOURS ===
-function updateCountdown(){
-  const now=new Date(); const diff=COUNTDOWN_TARGET-now;
-  if(diff<=0){document.getElementById("countdown").textContent="Votes terminés";return;}
-  const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),
-        m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
-  document.getElementById("countdown").textContent=`${d}j ${h}h ${m}m ${s}s`;
-}
-setInterval(updateCountdown,1000);updateCountdown();
+function hasVoted(){ return !!localStorage.getItem(VOTED_KEY); }
 
-// === ACTION VOTE ===
+// === VOTER ===
 document.getElementById("btn-vote").addEventListener("click",async()=>{
-  if(!selectedFilm)return alert("Choisis un film !");
+  if(!selectedFilm) return alert("Choisis un film !");
   try {
-    // Cherche le film
-    const resFind = await fetch(`${API_URL}?filterByFormula={Name}='${selectedFilm}'`,{
-      headers:{Authorization:`Bearer ${AIRTABLE_TOKEN}`}
-    });
-    const dataFind=await resFind.json();
-    if(!dataFind.records||!dataFind.records.length)return alert("Film introuvable !");
-    const rec=dataFind.records[0];
-    const current=rec.fields.Votes||0;
-
-    // Incrémente le compteur
-    const resUpdate=await fetch(`${API_URL}/${rec.id}`,{
-      method:"PATCH",
+    const res = await fetch(API_URL,{
+      method:"POST",
       headers:{
         "Authorization":`Bearer ${AIRTABLE_TOKEN}`,
         "Content-Type":"application/json"
       },
-      body:JSON.stringify({fields:{Votes:current+1}})
+      body:JSON.stringify({fields:{Film:selectedFilm}})
     });
-    const dataUpdate=await resUpdate.json();
-
-    localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
-    document.getElementById("message").textContent=`Merci ! Tu as voté pour "${selectedFilm}".`;
-    showResults();
-  } catch(e){
-    alert("Erreur: "+e.message);
-  }
+    const data=await res.json();
+    if(res.ok){
+      localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
+      document.getElementById("message").textContent=`Merci ! Tu as voté pour "${selectedFilm}".`;
+      document.getElementById("btn-vote").disabled=true;
+    } else {
+      alert("Erreur: "+(data.error?.message||"inconnue"));
+    }
+  } catch(e){ alert("Erreur: "+e.message); }
 });
-
-// === VOIR LES RÉSULTATS ===
-document.getElementById("btn-view-results").addEventListener("click",showResults);
-
-async function showResults(){
-  document.getElementById("results").classList.remove("hidden");
-  const res=await fetch(API_URL,{headers:{Authorization:`Bearer ${AIRTABLE_TOKEN}`}});
-  const data=await res.json();
-  const list=document.getElementById("results-list");list.innerHTML="";
-  data.records.sort((a,b)=>(b.fields.Votes||0)-(a.fields.Votes||0)).forEach(r=>{
-    const row=document.createElement("div");
-    row.className="flex justify-between";
-    row.innerHTML=`<span>${r.fields.Name}</span><span>${r.fields.Votes||0} votes</span>`;
-    list.appendChild(row);
-  });
-}
 
 // === INIT ===
 renderFilms();
-if(hasVoted()){const v=JSON.parse(localStorage.getItem(VOTED_KEY));document.getElementById("message").textContent=`Tu as déjà voté pour "${v.film}".`;}
+if(hasVoted()){
+  const v=JSON.parse(localStorage.getItem(VOTED_KEY));
+  document.getElementById("message").textContent=`Tu as déjà voté pour "${v.film}".`;
+  document.getElementById("btn-vote").disabled=true;
+}
 </script>
 </body>
 </html>

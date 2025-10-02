@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Vote - Projection 2025</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .poster { cursor:pointer; transition: transform .2s; }
+    .poster.selected { outline:3px solid #e94560; transform: translateY(-6px); }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center mb-4">Votez pour votre court-métrage préféré</h1>
+    <div id="message" class="text-center mt-3 text-green-600"></div>
+
+    <section id="films" class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6"></section>
+
+    <div class="flex justify-end mt-6">
+      <button id="btn-vote" class="px-5 py-2 bg-indigo-600 text-white rounded disabled:opacity-50" disabled>
+        Valider mon vote
+      </button>
+    </div>
+  </div>
+
+<script>
+// === CONFIG AIRTABLE ===
+const AIRTABLE_TOKEN = "patfaiLK9KaGI0wVF.5379c37b1ee9ac9a665f981473d523e8e3004ced12be7531d8273b7aa3608a40";
+const AIRTABLE_BASE = "appLkFCKB7ys0zr7j";
+const AIRTABLE_TABLE = "Votes";
+const API_URL = `https://api.airtable.com/v0/${AIRTABLE_BASE}/${AIRTABLE_TABLE}`;
+
+// === LISTE DES FILMS EN LOCAL ===
+const films = [
+    {
+        "nom": "Moins par Moins",
+        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png",
+        "synopsis": "Seul face à sa feuille blanche...",
+        "genre": "Science-Fiction"
+    },
+    {
+        "nom": "Impulsion",
+        "affiche": "https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true",
+        "synopsis": "Un jeune homme commence à apercevoir...",
+        "genre": "Fantastique"
+    },
+    {
+        "nom": "La Vie Rêvée",
+        "affiche": "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
+        "synopsis": "C’est l’histoire de Maëlle et Antoine...",
+        "genre": "Romance"
+    },
+    // 👉 ajoute ici tous les autres films
+];
+
+// === VARIABLES ===
+let selectedFilm = null;
+const VOTED_KEY = "film_voted";
+
+// === AFFICHER LES FILMS ===
+function renderFilms(){
+  const c=document.getElementById("films");
+  c.innerHTML="";
+  films.forEach(f=>{
+    const d=document.createElement("div");
+    d.className="bg-white rounded shadow p-2 text-center";
+    d.innerHTML=`
+      <img class="poster mx-auto w-full h-52 object-cover rounded" src="${f.affiche}">
+      <div class="mt-2 font-bold">${f.nom}</div>
+      <div class="text-sm italic text-gray-600">${f.genre}</div>
+      <p class="text-xs mt-1">${f.synopsis}</p>
+    `;
+    d.querySelector(".poster").addEventListener("click",()=>selectFilm(d,f.nom));
+    c.appendChild(d);
+  });
+}
+
+function selectFilm(card,name){
+  if(hasVoted()) return;
+  document.querySelectorAll(".poster").forEach(p=>p.classList.remove("selected"));
+  card.querySelector(".poster").classList.add("selected");
+  selectedFilm=name;
+  document.getElementById("btn-vote").disabled=false;
+}
+
+function hasVoted(){ return !!localStorage.getItem(VOTED_KEY); }
+
+// === VOTER ===
+document.getElementById("btn-vote").addEventListener("click",async()=>{
+  if(!selectedFilm) return alert("Choisis un film !");
+  try {
+    const res = await fetch(API_URL,{
+      method:"POST",
+      headers:{
+        "Authorization":`Bearer ${AIRTABLE_TOKEN}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({fields:{Film:selectedFilm}})
+    });
+    const data=await res.json();
+    if(res.ok){
+      localStorage.setItem(VOTED_KEY,JSON.stringify({film:selectedFilm}));
+      document.getElementById("message").textContent=`Merci ! Tu as voté pour "${selectedFilm}".`;
+      document.getElementById("btn-vote").disabled=true;
+    } else {
+      alert("Erreur: "+(data.error?.message||"inconnue"));
+    }
+  } catch(e){ alert("Erreur: "+e.message); }
+});
+
+// === INIT ===
+renderFilms();
+if(hasVoted()){
+  const v=JSON.parse(localStorage.getItem(VOTED_KEY));
+  document.getElementById("message").textContent=`Tu as déjà voté pour "${v.film}".`;
+  document.getElementById("btn-vote").disabled=true;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Résultats Vote - Courts Métrages</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Poppins', sans-serif;
+    margin:0;
+    padding:0;
+    background: linear-gradient(135deg,#1a1a2e,#16213e);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    text-align: center;
+    padding: 30px 20px 10px 20px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.2rem;
+    color: #ccc;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-top: -150px;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.countdown {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.time-box {
+    background: rgba(255,255,255,0.1);
+    padding: 20px 25px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 700;
+    min-width: 70px;
+    font-size: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.time-box span {
+    display: block;
+    font-size: 0.8rem;
+    color: #ccc;
+    margin-top: 5px;
+}
+
+.flip {
+    animation: flip 0.5s ease forwards;
+}
+
+@keyframes flip {
+    0% { transform: rotateX(0deg); }
+    50% { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+.results-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.film-card {
+    position: relative;
+    width: 200px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.film-card:hover {
+    transform: scale(1.05);
+}
+
+.film-img {
+    width: 100%;
+    aspect-ratio: 2/3;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+.vote-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    background: rgba(0,0,0,0.5);
+    padding: 10px;
+    border-radius: 0 0 12px 12px;
+}
+
+.vote-overlay span {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+/* --- Animation Home Icon --- */
+.home-btn svg path.house-door {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    transition: stroke-dashoffset 0.6s ease;
+}
+
+.home-btn:hover svg path.house-door {
+    stroke-dashoffset: 0;
+}
+
+/* Position fixe en bas centré */
+.home-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Résultats du Vote</h1>
+    <p>Découvrez le classement des courts métrages</p>
+</header>
+
+<div class="main-content">
+    <div id="countdown" class="countdown"></div>
+</div>
+
+<!-- Bouton Home avec texte Accueil -->
+<a href="index.html" class="home-btn flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full hover:bg-white/20 transition">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+         viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <path class="house-door" d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/>
+    </svg>
+    <span class="text-white font-medium">Accueil</span>
+</a>
+
+<div class="results-container" id="results-container" style="display:none;"></div>
+
+<script>
+const films = [
+    {"nom":"Moins par Moins"},
+    {"nom":"Impulsion"},
+    {"nom":"La Vie Rêvée"},
+    {"nom":"Lettre à un amour"},
+    {"nom":"Nature Morte"},
+    {"nom":"Un Dernier Regard"},
+    {"nom":"The other woman"},
+    {"nom":"The Middle of the World"},
+    {"nom":"Errance"},
+    {"nom":"Brouillon"},
+    {"nom":"Léopoldine"},
+    {"nom":"BOKEH"},
+    {"nom":"Accident"}
+];
+
+const filmImages = {
+    "Moins par Moins":"https://raw.githubusercontent.com/Cyprdu/projection/main/Projection.png",
+    "Impulsion":"https://github.com/Cyprdu/projection/blob/main/2cd7d9aa-f057-44fa-a4c0-255f72e11739.jpeg?raw=true",
+    "La Vie Rêvée":"https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png",
+    "Lettre à un amour":"https://github.com/Cyprdu/projection/blob/main/Lettre%20%C3%A0%20un%20amour.png?raw=true",
+    "Nature Morte":"https://github.com/Cyprdu/projection/blob/main/nature%20morte%201.png?raw=true",
+    "Un Dernier Regard":"https://github.com/Cyprdu/projection/blob/main/nature%20morte.png?raw=true",
+    "The other woman":"https://github.com/Cyprdu/projection/blob/main/The%20other%20woman%20.png?raw=true",
+    "The Middle of the World":"https://github.com/Cyprdu/projection/blob/main/MIDDLE%20OF%20THE%20.png?raw=true",
+    "Errance":"B0B5B365-FB32-4237-A9D6-EA6BFACFEC67.jpeg",
+    "Brouillon":"B90557CD-D17C-44E5-AE56-ADD75D4A1EFB.jpeg",
+    "Léopoldine":"Léopoldine.png",
+    "BOKEH":"bokeh.png",
+    "Accident":"508654055_699355782965537_2639861947665647196_n.jpg"
+};
+
+const results = {
+    "Moins par Moins":12,
+    "Impulsion":8,
+    "La Vie Rêvée":20,
+    "Lettre à un amour":5,
+    "Nature Morte":3,
+    "Un Dernier Regard":7,
+    "The other woman":4,
+    "The Middle of the World":10,
+    "Errance":2,
+    "Brouillon":1,
+    "Léopoldine":6,
+    "BOKEH":0,
+    "Accident":2
+};
+
+const resultsContainer = document.getElementById('results-container');
+const countdownEl = document.getElementById('countdown');
+
+const resultDate = new Date("2026-07-01T22:00:00");
+
+let prevTime = {days:null, hours:null, minutes:null, seconds:null};
+
+function createTimeBox(value, label){
+    const box = document.createElement('div');
+    box.className = "time-box";
+    box.dataset.value = value;
+    box.innerHTML = `<div class="number">${value}</div><span>${label}</span>`;
+    return box;
+}
+
+function updateCountdown(){
+    const now = new Date();
+    const diff = resultDate - now;
+
+    if(diff <=0){
+        countdownEl.style.display="none";
+        showResults();
+        clearInterval(countdownInterval);
+        return;
+    }
+
+    const days = Math.floor(diff/1000/60/60/24);
+    const hours = Math.floor((diff/1000/60/60)%24);
+    const minutes = Math.floor((diff/1000/60)%60);
+    const seconds = Math.floor((diff/1000)%60);
+
+    const timeUnits = {days,hours,minutes,seconds};
+
+    countdownEl.innerHTML = "";
+
+    for(const [unit,value] of Object.entries(timeUnits)){
+        const box = createTimeBox(value,unit.charAt(0).toUpperCase()+unit.slice(1));
+        if(prevTime[unit] !== value){
+            box.querySelector('.number').classList.add('flip');
+        }
+        countdownEl.appendChild(box);
+        prevTime[unit] = value;
+        setTimeout(()=>box.querySelector('.number').classList.remove('flip'),500);
+    }
+}
+
+const countdownInterval = setInterval(updateCountdown,1000);
+updateCountdown();
+
+function showResults(){
+    resultsContainer.style.display="flex";
+    const sortedFilms = Object.keys(results).sort((a,b)=>results[b]-results[a]);
+
+    sortedFilms.forEach((film)=>{
+        const votes = results[film];
+        const card = document.createElement('div');
+        card.className="film-card";
+
+        card.innerHTML = `
+            <img src="${filmImages[film]}" alt="${film}" class="film-img">
+            <div class="vote-overlay"><span>${votes} votes</span></div>
+        `;
+
+        resultsContainer.appendChild(card);
+    });
+}
+</script>
+</body>
+</html>

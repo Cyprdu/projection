@@ -274,17 +274,21 @@
       transition: width 0.1s linear;
       opacity: 0.6;
     }
-    /* Steps wrap — stacks on top of sticky via negative margin trick */
     .story-steps-wrap {
       position: relative;
       z-index: 10;
       pointer-events: none;
-      /* Each step is 100vh, so 10 steps = 1000vh total scroll space */
+      height: 100vh;
     }
     .story-step {
-      height: 100vh;
+      display: none;
+    }
+    /* The actual text stages are inside .story-sticky, absolutely centered */
+    .story-stage {
+      position: absolute;
+      inset: 0;
       display: flex; align-items: center; justify-content: center;
-      /* text will be animated via JS opacity/transform */
+      pointer-events: none;
     }
     .story-text {
       font-family: 'Cormorant Garamond', serif;
@@ -921,6 +925,11 @@
     <div class="story-sticky" id="storyStickyEl">
       <div class="story-bg-number" id="storyBgNumber">I</div>
       <div class="story-progress-bar" id="storyProgressBar"></div>
+      <!-- Text stages live here, absolutely centered -->
+      <div class="story-stage" id="storyStage0"><p class="story-text">C'est l'histoire de <em>jeunes cinéastes</em><br>qui ont décidé de prendre la caméra.</p></div>
+      <div class="story-stage" id="storyStage1"><p class="story-text"><strong>Huit courts métrages.</strong><br>Huit visions du monde,<br>de l'amour et de la peur.</p></div>
+      <div class="story-stage" id="storyStage2"><p class="story-text">Une seule soirée<br>pour <em>tout découvrir</em><br>sur grand écran.</p></div>
+      <div class="story-stage" id="storyStage3"><p class="story-text"><em>1<sup>er</sup> juillet 2026.</em><br>Cinéma La Grenette —<br>Bourg-en-Bresse.</p></div>
     </div>
 
     <!-- scroll steps — each 100vh, text centered absolutely over sticky -->
@@ -928,63 +937,27 @@
 
       <div class="story-step" data-step="0">
         <p class="story-text">
-          Tout commence<br>par une <em>idée.</em>
+          C'est l'histoire de <em>jeunes cinéastes</em><br>qui ont décidé de prendre la caméra.
         </p>
       </div>
 
       <div class="story-step" data-step="1">
         <p class="story-text">
-          Des élèves du lycée Lalande<br>ont décidé de <strong>prendre la caméra</strong><br>et de raconter leur monde.
+          <strong>Huit courts métrages.</strong><br>
+          Huit visions du monde,<br>de l'amour et de la peur.
         </p>
       </div>
 
       <div class="story-step" data-step="2">
         <p class="story-text">
-          Ils ont écrit des scénarios,<br>choisi des acteurs,<br>trouvé des décors.
+          Une seule soirée<br>pour <em>tout découvrir</em><br>sur grand écran.
         </p>
       </div>
 
       <div class="story-step" data-step="3">
         <p class="story-text">
-          Ils ont filmé l'<em>amour</em><br>comme ils l'ont ressenti.
-        </p>
-      </div>
-
-      <div class="story-step" data-step="4">
-        <p class="story-text">
-          Ils ont filmé la <em>peur</em><br>qui se cache dans le quotidien.
-        </p>
-      </div>
-
-      <div class="story-step" data-step="5">
-        <p class="story-text">
-          Ils ont filmé le <em>deuil,</em><br>le désir, le doute —<br>tout ce qu'on n'ose pas dire.
-        </p>
-      </div>
-
-      <div class="story-step" data-step="6">
-        <p class="story-text">
-          <strong>Huit films.</strong><br>Huit regards sur la vie.
-        </p>
-      </div>
-
-      <div class="story-step" data-step="7">
-        <p class="story-text">
-          Ce soir-là,<br>les lumières de la salle s'éteindront.
-        </p>
-      </div>
-
-      <div class="story-step" data-step="8">
-        <p class="story-text">
-          Et pendant deux heures,<br>vous vivrez <em>leurs histoires.</em>
-        </p>
-      </div>
-
-      <div class="story-step" data-step="9">
-        <p class="story-text">
           <em>1<sup>er</sup> juillet 2026.</em><br>
-          Cinéma La Grenette,<br>Bourg-en-Bresse.<br>
-          <span style="font-size:0.6em; letter-spacing:0.3em; text-transform:uppercase; font-family:'Barlow Condensed',sans-serif; color:rgba(247,243,236,0.4); font-style:normal;">19h30 — Places limitées</span>
+          Cinéma La Grenette —<br>Bourg-en-Bresse.
         </p>
       </div>
 
@@ -1238,77 +1211,106 @@ const revObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 revealEls.forEach(el => revObs.observe(el));
 
-// ─── SCROLLYTELLING ───
-// Each step occupies 100vh. The sticky element stays fixed.
-// We measure which step the viewport center is closest to, then
-// fade it in fully and keep it visible through most of its scroll range,
-// only fading it out when the NEXT step starts to arrive.
+// ─── SCROLLYTELLING — AUTO-CINEMATIC ───
+// Texts live inside the sticky container (.story-stage).
+// On entering the section, we lock scroll and auto-play all 4 steps,
+// then release and scroll to #films.
 
 const storySection = document.getElementById('story');
 const storyBgNum = document.getElementById('storyBgNumber');
 const storyProgressBar = document.getElementById('storyProgressBar');
-const storyStepsWrap = document.getElementById('storyStepsWrap');
-const storyStepEls = document.querySelectorAll('.story-step');
-const STEP_COUNT = storyStepEls.length;
+const storyStages = [0,1,2,3].map(i => document.getElementById('storyStage'+i));
+const STEP_COUNT = storyStages.length;
+const roman = ['I','II','III','IV'];
 
-// Roman numerals for the big bg number
-const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+// Each step: hold time fully visible + transition out
+const STEP_HOLD = 1800;  // ms fully visible
+const STEP_TRANS = 600;  // ms fade out to next
 
-function updateStory() {
-  const sectionTop = storySection.getBoundingClientRect().top + window.scrollY;
-  const scrollY = window.scrollY;
-  // How far we've scrolled into the section (0 = just entered, 1 = just leaving)
-  const totalScrollable = storySection.offsetHeight - window.innerHeight;
-  const rawProgress = (scrollY - sectionTop) / totalScrollable;
-  const progress = Math.max(0, Math.min(1, rawProgress));
+let cinemaActive = false;
+let cinemaObserverFired = false;
 
-  // Progress bar
-  storyProgressBar.style.width = (progress * 100) + '%';
+// Init: all stages invisible, translateY down
+storyStages.forEach(s => {
+  const t = s.querySelector('.story-text');
+  t.style.opacity = '0';
+  t.style.transform = 'translateY(56px)';
+  t.style.transition = 'none';
+});
 
-  // stepProgress: 0..STEP_COUNT
-  const stepProgress = progress * STEP_COUNT;
+function renderStep(idx, p) {
+  // p: 0→1 over STEP_HOLD+STEP_TRANS
+  storyBgNum.textContent = roman[idx] || '';
+  storyProgressBar.style.width = ((idx + p) / STEP_COUNT * 100) + '%';
 
-  // Update big bg number — roman numeral of current step
-  const currentStepIdx = Math.min(Math.floor(stepProgress), STEP_COUNT - 1);
-  storyBgNum.textContent = roman[currentStepIdx] || '';
-
-  // For each step, compute opacity based on position relative to stepProgress
-  // Each step is "centered" at i + 0.5
-  // We want full opacity from i+0.15 to i+0.85 (70% of its scroll range)
-  // and smooth fade in/out in the remaining 15% on each side
-  storyStepEls.forEach((step, i) => {
-    const center = i + 0.5;
-    const dist = stepProgress - center; // negative = hasn't arrived yet, positive = past
-
+  storyStages.forEach((stage, i) => {
+    const txt = stage.querySelector('.story-text');
     let opacity, ty;
-
-    if (dist < -0.85) {
-      // Far below (not yet reached)
-      opacity = 0;
-      ty = 70;
-    } else if (dist < -0.35) {
-      // Fading in: dist goes from -0.85 to -0.35 → opacity 0→1
-      opacity = (dist + 0.85) / 0.5;
-      ty = (1 - opacity) * 70;
-    } else if (dist < 0.35) {
-      // Fully visible plateau: -0.35 to +0.35
-      opacity = 1;
-      ty = 0;
-    } else if (dist < 0.85) {
-      // Fading out: dist goes from 0.35 to 0.85 → opacity 1→0
-      opacity = 1 - (dist - 0.35) / 0.5;
-      ty = -(1 - opacity) * 70;
+    if (i < idx) {
+      // already gone
+      opacity = 0; ty = -56;
+    } else if (i === idx) {
+      // fade in 0→0.2, hold 0.2→0.85, fade out 0.85→1
+      if (p < 0.2) {
+        opacity = p / 0.2; ty = (1 - opacity) * 56;
+      } else if (p < 0.85) {
+        opacity = 1; ty = 0;
+      } else {
+        const f = (p - 0.85) / 0.15;
+        opacity = 1 - f; ty = -f * 56;
+      }
     } else {
-      // Far above (already passed)
-      opacity = 0;
-      ty = -70;
+      // waiting below
+      opacity = 0; ty = 56;
     }
-
-    const txt = step.querySelector('.story-text');
-    txt.style.opacity = Math.max(0, Math.min(1, opacity));
+    txt.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+    txt.style.opacity = String(Math.max(0, Math.min(1, opacity)));
     txt.style.transform = `translateY(${ty}px)`;
   });
 }
+
+function runStep(idx) {
+  if (idx >= STEP_COUNT) {
+    // Sequence done — release and scroll to films
+    cinemaActive = false;
+    document.body.style.overflow = '';
+    document.body.style.pointerEvents = '';
+    document.getElementById('nav').style.pointerEvents = '';
+    setTimeout(() => {
+      document.getElementById('films').scrollIntoView({ behavior: 'smooth' });
+    }, 200);
+    return;
+  }
+  const total = STEP_HOLD + STEP_TRANS;
+  const start = performance.now();
+  function tick(now) {
+    if (!cinemaActive) return;
+    const p = Math.min((now - start) / total, 1);
+    renderStep(idx, p);
+    if (p < 1) requestAnimationFrame(tick);
+    else runStep(idx + 1);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startCinema() {
+  if (cinemaActive) return;
+  cinemaActive = true;
+  window.scrollTo({ top: storySection.offsetTop, behavior: 'instant' });
+  document.body.style.overflow = 'hidden';
+  document.body.style.pointerEvents = 'none';
+  document.getElementById('nav').style.pointerEvents = 'all';
+  runStep(0);
+}
+
+const cinemaObs = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && !cinemaObserverFired) {
+    cinemaObserverFired = true;
+    cinemaObs.disconnect();
+    setTimeout(startCinema, 60);
+  }
+}, { threshold: 0.4 });
+cinemaObs.observe(storySection);
 
 // ─── PARALLAX ───
 const parallaxBg = document.getElementById('parallaxBg');
@@ -1321,7 +1323,6 @@ function updateParallax() {
 }
 
 window.addEventListener('scroll', () => {
-  updateStory();
   updateParallax();
 }, { passive: true });
 

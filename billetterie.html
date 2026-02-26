@@ -1211,56 +1211,9 @@ const revObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 revealEls.forEach(el => revObs.observe(el));
 
-// ═══════════════════════════════════════════════
-// SMOOTH SCROLL ENGINE — tapis rouge
-// Intercepts wheel/touch events, lerps to target
-// so clic-by-clic mice glide instead of jerking.
-// ═══════════════════════════════════════════════
-let scrollTarget = window.scrollY;
-let scrollCurrent = window.scrollY;
-let scrollRAF = null;
-const LERP = 0.10; // smoothing factor (0=frozen, 1=instant)
-const WHEEL_MULT = 1.1; // wheel sensitivity
-
-function smoothLoop() {
-  scrollCurrent += (scrollTarget - scrollCurrent) * LERP;
-  // Clamp to valid range
-  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-  scrollCurrent = Math.max(0, Math.min(maxScroll, scrollCurrent));
-  scrollTarget  = Math.max(0, Math.min(maxScroll, scrollTarget));
-
-  if (Math.abs(scrollTarget - scrollCurrent) > 0.4) {
-    window.scrollTo(0, scrollCurrent);
-    updateParallax();
-    scrollRAF = requestAnimationFrame(smoothLoop);
-  } else {
-    // Snap to exact target
-    window.scrollTo(0, scrollTarget);
-    scrollCurrent = scrollTarget;
-    updateParallax();
-    scrollRAF = null;
-  }
-}
-
-function kickSmooth() {
-  if (!scrollRAF && !cinemaActive) {
-    scrollRAF = requestAnimationFrame(smoothLoop);
-  }
-}
-
-window.addEventListener('wheel', e => {
-  if (cinemaActive) { e.preventDefault(); return; }
-  e.preventDefault();
-  scrollTarget += e.deltaY * WHEEL_MULT;
-  kickSmooth();
-}, { passive: false });
-
-// Keep scrollTarget in sync when native scroll happens (nav links, etc.)
+// scroll listener for parallax only
 window.addEventListener('scroll', () => {
-  if (!scrollRAF && !cinemaActive) {
-    scrollTarget = window.scrollY;
-    scrollCurrent = window.scrollY;
-  }
+  updateParallax();
 }, { passive: true });
 
 // ─── SCROLLYTELLING — AUTO-CINEMATIC ───
@@ -1316,25 +1269,12 @@ function renderStep(idx, p) {
 function stopCinema() {
   cinemaActive = false;
   if (cinemaRAF) { cancelAnimationFrame(cinemaRAF); cinemaRAF = null; }
-  document.body.style.overflow     = '';
-  document.body.style.pointerEvents = '';
-  document.getElementById('nav').style.pointerEvents = '';
-  // Sync smooth scroll engine
-  scrollTarget  = window.scrollY;
-  scrollCurrent = window.scrollY;
 }
 
 function runStep(idx) {
   if (!cinemaActive) return;
   if (idx >= STEP_COUNT) {
     stopCinema();
-    // Glide to films section via smooth engine
-    const filmsEl = document.getElementById('films');
-    if (filmsEl) {
-      scrollTarget  = filmsEl.getBoundingClientRect().top + window.scrollY;
-      scrollCurrent = window.scrollY;
-      kickSmooth();
-    }
     return;
   }
   const total = STEP_HOLD + STEP_TRANS;
@@ -1353,14 +1293,6 @@ function startCinema() {
   if (cinemaActive) return;
   resetStages();
   cinemaActive = true;
-  // Cancel smooth scroll, pin to story top
-  if (scrollRAF) { cancelAnimationFrame(scrollRAF); scrollRAF = null; }
-  const top = storySection.getBoundingClientRect().top + window.scrollY;
-  window.scrollTo(0, top);
-  scrollTarget = scrollCurrent = top;
-  document.body.style.overflow      = 'hidden';
-  document.body.style.pointerEvents = 'none';
-  document.getElementById('nav').style.pointerEvents = 'all';
   runStep(0);
 }
 

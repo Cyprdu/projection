@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courts Métrages | Lycée Lalande 2026</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --accent: #E50914; /* Rouge Cinéma */
+            --text-main: #F5F5F5;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, .font-syne {
+            font-family: 'Syne', sans-serif;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* Navigation */
+        .glass-nav {
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link {
+            position: relative;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--accent);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+
+        /* Film Cards */
+        .film-card {
+            position: relative;
+            height: 60vh;
+            min-height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .film-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .film-card:hover .film-poster {
+            transform: scale(1.08);
+        }
+
+        .film-overlay {
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+            transition: opacity 0.3s ease;
+        }
+
+        .genre-badge {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Modals & Pages */
+        .page-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-dark);
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+            overflow-y: auto;
+        }
+
+        .page-overlay.active {
+            transform: translateY(0);
+        }
+
+        /* Parallax Image in Details */
+        .details-hero {
+            height: 70vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .details-poster-bg {
+            position: absolute;
+            inset: -10%;
+            width: 120%;
+            height: 120%;
+            object-fit: cover;
+            opacity: 0.4;
+            filter: blur(10px);
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .btn-accent:hover {
+            background: #ff0f1f;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);
+        }
+
+        /* Scrollytelling Section */
+        .scrolly-container {
+            /* Hauteur dynamique gérée par GSAP */
+            position: relative;
+        }
+        .scrolly-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            text-align: center;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="fixed w-full z-50 glass-nav transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-xl font-syne font-bold tracking-wider">
+                LALANDE<span class="text-[#E50914]">.</span>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <button onclick="scrollToSection('hero')" class="nav-link active font-medium">Accueil</button>
+                <button onclick="scrollToSection('selection')" class="nav-link font-medium">Sélection</button>
+                <button onclick="scrollToSection('billetterie')" class="nav-link font-medium">Billetterie</button>
+            </div>
+            <button class="md:hidden text-2xl" id="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div id="mobile-menu" class="fixed inset-0 bg-[#050505] z-40 flex flex-col justify-center items-center space-y-8 transform translate-x-full transition-transform duration-500">
+        <button onclick="scrollToSection('hero'); toggleMobileMenu()" class="text-3xl font-syne">Accueil</button>
+        <button onclick="scrollToSection('selection'); toggleMobileMenu()" class="text-3xl font-syne">Sélection</button>
+        <button onclick="scrollToSection('billetterie'); toggleMobileMenu()" class="text-3xl font-syne">Billetterie</button>
+        <button onclick="toggleMobileMenu()" class="absolute top-6 right-6 text-3xl"><i class="fas fa-times"></i></button>
+    </div>
+
+    <header id="hero" class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="hero-bg absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=2070&auto=format&fit=crop" alt="Cinéma" class="w-full h-full object-cover opacity-30">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[#050505]/50 to-[#050505] z-0"></div>
+        
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <p class="text-gray-400 tracking-[0.3em] uppercase text-sm mb-4 hero-elem">1 Juillet 2026 • Cinéma La Grenette</p>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-syne font-bold mb-6 leading-tight hero-elem">
+                FESTIVAL <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">COURTS MÉTRAGES</span>
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-10 font-light hero-elem">La sélection officielle du Lycée Lalande.</p>
+            <button onclick="scrollToSection('selection')" class="btn-accent px-8 py-4 rounded-full font-medium tracking-wide uppercase text-sm hero-elem">
+                Découvrir la sélection <i class="fas fa-chevron-down ml-2"></i>
+            </button>
+        </div>
+    </header>
+
+    <section class="scrolly-container bg-[#050505]">
+        <div class="sticky top-0 h-screen flex items-center justify-center overflow-hidden scrolly-wrapper">
+            <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=2025&auto=format&fit=crop')] bg-cover bg-center filter grayscale"></div>
+            
+            <h2 class="scrolly-text text-1 text-4xl md:text-6xl font-syne font-bold">Une passion commune.</h2>
+            <h2 class="scrolly-text text-2 text-4xl md:text-6xl font-syne font-bold text-[#E50914]">8 créations originales.</h2>
+            <h2 class="scrolly-text text-3 text-4xl md:text-6xl font-syne font-bold">Plongez dans l'univers de Lalande.</h2>
+        </div>
+    </section>
+
+    <section id="selection" class="py-24 bg-[#050505] relative z-10">
+        <div class="container mx-auto px-4 md:px-8">
+            <div class="flex items-end justify-between mb-16">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-syne font-bold">Sélection <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#E50914] to-orange-500">Officielle</span></h2>
+                    <div class="h-1 w-24 bg-[#E50914] mt-6"></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 md:gap-12" id="films-container">
+                </div>
+        </div>
+    </section>
+
+    <section id="billetterie" class="py-32 bg-[#0a0a0a] border-t border-white/5 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#E50914] rounded-full blur-[150px] opacity-10 pointer-events-none"></div>
+        
+        <div class="container mx-auto px-4 md:px-8 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-6xl font-syne font-bold mb-6">Prenez votre place</h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto">Rejoignez-nous le 1er juillet 2026 pour une soirée inoubliable au cinéma La Grenette.</p>
+            </div>
+
+            <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white/5 border border-white/10 p-8 rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-colors">
+                        <i class="fas fa-calendar-alt text-3xl text-[#E50914] mb-4"></i>
+                        <h3 class="text-xl font-syne font-bold mb-2">Date & Heure</h3>
+                        <p class="text-gray-400">Mercredi 1er juillet 2026<br>Accueil dès 19h00<br>Début de la séance à 19h30</p>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 p-8 rounded-2xl backdrop-blur-sm hover:bg-white/10 transition-colors">
+                        <i class="fas fa-map-marker-alt text-3xl text-[#E50914] mb-4"></i>
+                        <h3 class="text-xl font-syne font-bold mb-2">Lieu</h3>
+                        <p class="text-gray-400">Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 bg-white rounded-2xl overflow-hidden p-2 shadow-2xl">
+                    <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="500" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne</a>
+                    <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-[#050505] py-12 border-t border-white/10">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="text-2xl font-syne font-bold mb-4 md:mb-0">
+                LALANDE<span class="text-[#E50914]">.</span>
+            </div>
+            <p class="text-gray-500 text-sm">© 2026 Projection Courts Métrages Lycée Lalande.</p>
+            <a href="https://lalande.ent.auvergnerhonealpes.fr/" target="_blank" class="text-gray-400 hover:text-white transition-colors mt-4 md:mt-0 flex items-center">
+                Site de l'établissement <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+            </a>
+        </div>
+    </footer>
+
+    <div id="film-details-page" class="page-overlay">
+        <button onclick="closeFilmDetails()" class="fixed top-6 left-6 md:top-10 md:left-10 z-[110] bg-white/10 hover:bg-[#E50914] backdrop-blur-md text-white w-12 h-12 rounded-full flex justify-center items-center transition-all duration-300">
+            <i class="fas fa-arrow-left text-xl"></i>
+        </button>
+
+        <div class="details-hero w-full relative">
+            <img id="details-poster-bg" src="" alt="" class="details-poster-bg">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
+            
+            <div class="absolute bottom-0 left-0 w-full p-8 md:p-16 flex flex-col md:flex-row items-end gap-8">
+                <img id="details-poster" src="" alt="" class="w-48 md:w-64 rounded-xl shadow-2xl border border-white/10 translate-y-8 md:translate-y-16">
+                <div class="pb-4">
+                    <span id="details-genre" class="genre-badge mb-4 inline-block"></span>
+                    <h2 id="details-title" class="text-5xl md:text-7xl font-syne font-bold text-white mb-2 shadow-black drop-shadow-lg"></h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mx-auto px-8 md:px-16 pt-20 pb-24 md:pt-24 md:flex gap-16">
+            <div class="md:w-2/3">
+                <h3 class="text-2xl font-syne font-bold mb-6 text-gray-200">Synopsis</h3>
+                <p id="details-synopsis" class="text-gray-400 text-lg leading-relaxed mb-10 font-light"></p>
+                
+                <button onclick="openShare()" class="btn-accent px-6 py-3 rounded-lg font-medium flex items-center gap-3">
+                    <i class="fas fa-share-alt"></i> Partager l'œuvre
+                </button>
+            </div>
+            <div class="md:w-1/3 mt-10 md:mt-0">
+                <div class="bg-white/5 border border-white/10 p-6 rounded-xl">
+                    <h4 class="font-syne font-bold text-xl mb-4 text-white">Informations</h4>
+                    <ul class="space-y-4 text-gray-400">
+                        <li class="flex justify-between border-b border-white/10 pb-2"><span>Réalisation</span> <span class="text-white">Élèves Lalande</span></li>
+                        <li class="flex justify-between border-b border-white/10 pb-2"><span>Année</span> <span class="text-white">2026</span></li>
+                        <li class="flex justify-between"><span>Lieu</span> <span class="text-white">La Grenette</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const films = [
+            { nom: "Déjà-vu", affiche: "https://github.com/Cyprdu/projection/blob/main/d%C3%A9j%C3%A0vu.png?raw=true", synopsis: "Un court métrage captivant qui explore les mystères du temps et de la mémoire.", genre: "Drame" },
+            { nom: "La vie rêvée", affiche: "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png", synopsis: "C'est l'histoire de Maëlle et Antoine, un jeune couple très amoureux. Au sein de leur quotidien émerge un délire entre eux: ils imaginent leur vie rêvée...", genre: "Romance" },
+            { nom: "Lettre à un amour", affiche: "https://github.com/Cyprdu/projection/blob/main/Lettre%20%C3%A0%20un%20amour.png?raw=true", synopsis: "Promenade visuelle à travers l'amour et ses incarnations esthétiques.", genre: "Romance" },
+            { nom: "Nature Morte", affiche: "https://github.com/Cyprdu/projection/blob/main/nature%20morte%201.png?raw=true", synopsis: "Un film d'horreur qui va vous donner des frissons...", genre: "Horreur" },
+            { nom: "Un Dernier Regard", affiche: "https://github.com/Cyprdu/projection/blob/main/nature%20morte.png?raw=true", synopsis: "Une tragédie qui va vous retourner le cerveau…", genre: "Tragédie" },
+            { nom: "The other woman", affiche: "https://github.com/Cyprdu/projection/blob/main/The%20other%20woman%20.png?raw=true", synopsis: "Max a dix sept ans, elle admire sa camarade de classe Théa. Un jour, elles se retrouvent seules dans le vestiaire. Elle tente de se rapprocher d'elle, mais se retrouve nez à nez avec son petit ami...", genre: "Drame" },
+            { nom: "Volver", affiche: "https://github.com/Cyprdu/projection/blob/main/Volver.png?raw=true", synopsis: "Une histoire émouvante sur le retour aux sources.", genre: "Drame" },
+            { nom: "Zéphyr", affiche: "https://github.com/Cyprdu/projection/blob/main/Z%C3%A9phyr.png?raw=true", synopsis: "Un voyage poétique à travers les saisons de la vie.", genre: "Poétique" }
+        ];
+
+        // Initialisation de l'affichage des films
+        const container = document.getElementById('films-container');
+        films.forEach((film, index) => {
+            container.innerHTML += `
+                <div class="film-card group" onclick="openFilmDetails(${index})">
+                    <img src="${film.affiche}" alt="${film.nom}" loading="lazy" class="film-poster">
+                    <div class="film-overlay absolute inset-0 flex flex-col justify-end p-8">
+                        <div class="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                            <span class="genre-badge mb-3 inline-block">${film.genre}</span>
+                            <h3 class="text-3xl font-syne font-bold text-white mb-2 drop-shadow-lg">${film.nom}</h3>
+                            <p class="text-gray-300 text-sm line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">${film.synopsis}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        // Logique UI Basique
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+            // Update active nav
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('translate-x-full');
+            document.getElementById('mobile-menu-btn').innerHTML = menu.classList.contains('translate-x-full') 
+                ? '<i class="fas fa-bars"></i>' 
+                : '<i class="fas fa-times"></i>';
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', toggleMobileMenu);
+
+        // Système de Modal pour détails
+        function openFilmDetails(index) {
+            const film = films[index];
+            document.getElementById('details-title').textContent = film.nom;
+            document.getElementById('details-synopsis').textContent = film.synopsis;
+            document.getElementById('details-genre').textContent = film.genre;
+            document.getElementById('details-poster').src = film.affiche;
+            document.getElementById('details-poster-bg').src = film.affiche;
+            
+            document.getElementById('film-details-page').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeFilmDetails() {
+            document.getElementById('film-details-page').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openShare() {
+            const title = document.getElementById('details-title').textContent;
+            const text = `Découvrez "${title}" lors de la projection des courts métrages du Lycée Lalande le 1er Juillet 2026 !`;
+            if (navigator.share) {
+                navigator.share({ title: title, text: text, url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert("Lien copié dans le presse-papier !");
+            }
+        }
+
+        // ==========================================
+        // ANIMATIONS GSAP (Scrollytelling & Parallax)
+        // ==========================================
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animation d'entrée Hero
+        gsap.from(".hero-elem", {
+            y: 50, opacity: 0, duration: 1, stagger: 0.2, ease: "power3.out", delay: 0.2
+        });
+
+        // Effet Parallaxe sur l'image Hero
+        gsap.to(".hero-bg", {
+            yPercent: 50,
+            ease: "none",
+            scrollTrigger: {
+                trigger: "#hero",
+                start: "top top",
+                end: "bottom top",
+                scrub: true
+            }
+        });
+
+        // Scrollytelling corrigé (Textes et transition au noir)
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".scrolly-container",
+                start: "top top",
+                end: "+=200%", // Durée de scroll réduite pour plus de dynamisme
+                pin: true,
+                scrub: 1
+            }
+        });
+
+        tl.to(".text-1", { opacity: 1, y: -20, duration: 1 })
+          .to(".text-1", { opacity: 0, y: -40, duration: 1, delay: 0.5 })
+          .to(".text-2", { opacity: 1, y: -20, duration: 1 })
+          .to(".text-2", { opacity: 0, y: -40, duration: 1, delay: 0.5 })
+          .to(".text-3", { opacity: 1, y: -20, duration: 1 })
+          // Le texte 3 et l'image de fond s'effacent ensemble vers le noir
+          .to(".scrolly-wrapper", { opacity: 0, duration: 1, delay: 0.5 });
+
+        // Apparition des cartes films au scroll
+        gsap.utils.toArray('.film-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top bottom-=100",
+                    toggleActions: "play none none reverse"
+                },
+                y: 100,
+                opacity: 0,
+                duration: 0.8,
+                ease: "power3.out"
+            });
+        });
+
+        // Navbar blur effect au scroll
+        window.addEventListener('scroll', () => {
+            if(window.scrollY > 50) {
+                document.getElementById('navbar').classList.add('bg-[#050505]/90', 'shadow-lg');
+            } else {
+                document.getElementById('navbar').classList.remove('bg-[#050505]/90', 'shadow-lg');
+            }
+        });
+    </script>
+</body>
+</html>

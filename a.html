@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Courts Métrages — Lycée Lalande</title>
+  <link rel="icon" href="https://github.com/Cyprdu/projection/blob/main/clap.png?raw=true" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #c8102e;
+      --red-dark: #8b0a1e;
+      --cream: #f7f3ec;
+      --black: #0a0a0a;
+      --dark: #111115;
+      --mid: #1e1e24;
+      --gold: #c9a84c;
+      --text-light: rgba(247,243,236,0.75);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--black);
+      color: var(--cream);
+      overflow-x: hidden;
+    }
+
+    /* ─── CURSOR ─── */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--red);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.08s, width 0.2s, height 0.2s, background 0.2s;
+    }
+    .cursor-ring {
+      width: 36px; height: 36px;
+      border: 1px solid rgba(200,16,46,0.5);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: all 0.15s;
+    }
+    body:has(a:hover) .cursor, body:has(button:hover) .cursor { width: 20px; height: 20px; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 500;
+      padding: 0 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 72px;
+      transition: background 0.4s, backdrop-filter 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(200,16,46,0.15);
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem;
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--red); }
+    .nav-links { display: flex; gap: 48px; align-items: center; }
+    .nav-links a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s;
+      border: none; background: none;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--cream); }
+    .nav-ticket {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream) !important;
+      background: var(--red);
+      padding: 10px 24px;
+      cursor: pointer;
+      transition: background 0.2s !important;
+    }
+    .nav-ticket:hover { background: var(--red-dark) !important; color: var(--cream) !important; }
+
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      height: 100vh; min-height: 700px;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: 
+        radial-gradient(ellipse 80% 60% at 30% 60%, rgba(200,16,46,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+        linear-gradient(170deg, #0a0a0a 0%, #12060a 40%, #0a0a0a 100%);
+    }
+    .hero-grain {
+      position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      opacity: 0.4; pointer-events: none;
+    }
+    .hero-lines {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .hero-lines::before {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0; left: 50%;
+      width: 1px;
+      background: linear-gradient(to bottom, transparent, rgba(200,16,46,0.3), transparent);
+      transform: translateX(-50%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      text-align: center; padding: 0 24px;
+    }
+    .hero-eyebrow {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 1s 0.2s ease forwards;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      font-weight: 300;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+      opacity: 0;
+      animation: fadeUp 1s 0.4s ease forwards;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--red);
+    }
+    .hero-subtitle {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-top: 28px;
+      opacity: 0;
+      animation: fadeUp 1s 0.6s ease forwards;
+    }
+    .hero-date {
+      margin-top: 40px;
+      display: inline-flex; align-items: center; gap: 16px;
+      opacity: 0;
+      animation: fadeUp 1s 0.8s ease forwards;
+    }
+    .hero-date-line { width: 40px; height: 1px; background: var(--red); }
+    .hero-date span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .hero-scroll {
+      position: absolute; bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      opacity: 0;
+      animation: fadeUp 1s 1.2s ease forwards;
+    }
+    .hero-scroll span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .scroll-line {
+      width: 1px; height: 60px;
+      background: linear-gradient(to bottom, var(--red), transparent);
+      animation: scrollPulse 2s infinite;
+    }
+
+    /* ─── INTRO STRIP ─── */
+    .intro-strip {
+      background: var(--red);
+      padding: 20px 0;
+      overflow: hidden;
+      position: relative;
+    }
+    .marquee-track {
+      display: flex; gap: 80px;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+      width: max-content;
+    }
+    .marquee-item {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      display: flex; align-items: center; gap: 24px;
+    }
+    .marquee-dot { width: 4px; height: 4px; background: rgba(247,243,236,0.5); border-radius: 50%; }
+
+    /* ─── PARALLAX SECTION TITLE ─── */
+    .section-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 16px;
+    }
+    .section-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -0.01em;
+    }
+
+    /* ─── SCROLLYTELLING INTRO ─── */
+    #story {
+      position: relative;
+      background: var(--dark);
+    }
+    .story-sticky {
+      position: sticky;
+      top: 0; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .story-bg-number {
+      position: absolute;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 45vw;
+      font-weight: 600;
+      color: rgba(200,16,46,0.035);
+      pointer-events: none;
+      user-select: none;
+      line-height: 1;
+      transition: opacity 0.6s ease;
+    }
+    .story-progress-bar {
+      position: absolute;
+      left: 0; bottom: 0;
+      height: 2px;
+      background: var(--red);
+      width: 0%;
+      transition: width 0.1s linear;
+      opacity: 0.6;
+    }
+    .story-steps-wrap {
+      position: relative;
+      z-index: 10;
+      pointer-events: none;
+      /* Tall — gives ~125vh of scroll per phrase */
+      height: 500vh;
+    }
+    .story-step { display: none; }
+    /* The actual text stages are inside .story-sticky, absolutely centered */
+    .story-stage {
+      position: absolute;
+      inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .story-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 300;
+      line-height: 1.35;
+      color: var(--cream);
+      text-align: center;
+      padding: 0 48px;
+      max-width: 720px;
+      /* start invisible, JS drives opacity & transform */
+      opacity: 0;
+      transform: translateY(60px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .story-text em { color: var(--red); font-style: italic; }
+    .story-text strong {
+      font-weight: 400;
+      border-bottom: 1px solid rgba(200,16,46,0.5);
+      padding-bottom: 2px;
+    }
+
+    /* ─── FILMS GRID ─── */
+    #films {
+      padding: 120px 0;
+      position: relative;
+    }
+    .films-header {
+      padding: 0 80px;
+      margin-bottom: 80px;
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .films-count {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem;
+      font-weight: 300;
+      color: rgba(247,243,236,0.06);
+      line-height: 1;
+    }
+    .films-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+    }
+    .film-card {
+      position: relative;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--mid);
+    }
+    .film-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.5s;
+      filter: grayscale(20%);
+    }
+    .film-card:hover img {
+      transform: scale(1.08);
+      filter: grayscale(0%);
+    }
+    .film-card-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 40%, transparent 70%);
+      transition: opacity 0.4s;
+    }
+    .film-card-body {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 28px 24px;
+      transform: translateY(0);
+      transition: transform 0.4s;
+    }
+    .film-genre {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+    .film-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      line-height: 1.1;
+      color: var(--cream);
+    }
+    .film-card-cta {
+      margin-top: 16px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s 0.1s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .film-card:hover .film-card-cta {
+      opacity: 1; transform: translateY(0);
+    }
+    .film-card-cta span {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--cream);
+    }
+    .film-card-cta .cta-line {
+      width: 0; height: 1px;
+      background: var(--red);
+      transition: width 0.4s;
+    }
+    .film-card:hover .cta-line { width: 32px; }
+    .film-number {
+      position: absolute; top: 20px; right: 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: rgba(247,243,236,0.3);
+    }
+
+    /* ─── PARALLAX BANNER ─── */
+    .parallax-banner {
+      position: relative;
+      height: 60vh; min-height: 400px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .parallax-bg {
+      position: absolute; inset: -40%;
+      background: 
+        radial-gradient(ellipse 100% 80% at 50% 50%, rgba(200,16,46,0.25) 0%, transparent 70%),
+        var(--black);
+      will-change: transform;
+    }
+    .parallax-text {
+      position: relative; z-index: 2;
+      text-align: center;
+    }
+    .parallax-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 4.5rem);
+      font-style: italic;
+      font-weight: 300;
+      line-height: 1.2;
+      color: var(--cream);
+      max-width: 900px;
+      padding: 0 48px;
+    }
+    .parallax-quote em { color: var(--red); font-style: normal; }
+    .parallax-attr {
+      margin-top: 24px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+
+    /* ─── VENUE SECTION ─── */
+    #venue {
+      padding: 120px 80px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .venue-visual {
+      position: relative;
+    }
+    .venue-frame {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--mid);
+      overflow: hidden;
+      border: 1px solid rgba(247,243,236,0.06);
+    }
+    .venue-frame iframe {
+      width: 100%; height: 100%;
+      border: 0; filter: grayscale(60%) contrast(1.1);
+      transition: filter 0.5s;
+    }
+    .venue-frame:hover iframe { filter: grayscale(0%) contrast(1); }
+    .venue-tag {
+      position: absolute;
+      bottom: -20px; right: -20px;
+      background: var(--red);
+      padding: 20px 28px;
+    }
+    .venue-tag p {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(247,243,236,0.7);
+    }
+    .venue-tag strong {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--cream);
+      display: block;
+      margin-top: 4px;
+    }
+    .venue-info { padding-left: 20px; }
+    .venue-detail {
+      margin-bottom: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(247,243,236,0.07);
+    }
+    .venue-detail:last-child { border-bottom: none; margin-bottom: 0; }
+    .venue-detail-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+    .venue-detail-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      line-height: 1.4;
+      color: var(--cream);
+    }
+
+    /* ─── TICKET SECTION ─── */
+    #tickets {
+      padding: 120px 80px;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+    }
+    #tickets::before {
+      content: '';
+      position: absolute;
+      top: -200px; right: -200px;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(200,16,46,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .tickets-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .tickets-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+    .ticket-widget-wrap {
+      background: rgba(247,243,236,0.03);
+      border: 1px solid rgba(247,243,236,0.08);
+      border-radius: 2px;
+      padding: 48px;
+      overflow: hidden;
+    }
+    .ticket-widget-wrap a {
+      color: var(--cream);
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+
+    /* ─── FILM MODAL ─── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.95);
+      backdrop-filter: blur(8px);
+      z-index: 800;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal {
+      position: fixed; inset: 0;
+      z-index: 801;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px;
+      opacity: 0; pointer-events: none;
+      transform: scale(0.96);
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .modal.open { opacity: 1; pointer-events: all; transform: scale(1); }
+    .modal-inner {
+      background: var(--dark);
+      border: 1px solid rgba(247,243,236,0.07);
+      max-width: 900px; width: 100%;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+      position: relative;
+    }
+    .modal-poster {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      min-height: 480px;
+    }
+    .modal-body {
+      padding: 48px;
+      display: flex; flex-direction: column;
+    }
+    .modal-close {
+      position: absolute; top: 20px; right: 20px;
+      width: 40px; height: 40px;
+      background: rgba(247,243,236,0.06);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--cream);
+      transition: background 0.2s;
+    }
+    .modal-close:hover { background: var(--red); }
+    .modal-genre {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 16px;
+    }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      line-height: 1;
+      color: var(--cream);
+      margin-bottom: 24px;
+    }
+    .modal-divider {
+      width: 40px; height: 1px;
+      background: var(--red);
+      margin-bottom: 24px;
+    }
+    .modal-synopsis {
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--text-light);
+      flex: 1;
+    }
+    .modal-actions {
+      margin-top: 40px;
+      display: flex; gap: 16px;
+    }
+    .btn-red {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      background: var(--red);
+      color: var(--cream);
+      border: none;
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-red:hover { background: var(--red-dark); }
+    .btn-outline {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--text-light);
+      border: 1px solid rgba(247,243,236,0.2);
+      padding: 14px 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--cream); color: var(--cream); }
+
+    /* Share popup */
+    .share-popup {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%) scale(0.95);
+      background: var(--dark);
+      border: 1px solid rgba(247,243,236,0.1);
+      padding: 40px;
+      z-index: 1000;
+      width: 480px; max-width: 90%;
+      opacity: 0; pointer-events: none;
+      transition: all 0.3s;
+    }
+    .share-popup.open { opacity: 1; pointer-events: all; transform: translate(-50%,-50%) scale(1); }
+    .share-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 300;
+      color: var(--cream); margin-bottom: 20px;
+    }
+    .share-text-box {
+      background: rgba(247,243,236,0.04);
+      border: 1px solid rgba(247,243,236,0.08);
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .share-text-box p { font-size: 0.85rem; color: var(--text-light); line-height: 1.6; }
+    .share-btns { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .share-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 1.2rem; }
+    .share-icon {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--cream); text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .share-icon:hover { opacity: 0.7; }
+    .share-wa { background: #25D366; }
+    .share-fb { background: #3b5998; }
+    .share-tw { background: #1DA1F2; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--black);
+      border-top: 1px solid rgba(247,243,236,0.06);
+      padding: 60px 80px 40px;
+    }
+    .footer-inner {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 40px;
+    }
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--cream);
+    }
+    .footer-brand span { color: var(--red); }
+    .footer-link {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--cream); }
+    .footer-copy {
+      border-top: 1px solid rgba(247,243,236,0.06);
+      padding-top: 24px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(247,243,236,0.2);
+      text-align: center;
+    }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes marquee {
+      to { transform: translateX(-50%); }
+    }
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-left {
+      opacity: 0; transform: translateX(-50px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+    .reveal-right {
+      opacity: 0; transform: translateX(50px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1024px) {
+      nav { padding: 0 24px; }
+      .films-grid { grid-template-columns: repeat(2, 1fr); }
+      #venue { grid-template-columns: 1fr; padding: 80px 40px; gap: 60px; }
+      .venue-info { padding-left: 0; }
+      .films-header { padding: 0 40px; }
+      #tickets { padding: 80px 40px; }
+      footer { padding: 60px 40px 40px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: flex !important; }
+      .films-grid { grid-template-columns: repeat(2, 1fr); }
+      .films-header { flex-direction: column; align-items: flex-start; gap: 16px; padding: 0 24px; }
+      #films { padding: 80px 0; }
+      .parallax-quote { font-size: 1.6rem; padding: 0 24px; }
+      #venue { padding: 60px 24px; }
+      #tickets { padding: 60px 24px; }
+      .ticket-widget-wrap { padding: 24px; }
+      footer { padding: 40px 24px 24px; }
+      .footer-inner { flex-direction: column; gap: 24px; align-items: flex-start; }
+      .modal-inner { grid-template-columns: 1fr; }
+      .modal-poster { display: none; }
+      .modal { padding: 20px; }
+    }
+    .nav-mobile-btn {
+      display: none;
+      background: none; border: none;
+      color: var(--cream); cursor: pointer;
+      font-size: 1.2rem; padding: 8px;
+    }
+    /* Mobile nav drawer */
+    .mobile-drawer {
+      position: fixed; top: 0; right: 0;
+      width: 280px; height: 100%;
+      background: var(--dark);
+      border-left: 1px solid rgba(247,243,236,0.06);
+      z-index: 600;
+      padding: 80px 40px;
+      display: flex; flex-direction: column; gap: 40px;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .mobile-drawer.open { transform: translateX(0); }
+    .mobile-drawer a {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      text-decoration: none; background: none; border: none; cursor: pointer;
+      text-align: left;
+      transition: color 0.2s;
+    }
+    .mobile-drawer a:hover { color: var(--cream); }
+    .drawer-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 599;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .drawer-overlay.open { opacity: 1; pointer-events: all; }
+
+    /* Film index indicator */
+    .film-index-bar {
+      position: fixed; right: 24px; top: 50%;
+      transform: translateY(-50%);
+      z-index: 100;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+    }
+    .film-index-dot {
+      width: 4px; height: 4px;
+      background: rgba(247,243,236,0.2);
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+    .film-index-dot.active {
+      background: var(--red);
+      transform: scale(1.5);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Nav -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Courts<span>.</span>Métrages</a>
+  <div class="nav-links">
+    <a onclick="scrollToSection('films')" id="nav-prog">Programmation</a>
+    <a onclick="scrollToSection('venue')" id="nav-venue">Lieu & Horaires</a>
+    <a onclick="scrollToSection('tickets')" class="nav-ticket" id="nav-tickets">Réserver</a>
+  </div>
+  <button class="nav-mobile-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+</nav>
+
+<!-- Mobile drawer -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <a onclick="scrollToSection('films'); toggleDrawer()">Programmation</a>
+  <a onclick="scrollToSection('venue'); toggleDrawer()">Lieu & Horaires</a>
+  <a onclick="scrollToSection('tickets'); toggleDrawer()">Réserver</a>
+</div>
+
+<!-- ─── HERO ─── -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Lycée Lalande — Sélection Officielle 2026</p>
+    <h1 class="hero-title">Courts<br><em>Métrages</em></h1>
+    <p class="hero-subtitle">Huit films. Huit regards.</p>
+    <div class="hero-date">
+      <div class="hero-date-line"></div>
+      <span>1 juillet 2026 — Cinéma La Grenette</span>
+      <div class="hero-date-line"></div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span>Découvrir</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ─── MARQUEE ─── -->
+<div class="intro-strip">
+  <div class="marquee-track" id="marquee">
+    <div class="marquee-item"><div class="marquee-dot"></div> Drame</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Romance</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Horreur</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Tragédie</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Poétique</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> 1 juillet 2026</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Cinéma La Grenette</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Lycée Lalande</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> 8 films</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Bourg-en-Bresse</div>
+    <!-- duplicate for seamless loop -->
+    <div class="marquee-item"><div class="marquee-dot"></div> Drame</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Romance</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Horreur</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Tragédie</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Poétique</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> 1 juillet 2026</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Cinéma La Grenette</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Lycée Lalande</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> 8 films</div>
+    <div class="marquee-item"><div class="marquee-dot"></div> Bourg-en-Bresse</div>
+  </div>
+</div>
+
+<!-- ─── SCROLLYTELLING ─── -->
+<section id="story">
+  <div style="position:relative;">
+    <!-- sticky background layer -->
+    <div class="story-sticky" id="storyStickyEl">
+      <div class="story-bg-number" id="storyBgNumber">I</div>
+      <div class="story-progress-bar" id="storyProgressBar"></div>
+      <!-- Text stages live here, absolutely centered -->
+      <div class="story-stage" id="storyStage0"><p class="story-text">C'est l'histoire de <em>jeunes cinéastes</em><br>qui ont décidé de prendre la caméra.</p></div>
+      <div class="story-stage" id="storyStage1"><p class="story-text"><strong>Huit courts métrages.</strong><br>Huit visions du monde,<br>de l'amour et de la peur.</p></div>
+      <div class="story-stage" id="storyStage2"><p class="story-text">Une seule soirée<br>pour <em>tout découvrir</em><br>sur grand écran.</p></div>
+      <div class="story-stage" id="storyStage3"><p class="story-text"><em>1<sup>er</sup> juillet 2026.</em><br>Cinéma La Grenette —<br>Bourg-en-Bresse.</p></div>
+    </div>
+
+    <!-- scroll steps — each 100vh, text centered absolutely over sticky -->
+    <div class="story-steps-wrap" id="storyStepsWrap">
+
+      <div class="story-step" data-step="0">
+        <p class="story-text">
+          C'est l'histoire de <em>jeunes cinéastes</em><br>qui ont décidé de prendre la caméra.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="1">
+        <p class="story-text">
+          <strong>Huit courts métrages.</strong><br>
+          Huit visions du monde,<br>de l'amour et de la peur.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="2">
+        <p class="story-text">
+          Une seule soirée<br>pour <em>tout découvrir</em><br>sur grand écran.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="3">
+        <p class="story-text">
+          <em>1<sup>er</sup> juillet 2026.</em><br>
+          Cinéma La Grenette —<br>Bourg-en-Bresse.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── FILMS ─── -->
+<section id="films" style="background: var(--black);">
+  <div class="films-header reveal">
+    <div>
+      <p class="section-label">Sélection Officielle</p>
+      <h2 class="section-heading">La programmation</h2>
+    </div>
+    <div class="films-count">08</div>
+  </div>
+  <div class="films-grid" id="filmsGrid">
+    <!-- JS renders cards here -->
+  </div>
+</section>
+
+<!-- ─── PARALLAX QUOTE ─── -->
+<div class="parallax-banner" id="parallaxBanner">
+  <div class="parallax-bg" id="parallaxBg"></div>
+  <div class="parallax-text reveal">
+    <p class="parallax-quote">
+      "Le cinéma, c'est l'<em>écriture</em> moderne<br>dont l'encre est la lumière."
+    </p>
+    <p class="parallax-attr">Jean Cocteau</p>
+  </div>
+</div>
+
+<!-- ─── VENUE ─── -->
+<section id="venue">
+  <div class="reveal-left">
+    <div class="venue-visual">
+      <div class="venue-frame">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2762.7333889392946!2d5.228279315842245!3d46.20790617911712!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47f353f23a5ffb91%3A0x8e09cf9b0f5bb60c!2s4%20Cours%20de%20Verdun%2C%2001000%20Bourg-en-Bresse!5e0!3m2!1sfr!2sfr!4v1716810750000!5m2!1sfr!2sfr" allowfullscreen="" loading="lazy"></iframe>
+      </div>
+      <div class="venue-tag">
+        <p>Cinéma</p>
+        <strong>La Grenette</strong>
+      </div>
+    </div>
+  </div>
+  <div class="venue-info reveal-right">
+    <p class="section-label">Informations pratiques</p>
+    <h2 class="section-heading" style="margin-bottom: 56px;">Où & quand<br>nous rejoindre</h2>
+    <div class="venue-detail">
+      <p class="venue-detail-label">Adresse</p>
+      <p class="venue-detail-text">Cinéma La Grenette<br>4 Cours de Verdun<br>01000 Bourg-en-Bresse</p>
+    </div>
+    <div class="venue-detail">
+      <p class="venue-detail-label">Date & Horaire</p>
+      <p class="venue-detail-text">Mercredi 1 juillet 2026<br>Séance à 19h30</p>
+    </div>
+    <div class="venue-detail" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
+      <p class="venue-detail-label">Organisateur</p>
+      <p class="venue-detail-text">Lycée Lalande<br>Bourg-en-Bresse</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TICKETS ─── -->
+<section id="tickets">
+  <div class="tickets-inner">
+    <div class="tickets-header reveal">
+      <p class="section-label">Réservation</p>
+      <h2 class="section-heading">Réservez<br>votre place</h2>
+      <p style="margin-top:24px; font-size:1rem; color: var(--text-light); max-width:480px; margin-left:auto; margin-right:auto; line-height:1.7;">
+        Places limitées. Réservez dès maintenant pour ne pas manquer la soirée.
+      </p>
+    </div>
+    <div class="ticket-widget-wrap reveal">
+      <a title="Vente de billets en ligne" href="https://www.billetweb.fr/shop.php?event=projection" class="shop_frame" target="_blank" data-src="https://www.billetweb.fr/shop.php?event=projection" data-max-width="100%" data-initial-height="600" data-scrolling="no" data-id="projection" data-resize="1">Vente de billets en ligne →</a>
+      <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <p class="footer-brand">Courts<span>.</span>Métrages — Lycée Lalande</p>
+      <p style="margin-top:8px; font-family:'Barlow Condensed',sans-serif; font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(247,243,236,0.3);">1 Juillet 2026 — Cinéma La Grenette</p>
+    </div>
+    <a href="https://lalande.ent.auvergnerhonealpes.fr/" target="_blank" class="footer-link">
+      Site du lycée <i class="fas fa-arrow-right" style="font-size:0.6rem;"></i>
+    </a>
+  </div>
+  <p class="footer-copy">© 2026 Projection Courts Métrages Lycée Lalande. Tous droits réservés.</p>
+</footer>
+
+<!-- ─── MODAL ─── -->
+<div class="modal-backdrop" id="modalBackdrop" onclick="closeModal()"></div>
+<div class="modal" id="filmModal">
+  <div class="modal-inner">
+    <img id="modalPoster" class="modal-poster" src="" alt="">
+    <div class="modal-body">
+      <p class="modal-genre" id="modalGenre"></p>
+      <h2 class="modal-title" id="modalTitle"></h2>
+      <div class="modal-divider"></div>
+      <p class="modal-synopsis" id="modalSynopsis"></p>
+      <div class="modal-actions">
+        <button class="btn-red" onclick="scrollToSection('tickets'); closeModal()">Réserver une place</button>
+        <button class="btn-outline" id="modalShareBtn">Partager</button>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+
+<!-- ─── SHARE POPUP ─── -->
+<div class="modal-backdrop" id="shareBackdrop" style="z-index:900;" onclick="closeShare()"></div>
+<div class="share-popup" id="sharePopup">
+  <button class="share-close" onclick="closeShare()"><i class="fas fa-times"></i></button>
+  <h3 class="share-title">Partager</h3>
+  <div class="share-text-box"><p id="shareMsg"></p></div>
+  <div class="share-btns">
+    <button class="btn-red" id="copyBtn" onclick="copyShare()">
+      <i class="fas fa-copy"></i> Copier
+    </button>
+    <a href="#" id="waBtn" target="_blank" class="share-icon share-wa"><i class="fab fa-whatsapp"></i></a>
+    <a href="#" id="fbBtn" target="_blank" class="share-icon share-fb"><i class="fab fa-facebook-f"></i></a>
+    <a href="#" id="twBtn" target="_blank" class="share-icon share-tw"><i class="fab fa-twitter"></i></a>
+  </div>
+</div>
+
+<script>
+const films = [
+  { nom: "Déjà-vu", affiche: "https://github.com/Cyprdu/projection/blob/main/d%C3%A9j%C3%A0vu.png?raw=true", synopsis: "Un court métrage captivant qui explore les mystères du temps et de la mémoire.", genre: "Drame" },
+  { nom: "La vie rêvée", affiche: "https://raw.githubusercontent.com/Cyprdu/projection/main/la%20vie%20reve.png", synopsis: "C'est l'histoire de Maëlle et Antoine, un jeune couple très amoureux. Au sein de leur quotidien émerge un délire entre eux: ils imaginent leur vie rêvée...", genre: "Romance" },
+  { nom: "Lettre à un amour", affiche: "https://github.com/Cyprdu/projection/blob/main/Lettre%20%C3%A0%20un%20amour.png?raw=true", synopsis: "Promenade visuelle à travers l'amour et ses incarnations esthétiques.", genre: "Romance" },
+  { nom: "Nature Morte", affiche: "https://github.com/Cyprdu/projection/blob/main/nature%20morte%201.png?raw=true", synopsis: "Un film d'horreur qui va vous donner des frissons...", genre: "Horreur" },
+  { nom: "Un Dernier Regard", affiche: "https://github.com/Cyprdu/projection/blob/main/nature%20morte.png?raw=true", synopsis: "Une tragédie qui va vous retourner le cerveau…", genre: "Tragédie" },
+  { nom: "The other woman", affiche: "https://github.com/Cyprdu/projection/blob/main/The%20other%20woman%20.png?raw=true", synopsis: "Max a dix sept ans, elle admire sa camarade de classe Théa. Un jour, elles se retrouvent seules dans le vestiaire. Elle tente de se rapprocher d'elle, mais se retrouve nez à nez avec son petit ami...", genre: "Drame" },
+  { nom: "Volver", affiche: "https://github.com/Cyprdu/projection/blob/main/Volver.png?raw=true", synopsis: "Une histoire émouvante sur le retour aux sources.", genre: "Drame" },
+  { nom: "Zéphyr", affiche: "https://github.com/Cyprdu/projection/blob/main/Z%C3%A9phyr.png?raw=true", synopsis: "Un voyage poétique à travers les saisons de la vie.", genre: "Poétique" }
+];
+
+let currentFilm = null;
+
+// ─── RENDER FILMS ───
+const grid = document.getElementById('filmsGrid');
+films.forEach((f, i) => {
+  const card = document.createElement('div');
+  card.className = 'film-card';
+  card.innerHTML = `
+    <img src="${f.affiche}" alt="${f.nom}" loading="lazy">
+    <div class="film-card-overlay"></div>
+    <div class="film-card-body">
+      <p class="film-genre">${f.genre}</p>
+      <h3 class="film-name">${f.nom}</h3>
+      <div class="film-card-cta">
+        <span>Découvrir</span>
+        <div class="cta-line"></div>
+      </div>
+    </div>
+    <span class="film-number">0${i+1}</span>
+  `;
+  card.addEventListener('click', () => openModal(i));
+  grid.appendChild(card);
+});
+
+// ─── MODAL ───
+function openModal(i) {
+  currentFilm = films[i];
+  document.getElementById('modalPoster').src = currentFilm.affiche;
+  document.getElementById('modalPoster').alt = currentFilm.nom;
+  document.getElementById('modalGenre').textContent = currentFilm.genre;
+  document.getElementById('modalTitle').textContent = currentFilm.nom;
+  document.getElementById('modalSynopsis').textContent = currentFilm.synopsis;
+  document.getElementById('modalBackdrop').classList.add('open');
+  document.getElementById('filmModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+  document.getElementById('filmModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.getElementById('modalShareBtn').addEventListener('click', () => {
+  closeModal();
+  openShare();
+});
+
+// ─── SHARE ───
+function openShare() {
+  if (!currentFilm) return;
+  const msg = `Découvrez "${currentFilm.nom}" — ${currentFilm.genre}\n\n${currentFilm.synopsis}\n\nProjection le 1 juillet 2026 au Cinéma La Grenette, Bourg-en-Bresse.`;
+  document.getElementById('shareMsg').textContent = msg;
+  const enc = encodeURIComponent(msg);
+  document.getElementById('waBtn').href = `https://wa.me/?text=${enc}`;
+  document.getElementById('fbBtn').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}&quote=${enc}`;
+  document.getElementById('twBtn').href = `https://twitter.com/intent/tweet?text=${enc}`;
+  document.getElementById('shareBackdrop').classList.add('open');
+  document.getElementById('sharePopup').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeShare() {
+  document.getElementById('shareBackdrop').classList.remove('open');
+  document.getElementById('sharePopup').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function copyShare() {
+  navigator.clipboard.writeText(document.getElementById('shareMsg').textContent).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copié !';
+    setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i> Copier', 2000);
+  });
+}
+
+// ─── CURSOR ───
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let rx = 0, ry = 0, mx = 0, my = 0;
+document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx+'px'; cursor.style.top = my+'px'; });
+(function animRing() {
+  rx += (mx - rx) * 0.15;
+  ry += (my - ry) * 0.15;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+})();
+
+// ─── NAV SCROLL ───
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
+});
+
+// ─── SCROLL TO ───
+function scrollToSection(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── MOBILE DRAWER ───
+const mobileDrawer = document.getElementById('mobileDrawer');
+const drawerOverlay = document.getElementById('drawerOverlay');
+document.getElementById('mobileMenuBtn').addEventListener('click', toggleDrawer);
+function toggleDrawer() {
+  mobileDrawer.classList.toggle('open');
+  drawerOverlay.classList.toggle('open');
+  document.body.style.overflow = mobileDrawer.classList.contains('open') ? 'hidden' : '';
+}
+
+// ─── REVEAL ON SCROLL ───
+const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+const revObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revObs.unobserve(e.target); } });
+}, { threshold: 0.15 });
+revealEls.forEach(el => revObs.observe(el));
+
+// scroll listener for parallax only
+window.addEventListener('scroll', () => {
+  updateParallax();
+}, { passive: true });
+
+// ─── SCROLLYTELLING — SCROLL-DRIVEN ───
+// The story section is tall (500vh). The sticky panel stays centered.
+// User scrolls normally — progress through the section drives the story.
+// Each of the 4 phrases occupies 25% of the scroll range.
+// The red bar = scroll progress. Completely intuitive: scroll → story advances.
+
+const storySection = document.getElementById('story');
+const storyBgNum = document.getElementById('storyBgNumber');
+const storyProgressBar = document.getElementById('storyProgressBar');
+const storyStages = [0,1,2,3].map(i => document.getElementById('storyStage'+i));
+const STEP_COUNT = storyStages.length;
+const roman = ['I','II','III','IV'];
+
+// Init all stages invisible
+storyStages.forEach(s => {
+  const t = s.querySelector('.story-text');
+  t.style.opacity = '0';
+  t.style.transform = 'translateY(48px)';
+  t.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+});
+
+function updateStoryScroll() {
+  const rect = storySection.getBoundingClientRect();
+  const sectionH = storySection.offsetHeight;
+  // progress: 0 when section top hits viewport top, 1 when section bottom leaves
+  const scrolled = -rect.top;
+  const scrollable = sectionH - window.innerHeight;
+  const progress = Math.max(0, Math.min(1, scrolled / scrollable));
+
+  // progress bar
+  storyProgressBar.style.width = (progress * 100) + '%';
+
+  // Each step spans 1/STEP_COUNT of the total progress
+  // Within its slice: fade in 0→30%, hold 30→75%, fade out 75→100%
+  const stepSpan = 1 / STEP_COUNT;
+
+  storyStages.forEach((stage, i) => {
+    const txt = stage.querySelector('.story-text');
+    const stepStart = i * stepSpan;
+    const stepEnd   = stepStart + stepSpan;
+    // local progress within this step's slice (0→1)
+    const local = Math.max(0, Math.min(1, (progress - stepStart) / stepSpan));
+
+    let opacity, ty;
+    if (local <= 0) {
+      opacity = 0; ty = 48;
+    } else if (local < 0.18) {
+      // fade in
+      opacity = local / 0.18;
+      ty = (1 - opacity) * 48;
+    } else if (local < 0.78) {
+      // fully visible — long hold
+      opacity = 1; ty = 0;
+    } else if (local < 1.0) {
+      // fade out
+      const f = (local - 0.78) / 0.22;
+      opacity = 1 - f;
+      ty = -f * 48;
+    } else {
+      opacity = 0; ty = -48;
+    }
+
+    txt.style.opacity   = String(Math.max(0, Math.min(1, opacity)));
+    txt.style.transform = `translateY(${ty}px)`;
+  });
+
+  // big background roman numeral — current step
+  const currentStep = Math.min(Math.floor(progress * STEP_COUNT), STEP_COUNT - 1);
+  storyBgNum.textContent = roman[currentStep] || 'I';
+}
+
+window.addEventListener('scroll', updateStoryScroll, { passive: true });
+updateStoryScroll();
+
+// ─── PARALLAX ───
+const parallaxBg = document.getElementById('parallaxBg');
+function updateParallax() {
+  const banner = document.getElementById('parallaxBanner');
+  if (!banner) return;
+  const rect = banner.getBoundingClientRect();
+  const center = rect.top + rect.height / 2 - window.innerHeight / 2;
+  parallaxBg.style.transform = `translateY(${center * 0.3}px)`;
+}
+updateParallax();
+
+// Film cards stagger
+document.querySelectorAll('.film-card').forEach((card, i) => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(40px)';
+  card.style.transition = `opacity 0.6s ease ${i*0.08}s, transform 0.6s ease ${i*0.08}s`;
+});
+const gridObs = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) {
+    document.querySelectorAll('.film-card').forEach(card => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+    gridObs.disconnect();
+  }
+}, { threshold: 0.05 });
+gridObs.observe(grid);
+</script>
+
+</body>
+</html>

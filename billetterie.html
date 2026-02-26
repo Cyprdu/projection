@@ -1211,10 +1211,61 @@ const revObs = new IntersectionObserver((entries) => {
 }, { threshold: 0.15 });
 revealEls.forEach(el => revObs.observe(el));
 
+// ═══════════════════════════════════════════════
+// SMOOTH SCROLL ENGINE — tapis rouge
+// Intercepts wheel/touch events, lerps to target
+// so clic-by-clic mice glide instead of jerking.
+// ═══════════════════════════════════════════════
+let scrollTarget = window.scrollY;
+let scrollCurrent = window.scrollY;
+let scrollRAF = null;
+const LERP = 0.10; // smoothing factor (0=frozen, 1=instant)
+const WHEEL_MULT = 1.1; // wheel sensitivity
+
+function smoothLoop() {
+  scrollCurrent += (scrollTarget - scrollCurrent) * LERP;
+  // Clamp to valid range
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  scrollCurrent = Math.max(0, Math.min(maxScroll, scrollCurrent));
+  scrollTarget  = Math.max(0, Math.min(maxScroll, scrollTarget));
+
+  if (Math.abs(scrollTarget - scrollCurrent) > 0.4) {
+    window.scrollTo(0, scrollCurrent);
+    updateParallax();
+    scrollRAF = requestAnimationFrame(smoothLoop);
+  } else {
+    // Snap to exact target
+    window.scrollTo(0, scrollTarget);
+    scrollCurrent = scrollTarget;
+    updateParallax();
+    scrollRAF = null;
+  }
+}
+
+function kickSmooth() {
+  if (!scrollRAF && !cinemaActive) {
+    scrollRAF = requestAnimationFrame(smoothLoop);
+  }
+}
+
+window.addEventListener('wheel', e => {
+  if (cinemaActive) { e.preventDefault(); return; }
+  e.preventDefault();
+  scrollTarget += e.deltaY * WHEEL_MULT;
+  kickSmooth();
+}, { passive: false });
+
+// Keep scrollTarget in sync when native scroll happens (nav links, etc.)
+window.addEventListener('scroll', () => {
+  if (!scrollRAF && !cinemaActive) {
+    scrollTarget = window.scrollY;
+    scrollCurrent = window.scrollY;
+  }
+}, { passive: true });
+
 // ─── SCROLLYTELLING — AUTO-CINEMATIC ───
-// Texts live inside the sticky container (.story-stage).
-// On entering the section, we lock scroll and auto-play all 4 steps,
-// then release and scroll to #films.
+// Plays once every time the section enters the viewport.
+// Resets properly when scrolling back up.
 
 const storySection = document.getElementById('story');
 const storyBgNum = document.getElementById('storyBgNumber');
@@ -1223,62 +1274,67 @@ const storyStages = [0,1,2,3].map(i => document.getElementById('storyStage'+i));
 const STEP_COUNT = storyStages.length;
 const roman = ['I','II','III','IV'];
 
-// Each step: hold time fully visible + transition out
-const STEP_HOLD = 1800;  // ms fully visible
-const STEP_TRANS = 600;  // ms fade out to next
+const STEP_HOLD  = 1800; // ms fully visible
+const STEP_TRANS = 600;  // ms fade transition
 
 let cinemaActive = false;
-let cinemaObserverFired = false;
+let cinemaRAF = null;
 
-// Init: all stages invisible, translateY down
-storyStages.forEach(s => {
-  const t = s.querySelector('.story-text');
-  t.style.opacity = '0';
-  t.style.transform = 'translateY(56px)';
-  t.style.transition = 'none';
-});
+function resetStages() {
+  storyProgressBar.style.width = '0%';
+  storyBgNum.textContent = 'I';
+  storyStages.forEach(s => {
+    const t = s.querySelector('.story-text');
+    t.style.transition = 'none';
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(56px)';
+  });
+}
+resetStages();
 
 function renderStep(idx, p) {
-  // p: 0→1 over STEP_HOLD+STEP_TRANS
   storyBgNum.textContent = roman[idx] || '';
   storyProgressBar.style.width = ((idx + p) / STEP_COUNT * 100) + '%';
-
   storyStages.forEach((stage, i) => {
     const txt = stage.querySelector('.story-text');
     let opacity, ty;
     if (i < idx) {
-      // already gone
       opacity = 0; ty = -56;
     } else if (i === idx) {
-      // fade in 0→0.2, hold 0.2→0.85, fade out 0.85→1
-      if (p < 0.2) {
-        opacity = p / 0.2; ty = (1 - opacity) * 56;
-      } else if (p < 0.85) {
-        opacity = 1; ty = 0;
-      } else {
-        const f = (p - 0.85) / 0.15;
-        opacity = 1 - f; ty = -f * 56;
-      }
+      if (p < 0.2)       { opacity = p / 0.2;             ty = (1 - opacity) * 56; }
+      else if (p < 0.85) { opacity = 1;                   ty = 0; }
+      else               { const f = (p-0.85)/0.15; opacity = 1-f; ty = -f*56; }
     } else {
-      // waiting below
       opacity = 0; ty = 56;
     }
     txt.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
-    txt.style.opacity = String(Math.max(0, Math.min(1, opacity)));
-    txt.style.transform = `translateY(${ty}px)`;
+    txt.style.opacity    = String(Math.max(0, Math.min(1, opacity)));
+    txt.style.transform  = `translateY(${ty}px)`;
   });
 }
 
+function stopCinema() {
+  cinemaActive = false;
+  if (cinemaRAF) { cancelAnimationFrame(cinemaRAF); cinemaRAF = null; }
+  document.body.style.overflow     = '';
+  document.body.style.pointerEvents = '';
+  document.getElementById('nav').style.pointerEvents = '';
+  // Sync smooth scroll engine
+  scrollTarget  = window.scrollY;
+  scrollCurrent = window.scrollY;
+}
+
 function runStep(idx) {
+  if (!cinemaActive) return;
   if (idx >= STEP_COUNT) {
-    // Sequence done — release and scroll to films
-    cinemaActive = false;
-    document.body.style.overflow = '';
-    document.body.style.pointerEvents = '';
-    document.getElementById('nav').style.pointerEvents = '';
-    setTimeout(() => {
-      document.getElementById('films').scrollIntoView({ behavior: 'smooth' });
-    }, 200);
+    stopCinema();
+    // Glide to films section via smooth engine
+    const filmsEl = document.getElementById('films');
+    if (filmsEl) {
+      scrollTarget  = filmsEl.getBoundingClientRect().top + window.scrollY;
+      scrollCurrent = window.scrollY;
+      kickSmooth();
+    }
     return;
   }
   const total = STEP_HOLD + STEP_TRANS;
@@ -1287,27 +1343,44 @@ function runStep(idx) {
     if (!cinemaActive) return;
     const p = Math.min((now - start) / total, 1);
     renderStep(idx, p);
-    if (p < 1) requestAnimationFrame(tick);
+    if (p < 1) { cinemaRAF = requestAnimationFrame(tick); }
     else runStep(idx + 1);
   }
-  requestAnimationFrame(tick);
+  cinemaRAF = requestAnimationFrame(tick);
 }
 
 function startCinema() {
   if (cinemaActive) return;
+  resetStages();
   cinemaActive = true;
-  window.scrollTo({ top: storySection.offsetTop, behavior: 'instant' });
-  document.body.style.overflow = 'hidden';
+  // Cancel smooth scroll, pin to story top
+  if (scrollRAF) { cancelAnimationFrame(scrollRAF); scrollRAF = null; }
+  const top = storySection.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo(0, top);
+  scrollTarget = scrollCurrent = top;
+  document.body.style.overflow      = 'hidden';
   document.body.style.pointerEvents = 'none';
   document.getElementById('nav').style.pointerEvents = 'all';
   runStep(0);
 }
 
+// Watch: trigger cinema each time section enters from above,
+// and allow re-trigger after scrolling back up past it.
+let storyWasAbove = true; // starts above viewport before user scrolls
 const cinemaObs = new IntersectionObserver((entries) => {
-  if (entries[0].isIntersecting && !cinemaObserverFired) {
-    cinemaObserverFired = true;
-    cinemaObs.disconnect();
+  const e = entries[0];
+  if (e.isIntersecting && storyWasAbove && !cinemaActive) {
+    storyWasAbove = false;
     setTimeout(startCinema, 60);
+  }
+  if (!e.isIntersecting) {
+    // Section left viewport — figure out direction
+    const rect = storySection.getBoundingClientRect();
+    if (rect.top > 0) {
+      // User scrolled back above the section — arm for re-trigger
+      storyWasAbove = true;
+      resetStages();
+    }
   }
 }, { threshold: 0.4 });
 cinemaObs.observe(storySection);
@@ -1321,12 +1394,6 @@ function updateParallax() {
   const center = rect.top + rect.height / 2 - window.innerHeight / 2;
   parallaxBg.style.transform = `translateY(${center * 0.3}px)`;
 }
-
-window.addEventListener('scroll', () => {
-  updateParallax();
-}, { passive: true });
-
-// Init
 updateParallax();
 
 // Film cards stagger

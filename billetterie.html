@@ -252,50 +252,59 @@
       top: 0; height: 100vh;
       display: flex; align-items: center; justify-content: center;
       overflow: hidden;
+      pointer-events: none;
     }
     .story-bg-number {
       position: absolute;
       font-family: 'Cormorant Garamond', serif;
-      font-size: 35vw;
+      font-size: 45vw;
       font-weight: 600;
-      color: rgba(200,16,46,0.04);
+      color: rgba(200,16,46,0.035);
       pointer-events: none;
       user-select: none;
       line-height: 1;
-      transition: all 0.5s ease;
+      transition: opacity 0.6s ease;
     }
-    .story-content {
-      position: relative; z-index: 2;
-      max-width: 680px;
-      padding: 0 48px;
-      text-align: center;
-      opacity: 0;
-      transform: translateY(40px);
-      transition: all 0.8s ease;
+    .story-progress-bar {
+      position: absolute;
+      left: 0; bottom: 0;
+      height: 2px;
+      background: var(--red);
+      width: 0%;
+      transition: width 0.1s linear;
+      opacity: 0.6;
     }
-    .story-content.visible {
-      opacity: 1;
-      transform: translateY(0);
+    /* Steps wrap — stacks on top of sticky via negative margin trick */
+    .story-steps-wrap {
+      position: relative;
+      z-index: 10;
+      pointer-events: none;
+      /* Each step is 100vh, so 10 steps = 1000vh total scroll space */
     }
-    .story-steps { height: 400vh; }
     .story-step {
       height: 100vh;
       display: flex; align-items: center; justify-content: center;
+      /* text will be animated via JS opacity/transform */
     }
     .story-text {
       font-family: 'Cormorant Garamond', serif;
-      font-size: clamp(1.8rem, 3.5vw, 3rem);
+      font-size: clamp(2rem, 4vw, 3.4rem);
       font-weight: 300;
-      line-height: 1.3;
+      line-height: 1.35;
       color: var(--cream);
       text-align: center;
       padding: 0 48px;
-      max-width: 700px;
+      max-width: 720px;
+      /* start invisible, JS drives opacity & transform */
+      opacity: 0;
+      transform: translateY(60px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
     .story-text em { color: var(--red); font-style: italic; }
     .story-text strong {
       font-weight: 400;
-      border-bottom: 1px solid rgba(200,16,46,0.4);
+      border-bottom: 1px solid rgba(200,16,46,0.5);
+      padding-bottom: 2px;
     }
 
     /* ─── FILMS GRID ─── */
@@ -908,37 +917,77 @@
 <!-- ─── SCROLLYTELLING ─── -->
 <section id="story">
   <div style="position:relative;">
-    <!-- sticky visual -->
+    <!-- sticky background layer -->
     <div class="story-sticky" id="storyStickyEl">
-      <div class="story-bg-number" id="storyBgNumber">01</div>
+      <div class="story-bg-number" id="storyBgNumber">I</div>
+      <div class="story-progress-bar" id="storyProgressBar"></div>
     </div>
 
-    <!-- scroll steps overlaid -->
-    <div style="position:relative; z-index:10; pointer-events:none;">
+    <!-- scroll steps — each 100vh, text centered absolutely over sticky -->
+    <div class="story-steps-wrap" id="storyStepsWrap">
+
+      <div class="story-step" data-step="0">
+        <p class="story-text">
+          Tout commence<br>par une <em>idée.</em>
+        </p>
+      </div>
 
       <div class="story-step" data-step="1">
         <p class="story-text">
-          C'est l'histoire de <em>jeunes cinéastes</em><br>qui ont décidé de prendre la caméra.
+          Des élèves du lycée Lalande<br>ont décidé de <strong>prendre la caméra</strong><br>et de raconter leur monde.
         </p>
       </div>
+
       <div class="story-step" data-step="2">
         <p class="story-text">
-          <strong>Huit courts métrages.</strong><br>
-          Huit visions du monde,<br>de l'amour, et de la peur.
+          Ils ont écrit des scénarios,<br>choisi des acteurs,<br>trouvé des décors.
         </p>
       </div>
+
       <div class="story-step" data-step="3">
         <p class="story-text">
-          Une seule soirée<br>pour <em>tout découvrir</em><br>sur grand écran.
+          Ils ont filmé l'<em>amour</em><br>comme ils l'ont ressenti.
         </p>
       </div>
+
       <div class="story-step" data-step="4">
         <p class="story-text">
-          <em>1er juillet 2026.</em><br>
-          Cinéma La Grenette.<br>
-          Bourg-en-Bresse.
+          Ils ont filmé la <em>peur</em><br>qui se cache dans le quotidien.
         </p>
       </div>
+
+      <div class="story-step" data-step="5">
+        <p class="story-text">
+          Ils ont filmé le <em>deuil,</em><br>le désir, le doute —<br>tout ce qu'on n'ose pas dire.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="6">
+        <p class="story-text">
+          <strong>Huit films.</strong><br>Huit regards sur la vie.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="7">
+        <p class="story-text">
+          Ce soir-là,<br>les lumières de la salle s'éteindront.
+        </p>
+      </div>
+
+      <div class="story-step" data-step="8">
+        <p class="story-text">
+          Et pendant deux heures,<br>vous vivrez <em>leurs histoires.</em>
+        </p>
+      </div>
+
+      <div class="story-step" data-step="9">
+        <p class="story-text">
+          <em>1<sup>er</sup> juillet 2026.</em><br>
+          Cinéma La Grenette,<br>Bourg-en-Bresse.<br>
+          <span style="font-size:0.6em; letter-spacing:0.3em; text-transform:uppercase; font-family:'Barlow Condensed',sans-serif; color:rgba(247,243,236,0.4); font-style:normal;">19h30 — Places limitées</span>
+        </p>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1190,34 +1239,74 @@ const revObs = new IntersectionObserver((entries) => {
 revealEls.forEach(el => revObs.observe(el));
 
 // ─── SCROLLYTELLING ───
+// Each step occupies 100vh. The sticky element stays fixed.
+// We measure which step the viewport center is closest to, then
+// fade it in fully and keep it visible through most of its scroll range,
+// only fading it out when the NEXT step starts to arrive.
+
 const storySection = document.getElementById('story');
 const storyBgNum = document.getElementById('storyBgNumber');
-const storySteps = document.querySelectorAll('.story-step');
+const storyProgressBar = document.getElementById('storyProgressBar');
+const storyStepsWrap = document.getElementById('storyStepsWrap');
+const storyStepEls = document.querySelectorAll('.story-step');
+const STEP_COUNT = storyStepEls.length;
+
+// Roman numerals for the big bg number
+const roman = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
 
 function updateStory() {
+  const sectionTop = storySection.getBoundingClientRect().top + window.scrollY;
   const scrollY = window.scrollY;
-  const sectionTop = storySection.offsetTop;
-  const sectionH = storySection.offsetHeight;
-  const progress = (scrollY - sectionTop) / (sectionH - window.innerHeight);
+  // How far we've scrolled into the section (0 = just entered, 1 = just leaving)
+  const totalScrollable = storySection.offsetHeight - window.innerHeight;
+  const rawProgress = (scrollY - sectionTop) / totalScrollable;
+  const progress = Math.max(0, Math.min(1, rawProgress));
 
-  if (progress < 0 || progress > 1) return;
+  // Progress bar
+  storyProgressBar.style.width = (progress * 100) + '%';
 
-  const stepCount = storySteps.length;
-  const stepProgress = progress * stepCount;
-  const currentStep = Math.min(Math.floor(stepProgress), stepCount - 1);
-  const stepLocal = stepProgress - currentStep;
+  // stepProgress: 0..STEP_COUNT
+  const stepProgress = progress * STEP_COUNT;
 
-  // Update bg number
-  storyBgNum.textContent = String(currentStep + 1).padStart(2, '0');
-  storyBgNum.style.opacity = 0.04 + stepLocal * 0.03;
+  // Update big bg number — roman numeral of current step
+  const currentStepIdx = Math.min(Math.floor(stepProgress), STEP_COUNT - 1);
+  storyBgNum.textContent = roman[currentStepIdx] || '';
 
-  // Fade steps in/out based on scroll proximity
-  storySteps.forEach((step, i) => {
-    const dist = Math.abs(stepProgress - (i + 0.5));
-    const opacity = Math.max(0, 1 - dist * 2);
-    const ty = (stepProgress - (i + 0.5)) * 80;
-    step.querySelector('.story-text').style.opacity = opacity;
-    step.querySelector('.story-text').style.transform = `translateY(${ty}px)`;
+  // For each step, compute opacity based on position relative to stepProgress
+  // Each step is "centered" at i + 0.5
+  // We want full opacity from i+0.15 to i+0.85 (70% of its scroll range)
+  // and smooth fade in/out in the remaining 15% on each side
+  storyStepEls.forEach((step, i) => {
+    const center = i + 0.5;
+    const dist = stepProgress - center; // negative = hasn't arrived yet, positive = past
+
+    let opacity, ty;
+
+    if (dist < -0.85) {
+      // Far below (not yet reached)
+      opacity = 0;
+      ty = 70;
+    } else if (dist < -0.35) {
+      // Fading in: dist goes from -0.85 to -0.35 → opacity 0→1
+      opacity = (dist + 0.85) / 0.5;
+      ty = (1 - opacity) * 70;
+    } else if (dist < 0.35) {
+      // Fully visible plateau: -0.35 to +0.35
+      opacity = 1;
+      ty = 0;
+    } else if (dist < 0.85) {
+      // Fading out: dist goes from 0.35 to 0.85 → opacity 1→0
+      opacity = 1 - (dist - 0.35) / 0.5;
+      ty = -(1 - opacity) * 70;
+    } else {
+      // Far above (already passed)
+      opacity = 0;
+      ty = -70;
+    }
+
+    const txt = step.querySelector('.story-text');
+    txt.style.opacity = Math.max(0, Math.min(1, opacity));
+    txt.style.transform = `translateY(${ty}px)`;
   });
 }
 

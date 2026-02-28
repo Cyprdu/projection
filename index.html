@@ -535,13 +535,25 @@
       text-align: center;
       margin-bottom: 64px;
     }
-    .ticket-widget-wrap {
-      background: rgba(247,243,236,0.03);
-      border: 1px solid rgba(247,243,236,0.08);
-      border-radius: 2px;
-      padding: 48px;
-      overflow: hidden;
-    }
+.ticket-widget-wrap {
+    background: rgba(247, 243, 236, 0.03);
+    border: 1px solid rgba(247, 243, 236, 0.08);
+    border-radius: 2px;
+    padding: 10px; /* Réduit pour laisser le widget respirer */
+    overflow: hidden;
+    min-height: 600px; /* Minimum de sécurité */
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s ease;
+}
+
+/* Force l'iframe générée par le script à s'étendre */
+.ticket-widget-wrap iframe {
+    width: 100% !important;
+    flex-grow: 1;
+    min-height: 600px !important;
+    border: none;
+}
     
     .ticket-widget-wrap a {
       color: var(--cream);
@@ -1106,6 +1118,7 @@
      
   <script type="text/javascript" src="https://www.billetweb.fr/js/export.js"></script>
 </div>
+
   </div>
 </section>
 

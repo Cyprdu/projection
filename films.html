@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineRépertoire - Mon Catalogue</title>
+    <!-- Tailwind CSS pour un design moderne ultra-rapide -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Navigation -->
+    <header class="border-b border-gray-800 bg-gray-950/80 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <h1 class="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-purple-600 tracking-wider">
+                🍿 CINÉ-REPERTOIRE
+            </h1>
+            
+            <!-- Barre de recherche -->
+            <div class="relative w-full sm:w-72">
+                <input type="text" id="search-input" placeholder="Rechercher un film..." 
+                       class="w-full bg-gray-900 border border-gray-700 rounded-full py-2 pl-4 pr-10 text-sm text-gray-200 focus:outline-none focus:border-red-500 transition-colors">
+                <span class="absolute right-3 top-2.5 text-gray-500">🔍</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 flex-grow">
+        
+        <!-- Filtres par Genre -->
+        <div class="flex flex-wrap gap-2 mb-8 justify-center sm:justify-start" id="genre-filters">
+            <button onclick="filterGenre('Tous')" class="genre-btn px-4 py-1.5 rounded-full text-sm font-semibold bg-red-600 text-white transition-all">Tous</button>
+            <button onclick="filterGenre('Court-métrage')" class="genre-btn px-4 py-1.5 rounded-full text-sm font-semibold bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">Court-métrages</button>
+            <button onclick="filterGenre('Documentaire')" class="genre-btn px-4 py-1.5 rounded-full text-sm font-semibold bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all">Documentaires</button>
+        </div>
+
+        <!-- Grille de films -->
+        <div id="films-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            <!-- Les films seront injectés ici par JavaScript -->
+        </div>
+    </main>
+
+    <!-- Pied de page -->
+    <footer class="border-t border-gray-800 bg-gray-950 py-6 text-center text-gray-500 text-sm">
+        <p>&copy; 2026 Ciné-Répertoire. Conçu avec passion.</p>
+    </footer>
+
+    <!-- Notification Toast (pour les films sans lien) -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-red-600 text-white font-semibold px-6 py-4 rounded-xl shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <span class="text-xl">⚠️</span>
+        <span id="toast-message">Pas de lien pour ce film pour l'instant</span>
+    </div>
+
+    <!-- Script de gestion des données et de l'affichage -->
+    <script>
+        // Votre liste JSON avec une entrée "url" (vide ou remplie à titre d'exemple)
+        const films = [
+          { 
+            nom: "Refuge des oubliés", 
+            affiche: "BENIN%20-%20AFFICHE.jpeg", 
+            synopsis: "Au Bénin, pays de plus de 14 millions d’habitants, il n’existe qu’un seul hôpital psychiatrique public, dont l’accès est conditionné par des moyens financiers que la majorité ne possède pas. Face à cette détresse, l’association Saint-Camille de Lellis se mobilise pour offrir une prise en charge totalement gratuite à ces malades délaissés. C’est au sein de cette mission que Noémie et Suzanne se sont engagées bénévolement. À travers leur regard, ce documentaire nous plonge au cœur d'une dure réalité, révélant pourtant, au-delà de la souffrance et de la précarité, la joie profonde et contagieuse qui habite les malades.", 
+            genre: "Documentaire",
+            url: "" // Vide
+          },
+          { 
+            nom: "À ma Soeur", 
+            affiche: "A%20ma%20soeur.jpeg", 
+            synopsis: "Un court métrage réalisé par de jeunes élèves de seconde.", 
+            genre: "Court-métrage",
+            url: "https://www.youtube.com" // Exemple d'URL remplie
+          },
+          { 
+            nom: "Cher François", 
+            affiche: "Ch%C3%A8r%20Fran%C3%A7ois.jpeg", 
+            synopsis: "Cher François... un court métrage... surprenant ;)", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "PHILIA", 
+            affiche: "712623109_1475179597141404_1999969485844026104_n_.png", 
+            synopsis: "Court-Métrage d'une qualité remarqualble !", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Obsession", 
+            affiche: "Obsession.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "https://vimeo.com" // Exemple d'URL remplie
+          },
+          { 
+            nom: "The Cellar", 
+            affiche: "WhatsApp Image 2026-06-05 at 09.43.10.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Désolé, je suis un hérisson.", 
+            affiche: "herisson.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Mind Trap", 
+            affiche: "Affiche Mind trap.png", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Mickael", 
+            affiche: "IMG_6135.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "ELLE", 
+            affiche: "elle.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Frissons", 
+            affiche: "Frissons.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Pas si Seule", 
+            affiche: "Pas%20si%20seule.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Le Jugement", 
+            affiche: "Le%20jugement.png", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          },
+          { 
+            nom: "Une Amitié brûlée", 
+            affiche: "Une amitié brulee.jpeg", 
+            synopsis: "Un court-métrage qui va vous retourner le cerveau…", 
+            genre: "Court-métrage",
+            url: "" 
+          }
+        ];
+
+        let currentGenre = "Tous";
+        let searchQuery = "";
+
+        // URL de l'image de secours si l'affiche locale n'existe pas
+        const fallbackImage = "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=600&auto=format&fit=crop";
+
+        // Fonction pour afficher les films
+        function displayFilms() {
+            const grid = document.getElementById('films-grid');
+            grid.innerHTML = '';
+
+            // Filtrer les films selon la recherche et le genre
+            const filteredFilms = films.filter(film => {
+                const matchesGenre = currentGenre === "Tous" || film.genre === currentGenre;
+                const matchesSearch = film.nom.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesGenre && matchesSearch;
+            });
+
+            if (filteredFilms.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500 text-lg">Aucun film ne correspond à votre recherche. 🔍</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredFilms.forEach(film => {
+                const hasUrl = film.url && film.url.trim() !== "";
+
+                // Création du bouton selon la disponibilité du lien
+                const buttonHTML = hasUrl 
+                    ? `<a href="${film.url}" target="_blank" class="w-full text-center block bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-lg transition-colors duration-200">
+                        ▶ Regarder le film
+                       </a>`
+                    : `<button onclick="showNoLinkToast()" class="w-full bg-gray-800 text-gray-500 font-semibold py-2.5 px-4 rounded-lg cursor-not-allowed border border-gray-700/50">
+                        Indisponible
+                       </button>`;
+
+                // Template de la carte de film
+                const filmCard = `
+                    <div class="bg-gray-900 rounded-2xl overflow-hidden shadow-xl border border-gray-800 flex flex-col justify-between group hover:border-gray-700 transition-all duration-300 hover:-translate-y-1">
+                        <div>
+                            <!-- Conteneur Image -->
+                            <div class="relative aspect-[3/4] w-full overflow-hidden bg-gray-950">
+                                <img src="${film.affiche}" alt="${film.nom}" 
+                                     onerror="this.onerror=null; this.src='${fallbackImage}';"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-xs font-bold px-3 py-1 rounded-full text-gray-200 uppercase tracking-wider border border-gray-700">
+                                    ${film.genre}
+                                </span>
+                            </div>
+                            <!-- Conteneur Infos -->
+                            <div class="p-5">
+                                <h3 class="text-lg font-bold text-white group-hover:text-red-500 transition-colors line-clamp-1 mb-2">${film.nom}</h3>
+                                <p class="text-sm text-gray-400 line-clamp-4 leading-relaxed mb-4">${film.synopsis}</p>
+                            </div>
+                        </div>
+                        <!-- Bouton d'action -->
+                        <div class="p-5 pt-0">
+                            ${buttonHTML}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += filmCard;
+            });
+        }
+
+        // Gérer le clic sur les boutons de genre
+        function filterGenre(genre) {
+            currentGenre = genre;
+            
+            // Mise à jour visuelle des boutons de filtre
+            const buttons = document.querySelectorAll('.genre-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.trim() === genre || (genre === "Tous" && btn.textContent.trim() === "Tous") || (genre === "Court-métrage" && btn.textContent.trim() === "Court-métrages") || (genre === "Documentaire" && btn.textContent.trim() === "Documentaires")) {
+                    btn.className = "genre-btn px-4 py-1.5 rounded-full text-sm font-semibold bg-red-600 text-white transition-all";
+                } else {
+                    btn.className = "genre-btn px-4 py-1.5 rounded-full text-sm font-semibold bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all";
+                }
+            });
+
+            displayFilms();
+        }
+
+        // Ecouter la barre de recherche
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            searchQuery = e.target.value;
+            displayFilms();
+        });
+
+        // Afficher la notification si pas de lien
+        function showNoLinkToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            // Masquer après 3 secondes
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        // Premier affichage au chargement de la page
+        displayFilms();
+    </script>
+</body>
+</html>
